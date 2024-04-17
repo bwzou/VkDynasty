@@ -6,7 +6,7 @@
 #include "../render/PipelineStates.h"
 #include "Texture.h"
 #include "Uniform.h"
-#include "../render/ShaderProgram.h"
+// #include "../render/ShaderProgram.h"
 
 
 enum AlphaMode {
@@ -101,8 +101,65 @@ class MaterialObject {
 public:
     ShadingModel shadingModel = Shading_Unknown;
     std::shared_ptr<PipelineStates> pipelineStates;
-    std::shared_ptr<ShaderProgram> shaderProgram;
-    std::shared_ptr<ShaderResources> shaderResources;
+    // std::shared_ptr<ShaderProgram> shaderProgram;
+    // std::shared_ptr<ShaderResources> shaderResources;
+};
+
+class Material {
+public:
+    static const char *shadingModelStr(ShadingModel model);
+    static const char *materialTexTypeStr(MaterialTexType usage);
+    static const char *samplerDefine(MaterialTexType usage);
+    static const char *samplerName(MaterialTexType usage);
+
+public:
+    virtual void reset() {
+        shadingModel = Shading_Unknown;
+        doubleSided = false;
+        alphaMode = Alpha_Opaque;
+
+        baseColor = glm::vec4(1.f);
+        pointSize = 1.f;
+        lineWidth = 1.f;
+
+        textureData.clear();
+
+        shaderDefines.clear();
+        textures.clear();
+        materialObj = nullptr;
+    }
+
+    virtual void resetStates() {
+        textures.clear();
+        shaderDefines.clear();
+        materialObj = nullptr;
+    }
+
+public:
+    ShadingModel shadingModel = Shading_Unknown;
+    bool doubleSided = false;
+    AlphaMode alphaMode = Alpha_Opaque;
+
+    glm::vec4 baseColor = glm::vec4(1.f);
+    float pointSize = 1.f;
+    float lineWidth = 1.f;
+
+    std::unordered_map<int, TextureData> textureData;
+
+    std::set<std::string> shaderDefines;
+    std::unordered_map<int, std::shared_ptr<Texture>> textures;
+    std::shared_ptr<MaterialObject> materialObj = nullptr;
+};
+
+class SkyboxMaterial : public Material {
+public:
+    void resetStates() override {
+        Material::resetStates();
+        iblReady = false;
+    }
+
+public:
+    bool iblReady = false;
 };
 
 

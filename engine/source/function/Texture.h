@@ -3,8 +3,8 @@
 #include <string>
 #include <memory>
 #include <vector>
-#include "code/base/Buffer.h"
-#include "code/base/GLMInc.h"
+#include "../code/base/Buffer.h"
+#include "../code/base/GLMInc.h"
 
 
 enum WrapMode {

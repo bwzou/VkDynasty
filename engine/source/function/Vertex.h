@@ -2,7 +2,7 @@
 
 #include <vector>
 #include <memory>
-#include "code/base/GLMInc.h"
+#include "../code/base/GLMInc.h"
 
 
 class VertexArrayObject {

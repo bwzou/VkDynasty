@@ -94,6 +94,8 @@
         "shared_mutex": "cpp",
         "stop_token": "cpp",
         "thread": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "*.ipp": "cpp",
+        "filesystem": "cpp"
     }
 }

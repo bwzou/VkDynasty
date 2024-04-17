@@ -2,7 +2,7 @@
 
 #include "RenderStates.h"
 
-class PiplelineStates {
+class PipelineStates {
 public:
     explicit PipelineStates(const RenderStates &states) 
         : renderStates(states) {}

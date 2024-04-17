@@ -29,13 +29,13 @@ else()
     message(FATAL_ERROR "Unknown Platform")        
 endif()
 
-# # 引入assimp
+# 引入assimp
 # include_directories(
 #     "${THIRD_PARTY_DIR}/assimp/include"
 #     "${THIRD_PARTY_DIR}/assimp/contrib"
 # )
 
-# # assimp
+# assimp
 # set(BUILD_SHARED_LIBS OFF)
 # set(ASSIMP_NO_EXPORT ON)
 # set(ASSIMP_BUILD_TESTS OFF)
