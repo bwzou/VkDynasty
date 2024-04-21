@@ -96,6 +96,7 @@
         "thread": "cpp",
         "cfenv": "cpp",
         "*.ipp": "cpp",
-        "filesystem": "cpp"
+        "filesystem": "cpp",
+        "__functional_03": "cpp"
     }
 }

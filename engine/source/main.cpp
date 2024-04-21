@@ -1,26 +1,4 @@
-#ifndef GLFW_INCLUDE_VULKAN
-#define GLFW_INCLUDE_VULKAN 1
-#endif
-#define GLM_FORCE_RADIANS
-#define GLM_FORCE_DEFAULT_ALIGNED_GENTYPES
-#define GLM_FORCE_DEPTH_ZERO_TO_ONE
-#define GLM_ENABLE_EXPERIMENTAL
-
 #include <stdlib.h>
-#include <iostream>
-#include <stdexcept>
-#include <algorithm>
-#include <vector>
-#include <fstream>
-#include <chrono>
-#include <cstdint>
-#include <cstdlib>
-#include <cstring>
-#include <array>
-#include <limits>
-#include <optional>
-#include <set>
-#include <unordered_map>
 #include "DynastyEngine.h"
 
 #define DYNASTY_XSTR(s) DYNASTY_STR(s)

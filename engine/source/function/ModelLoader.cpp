@@ -340,7 +340,7 @@ bool ModelLoader::processMesh(const aiMesh *ai_mesh, const aiScene * ai_scene, M
 
     outMesh.primitiveType = Primitive_TRIANGLE;
     outMesh.primitiveCnt = ai_mesh->mNumFaces;
-    outMesh.vertexes = std::move(vertexes);
+    outMesh.vertexes = std::move(vertexes); // std::move作用主要可以将一个左值转换成右值引用，从而可以调用C++11右值引用的拷贝构造函数
     outMesh.indices = std::move(indices);
     outMesh.aabb = convertBoundingBox(ai_mesh->mAABB);
     outMesh.InitVertexes();

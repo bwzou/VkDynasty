@@ -11,7 +11,7 @@
 
 class ModelLoader {
 public:
-    // explict ModelLoader(Config &config)
+    // explicit的主要用法就是放在单参数的构造函数中, 防止隐式转换, 导致函数的入口参数
     explicit ModelLoader(Config &config);
 
     bool loadModel(const std::string &filepath);

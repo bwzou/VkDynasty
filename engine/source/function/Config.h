@@ -4,8 +4,8 @@
 #include "../code/base/GLMInc.h"
 // #include "../render/Renderer.h"
 
-const std::string ASSETS_DIR = "../../asset/";
-const std::string SHADER_GLSL_DIR = "../../shader/generated/spv";
+const std::string ASSETS_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/asset/";
+const std::string SHADER_GLSL_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/generated/spv";
 
 enum AAType {
     AAType_NONE,

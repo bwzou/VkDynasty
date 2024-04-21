@@ -14,13 +14,13 @@ public:
         std::vector<uint8_t> ret;
         std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);
         if (!file.is_open()) {
-            // LOGE("failed to open file: %s", path.c_str());
+            std::cout << "failed to open file: %s" << path.c_str() << std::endl;
             return ret;
         }
 
         size_t size = file.tellg();
         if (size <= 0) {
-            // LOGE("failed to read file, invalid size: %d", size);
+            std::cout << "failed to read file, invalid size: %d" << size << std::endl;
             return ret;
         }
 
