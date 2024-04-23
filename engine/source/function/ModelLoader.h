@@ -55,10 +55,13 @@ private:
     void preloadTextureFiles(const aiScene *scene, const std::string &resDir);
     std::shared_ptr<Buffer<RGBA>> loadTextureFile(const std::string &path);
 
+public: 
+    DemoScene scene_;
+
 private:
     Config &config_;
 
-    DemoScene scene_;
+    
     std::unordered_map<std::string, std::shared_ptr<Model>> modelCache_;
     std::unordered_map<std::string, std::shared_ptr<Buffer<RGBA>>> textureDataCache_;
     std::unordered_map<std::string, std::shared_ptr<SkyboxMaterial>> skyboxMaterialCache_;

@@ -887,7 +887,7 @@ void DynastyEngine::createVertexBuffer() {
 }
 
 void DynastyEngine::createIndexBuffer() {
-    std::cout << "createVertexBuffer" << std::endl;
+    std::cout << "createIndexBuffer" << std::endl;
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();//索引数bufferSize乘以索引类型的大小
  
     VkBuffer stagingBuffer;
@@ -976,6 +976,19 @@ void DynastyEngine::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
     copyRegion.size = size;
     // 使用命令传输缓冲区的内容vkCmdCopyBuffer。它以源缓冲区和目标缓冲区作为参数，以及要复制的区域数组。
     vkCmdCopyBuffer(commandBuffer, srcBuffer, dstBuffer, 1, &copyRegion);
+
+    // use barrier to ensure that data is uploaded to the GPU before it is accessed
+    VkBufferMemoryBarrier barrier{};
+    barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+    barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+    barrier.buffer = dstBuffer;
+    barrier.offset = 0;
+    barrier.size = VK_WHOLE_SIZE;
+    vkCmdPipelineBarrier(commandBuffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT | VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, 0, 0, nullptr, 1, &barrier, 0, nullptr);
+
     // 命令缓冲区仅包含复制命令，因此我们可以立即停止记录。现在执行命令缓冲区以完成传输：
     vkEndCommandBuffer(commandBuffer);
 
@@ -1104,9 +1117,9 @@ void DynastyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
     // 实际将每个帧的正确描述符集绑定到着色器中的描述符vkCmdBindDescriptorSets。这需要在调用之前完成vkCmdDrawIndexed
     vkCmdBindDescriptorSets(commandBuffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineLayout, 0, 1, &descriptorSets[0], 0, nullptr);
     
-    vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
+    // vkCmdDraw(commandBuffer, static_cast<uint32_t>(vertices.size()), 1, 0, 0);
 
-    // vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
+    vkCmdDrawIndexed(commandBuffer, static_cast<uint32_t>(indices.size()), 1, 0, 0, 0);
 
     vkCmdEndRenderPass(commandBuffer);
 
@@ -1143,8 +1156,9 @@ void DynastyEngine::updateUniformBuffer() {
 
     UniformBufferObject ubo{};
     ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.view = glm::lookAt(glm::vec3(2.0f, 2.0f, 2.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 10.0f);
+    // glm::lookAt 函数有三个参数，eye 表示摄像机所在位置，center 表示摄像机要看向的中心点的位置，在本文中是世界坐标系原点，up 表示摄像机的三个方位向量中的up向量。
+    ubo.view = glm::lookAt(glm::vec3(20.0f, 20.0f, 20.0f), glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    ubo.proj = glm::perspective(glm::radians(45.0f), swapChainExtent.width / (float) swapChainExtent.height, 0.1f, 50.0f);
     ubo.proj[1][1] *= -1;
     memcpy(uniformBufferMapped, &ubo, sizeof(ubo));
 }
@@ -1153,7 +1167,7 @@ void DynastyEngine::drawFrame() {
     // 等待所有的栅栏，但在单个栅栏的情况下，这无关紧要
     vkWaitForFences(device, 1, &inFlightFence, VK_TRUE, UINT64_MAX);
 
-    uint32_t imageIndex;
+    // uint32_t imageIndex;
     // 希望从中获取图像的逻辑设备和交换链
     // 指定图像可用的超时时间（以纳秒为单位）：使用 64 位无符号整数的最大值意味着我们可以有效地禁用超时。
     // 开始绘制的时间点，最后一个参数指定一个变量来输出已变为可用的交换链图像的索引
@@ -1162,8 +1176,10 @@ void DynastyEngine::drawFrame() {
     updateUniformBuffer();
     vkResetFences(device, 1, &inFlightFence);
 
-    vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
-    recordCommandBuffer(commandBuffer, imageIndex);
+    // vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+    // recordCommandBuffer(commandBuffer, imageIndex);
+
+    drawModel();
 
     VkSubmitInfo submitInfo{};
     submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
@@ -1211,6 +1227,9 @@ void DynastyEngine::cleanup() {
     vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
     vkDestroyFence(device, inFlightFence, nullptr);
 
+    vkDestroyBuffer(device, uniformBuffer, nullptr);
+    vkFreeMemory(device, uniformBufferMemory, nullptr);
+
     vkDestroyCommandPool(device, commandPool, nullptr);
 
     for (auto framebuffer : swapChainFramebuffers) {
@@ -1229,8 +1248,6 @@ void DynastyEngine::cleanup() {
 
     vkDestroySwapchainKHR(device, swapChain, nullptr);
     vkDestroyDevice(device, nullptr);
-
-    
 
     if (enableValidationLayers) {
         DestroyDebugUtilsMessengerEXT(instance, debugMessenger, nullptr);

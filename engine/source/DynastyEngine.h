@@ -28,9 +28,11 @@
 #include <unordered_map>
 
 #include "./function/Model.h"
+#include "./function/Material.h"
 #include "./function/Config.h"
 #include "./function/ModelLoader.h"
 #include "./code/util/FileUtils.h"
+
 
 const uint32_t WIDTH = 800;
 const uint32_t HEIGHT = 600;
@@ -73,19 +75,8 @@ struct UniformBufferObject {
 };
 
 
-const std::vector<Vertex> vertices = {
-    // {{1.0f, 0.0f, 0.0f}, {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-    // {{0.0f, 1.0f, 0.0f}, {0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-    // {{0.0f, 0.0f, 1.0f}, {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}
-    { {1.0f, 0.0f, 0.0f}, {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
-    { {0.0f, 1.0f, 0.0f}, {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
-    { {0.0f, 0.0f, 1.0f}, {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
-    { {1.0f, 1.0f, 1.0f}, {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}
-};
 
-const std::vector<uint16_t> indices = {
-    0, 1, 2, 2, 3, 0
-};
+
 
 class DynastyEngine {
 private:
@@ -155,6 +146,21 @@ private:
     // 现在我们的渲染循环有一个明显的缺陷。我们需要等待前一帧完成，然后才能开始渲染下一帧，这会导致主机不必要的空闲。
     const int MAX_FRAMES_IN_FLIGHT = 2;
 
+    uint32_t imageIndex;
+
+    std::vector<Vertex> vertices = {
+        // {{1.0f, 0.0f, 0.0f}, {0.0f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        // {{0.0f, 1.0f, 0.0f}, {0.5f, 0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        // {{0.0f, 0.0f, 1.0f}, {-0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}}
+        { {1.0f, 0.0f, 0.0f}, {-0.5f, -0.5f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f, 0.0f}},
+        { {0.0f, 1.0f, 0.0f}, {0.5f, -0.5f}, {0.0f, 1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}},
+        { {0.0f, 0.0f, 1.0f}, {0.5f, 0.5f}, {0.0f, 0.0f, 1.0f}, {0.0f, 0.0f, 1.0f}},
+        { {1.0f, 1.0f, 1.0f}, {-0.5f, 0.5f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f, 1.0f}}
+    };
+
+    std::vector<int32_t> indices = {
+        0, 1, 2, 2, 3, 0
+    };
 
     void initWindow(); 
     void mainLoop(); 
@@ -269,4 +275,69 @@ public:
         modelLoader->loadModel(filepath);
     }
 
-};
+    void drawModel() {
+        auto scene_ = modelLoader->scene_;
+        ModelNode &modelNode = scene_.model->rootNode;
+        drawModelNodes(modelNode, scene_.model->centeredTransform, Alpha_Opaque, false);
+    }
+
+    void drawModelNodes(ModelNode &node, glm::mat4 &transform, AlphaMode mode, float specular) {
+        glm::mat4 modelMatrix = transform * node.transform;
+
+        // draw nodes
+        std::cout<< "node.meshes" << "    " << node.meshes.size() << std::endl;
+        for (auto &mesh : node.meshes) {
+            if (mesh.material->alphaMode != mode) {
+                continue;
+            }
+            // frustum cull
+            // if (!checkMeshFrustumCull(mesh, modelMatrix)) {
+            //     return;
+            // }
+
+            drawModelMesh(mesh, specular);
+        }
+
+        // draw child
+        for (auto &childNode : node.children) {
+            drawModelNodes(childNode, modelMatrix, mode, specular);
+        }
+    }
+
+    void drawModelMesh(ModelMesh &mesh, float specular) {
+        // update material
+        // updateUniformMaterial(*mesh.material, specular);
+
+        // update IBL textures
+        // if (mesh.material->shadingModel == Shading_PBR) {
+        //     updateIBLTextures(mesh.material->materialObj.get());
+        // }
+
+        // // update shadow textures
+        // if (config_.shadowMap) {
+        //     updateShadowTextures(mesh.material->materialObj.get(), shadowPass);
+        // }
+
+        // draw mesh
+        pipelineDraw(mesh);
+    }
+
+    void pipelineDraw(ModelBase &model) {
+        // auto &materialObj = model.material->materialObj;
+
+        vertices = model.vertexes;
+        indices = model.indices;
+        std::cout<< vertices.size() << "indices:  " << indices.size() << std::endl;
+        createVertexBuffer();
+        createIndexBuffer();
+        
+        vkResetCommandBuffer(commandBuffer, /*VkCommandBufferResetFlagBits*/ 0);
+        recordCommandBuffer(commandBuffer, imageIndex);
+
+        // renderer_->setVertexArrayObject(model.vao);
+        // renderer_->setShaderProgram(materialObj->shaderProgram);
+        // renderer_->setShaderResources(materialObj->shaderResources);
+        // renderer_->setPipelineStates(materialObj->pipelineStates);
+        // renderer_->draw();      
+    }
+};  
