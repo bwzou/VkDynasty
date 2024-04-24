@@ -228,6 +228,7 @@ void DynastyEngine::initVulkan() {
     DynastyEngine::createVertexBuffer();
     DynastyEngine::createIndexBuffer();
     DynastyEngine::createUniformBuffer();
+    DynastyEngine::createMaterialBuffer();
     DynastyEngine::createDescriptorPool();
     DynastyEngine::createDescriptorSets();
     DynastyEngine::createCommandBuffer();
@@ -522,9 +523,9 @@ void DynastyEngine::createDescriptorSetLayout() {
     VkDescriptorSetLayoutBinding samplerLayoutBinding{};
     samplerLayoutBinding.binding = 1;
     samplerLayoutBinding.descriptorCount = 1;
-    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    samplerLayoutBinding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     samplerLayoutBinding.pImmutableSamplers = nullptr;
-    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_FRAGMENT_BIT;
+    samplerLayoutBinding.stageFlags = VK_SHADER_STAGE_VERTEX_BIT | VK_SHADER_STAGE_FRAGMENT_BIT;
 
     std::array<VkDescriptorSetLayoutBinding, 2> bindings = {uboLayoutBinding, samplerLayoutBinding};
     VkDescriptorSetLayoutCreateInfo layoutInfo{};
@@ -543,7 +544,7 @@ void DynastyEngine::createDescriptorPool() {
     // 描述符集将包含哪些描述符类型以及它们的数量
     // poolSizes[0].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[0].descriptorCount = 1;
-    poolSizes[1].type = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+    poolSizes[1].type = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
     // poolSizes[1].descriptorCount = static_cast<uint32_t>(MAX_FRAMES_IN_FLIGHT);
     poolSizes[1].descriptorCount = 1;
     
@@ -614,34 +615,34 @@ void DynastyEngine::createDescriptorSets() {
         bufferInfo.offset = 0;
         bufferInfo.range = sizeof(UniformBufferObject);
 
-        // VkDescriptorImageInfo imageInfo{};
-        // imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        // imageInfo.imageView = textureImageView;
-        // imageInfo.sampler = textureSampler;
+        VkDescriptorBufferInfo materialInfo{};
+        materialInfo.buffer = materialBuffer;
+        materialInfo.offset = 0;
+        materialInfo.range = sizeof(UniformsMaterial);
 
-        VkWriteDescriptorSet descriptorWrite{};
-        // std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
+        // VkWriteDescriptorSet descriptorWrite{};
+        std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
         // 前两个字段指定要更新的描述符集和绑定。
-        descriptorWrite.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        descriptorWrite.dstSet = descriptorSets[0];
+        descriptorWrites[0].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[0].dstSet = descriptorSets[0];
         // 统一的缓冲区绑定索引0
-        descriptorWrite.dstBinding = 0;
-        descriptorWrite.dstArrayElement = 0;
+        descriptorWrites[0].dstBinding = 0;
+        descriptorWrites[0].dstArrayElement = 0;
         // 指定描述符的类型。可以一次更新数组中的多个描述符
-        descriptorWrite.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
-        descriptorWrite.descriptorCount = 1;
+        descriptorWrites[0].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[0].descriptorCount = 1;
         // 该pBufferInfo字段用于引用缓冲区数据的描述符
-        descriptorWrite.pBufferInfo = &bufferInfo;
+        descriptorWrites[0].pBufferInfo = &bufferInfo;
 
-        // descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
-        // descriptorWrites[1].dstSet = descriptorSets[0];
-        // descriptorWrites[1].dstBinding = 1;
-        // descriptorWrites[1].dstArrayElement = 0;
-        // descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
-        // descriptorWrites[1].descriptorCount = 1;
-        // descriptorWrites[1].pImageInfo = &imageInfo;
+        descriptorWrites[1].sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        descriptorWrites[1].dstSet = descriptorSets[0];
+        descriptorWrites[1].dstBinding = 1;
+        descriptorWrites[1].dstArrayElement = 0;
+        descriptorWrites[1].descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+        descriptorWrites[1].descriptorCount = 1;
+        descriptorWrites[1].pBufferInfo = &materialInfo;
 
-        vkUpdateDescriptorSets(device, 1, &descriptorWrite, 0, nullptr);
+        vkUpdateDescriptorSets(device, static_cast<uint32_t>(descriptorWrites.size()), descriptorWrites.data(), 0, nullptr);
 }
 
 void DynastyEngine::createGraphicsPipeline() {
@@ -856,12 +857,20 @@ void DynastyEngine::createUniformBuffer() {
     vkMapMemory(device, uniformBufferMemory, 0, bufferSize, 0, &uniformBufferMapped);
 }
 
+void DynastyEngine::createMaterialBuffer() {
+    std::cout << "createMaterialBuffer" << std::endl; 
+    VkDeviceSize bufferSize = sizeof(UniformsMaterial); // 索引数bufferSize乘以索引类型的大小
+
+    createBuffer(bufferSize, VK_BUFFER_USAGE_UNIFORM_BUFFER_BIT, VK_MEMORY_PROPERTY_HOST_VISIBLE_BIT | VK_MEMORY_PROPERTY_HOST_COHERENT_BIT, materialBuffer, materialBufferMemory);
+    vkMapMemory(device, materialBufferMemory, 0, bufferSize, 0, &materialBufferMapped);
+}
+
 // 使用主机可见缓冲区作为临时缓冲区，并使用设备本地缓冲区作为实际顶点缓冲区
 void DynastyEngine::createVertexBuffer() {
-    std::cout << "createVertexBuffer" << std::endl;
+    // std::cout << "createVertexBuffer" << std::endl;
     // 使用新的stagingBuffer、stagingBufferMemory来映射和复制顶点数据
     VkDeviceSize bufferSize = sizeof(vertices[0]) * vertices.size();
-    std::cout << "bufferSize:" << bufferSize << std::endl;
+    // std::cout << "bufferSize:" << bufferSize << std::endl;
 
     VkBuffer stagingBuffer;
     VkDeviceMemory stagingBufferMemory;
@@ -880,14 +889,14 @@ void DynastyEngine::createVertexBuffer() {
     // VK_BUFFER_USAGE_TRANSFER_DST_BIT：缓冲区可用作内存传输操作中的目标。
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, vertexBuffer, vertexBufferMemory);
 
-    copyBuffer(stagingBuffer, vertexBuffer, bufferSize);
+    copyBuffer(stagingBuffer, vertexBuffer, bufferSize, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT);
 
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
 }
 
 void DynastyEngine::createIndexBuffer() {
-    std::cout << "createIndexBuffer" << std::endl;
+    // std::cout << "createIndexBuffer" << std::endl;
     VkDeviceSize bufferSize = sizeof(indices[0]) * indices.size();//索引数bufferSize乘以索引类型的大小
  
     VkBuffer stagingBuffer;
@@ -902,7 +911,7 @@ void DynastyEngine::createIndexBuffer() {
 
     createBuffer(bufferSize, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT, indexBuffer, indexBufferMemory);
  
-    copyBuffer(stagingBuffer, indexBuffer, bufferSize);
+    copyBuffer(stagingBuffer, indexBuffer, bufferSize, VK_ACCESS_INDEX_READ_BIT);
  
     vkDestroyBuffer(device, stagingBuffer, nullptr);
     vkFreeMemory(device, stagingBufferMemory, nullptr);
@@ -952,7 +961,7 @@ uint32_t DynastyEngine::findMemoryType(uint32_t typeFilter, VkMemoryPropertyFlag
         throw std::runtime_error("failed to find suitable memory type!");
 }
 
-void DynastyEngine::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size) {
+void DynastyEngine::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkAccessFlags dstAccessMask) {
     VkCommandBufferAllocateInfo allocInfo{};
     // 内存传输操作是使用命令缓冲区执行的，就像绘图命令一样。因此我们必须首先分配一个临时命令缓冲区。
     allocInfo.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_ALLOCATE_INFO;
@@ -981,7 +990,7 @@ void DynastyEngine::copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceS
     VkBufferMemoryBarrier barrier{};
     barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
     barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
-    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+    barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT | dstAccessMask;
     barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
     barrier.buffer = dstBuffer;
@@ -1108,8 +1117,6 @@ void DynastyEngine::recordCommandBuffer(VkCommandBuffer commandBuffer, uint32_t 
     scissor.extent = swapChainExtent;
     vkCmdSetScissor(commandBuffer, 0, 1, &scissor);
 
-    
-
     VkBuffer vertexBuffers[] = {vertexBuffer};
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
@@ -1227,20 +1234,30 @@ void DynastyEngine::cleanup() {
     vkDestroySemaphore(device, imageAvailableSemaphore, nullptr);
     vkDestroyFence(device, inFlightFence, nullptr);
 
-    vkDestroyBuffer(device, uniformBuffer, nullptr);
-    vkFreeMemory(device, uniformBufferMemory, nullptr);
-
     vkDestroyCommandPool(device, commandPool, nullptr);
 
     for (auto framebuffer : swapChainFramebuffers) {
         vkDestroyFramebuffer(device, framebuffer, nullptr);
     }
 
+    vkDestroyDescriptorPool(device, descriptorPool, nullptr);
     vkDestroyDescriptorSetLayout(device, descriptorSetLayout, nullptr);
 
     vkDestroyPipeline(device, graphicsPipeline, nullptr);
     vkDestroyPipelineLayout(device, pipelineLayout, nullptr);
     vkDestroyRenderPass(device, renderPass, nullptr);
+
+    vkDestroyBuffer(device, uniformBuffer, nullptr);
+    vkFreeMemory(device, uniformBufferMemory, nullptr);
+
+    vkDestroyBuffer(device, materialBuffer, nullptr);
+    vkFreeMemory(device, materialBufferMemory, nullptr);
+
+    vkDestroyBuffer(device, indexBuffer, nullptr);
+    vkFreeMemory(device, indexBufferMemory, nullptr);
+
+    vkDestroyBuffer(device, vertexBuffer, nullptr);
+    vkFreeMemory(device, vertexBufferMemory, nullptr);
 
     for (auto imageView : swapChainImageViews) {
         vkDestroyImageView(device, imageView, nullptr);

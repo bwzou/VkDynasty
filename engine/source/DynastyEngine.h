@@ -133,6 +133,10 @@ private:
     VkDeviceMemory uniformBufferMemory;
     void* uniformBufferMapped;
 
+    VkBuffer materialBuffer;
+    VkDeviceMemory materialBufferMemory;
+    void* materialBufferMapped;
+
     // std::vector<VkBuffer> uniformBuffers;
     // std::vector<VkDeviceMemory> uniformBuffersMemory;
     // std::vector<void*> uniformBuffersMapped;
@@ -195,8 +199,9 @@ private:
     void createCommandPool();
     void createVertexBuffer();
     void createIndexBuffer();
-    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size);
+    void copyBuffer(VkBuffer srcBuffer, VkBuffer dstBuffer, VkDeviceSize size, VkAccessFlags dstAccessMask);
     void createUniformBuffer();
+    void createMaterialBuffer();
     // void updateUniformBuffer(uint32_t currentImage);
      void updateUniformBuffer();
     void createFramebuffers();
@@ -228,6 +233,7 @@ private:
     }
 
 public:
+    int count = 0;
     std::shared_ptr<Config> config;
     std::shared_ptr<ModelLoader> modelLoader;
     std::unordered_map<std::string, std::string> modelPaths;
@@ -278,14 +284,25 @@ public:
     void drawModel() {
         auto scene_ = modelLoader->scene_;
         ModelNode &modelNode = scene_.model->rootNode;
+        // draw model nodes opaque
+        count = 0;
         drawModelNodes(modelNode, scene_.model->centeredTransform, Alpha_Opaque, false);
+        std::cout << "Alpha_Opaque model nodes: " << count << std::endl;
+
+        // draw model nodes blend
+        count = 0;
+        drawModelNodes(modelNode, scene_.model->centeredTransform, Alpha_Blend, false);
+        std::cout << "Alpha_Blend model nodes: " << count << std::endl;
     }
 
     void drawModelNodes(ModelNode &node, glm::mat4 &transform, AlphaMode mode, float specular) {
         glm::mat4 modelMatrix = transform * node.transform;
 
+        // update model uniform
+        // updateUniformModel(modelMatrix, camera_->viewMatrix());
+
         // draw nodes
-        std::cout<< "node.meshes" << "    " << node.meshes.size() << std::endl;
+        // std::cout<< "node.meshes" << "    " << node.meshes.size() << std::endl;
         for (auto &mesh : node.meshes) {
             if (mesh.material->alphaMode != mode) {
                 continue;
@@ -294,11 +311,12 @@ public:
             // if (!checkMeshFrustumCull(mesh, modelMatrix)) {
             //     return;
             // }
-
+            count ++;
             drawModelMesh(mesh, specular);
         }
 
         // draw child
+        // std::cout<< "node.children" << "    " << node.children.size() << std::endl;
         for (auto &childNode : node.children) {
             drawModelNodes(childNode, modelMatrix, mode, specular);
         }
@@ -306,7 +324,7 @@ public:
 
     void drawModelMesh(ModelMesh &mesh, float specular) {
         // update material
-        // updateUniformMaterial(*mesh.material, specular);
+        updateUniformMaterial(*mesh.material, specular);
 
         // update IBL textures
         // if (mesh.material->shadingModel == Shading_PBR) {
@@ -327,7 +345,7 @@ public:
 
         vertices = model.vertexes;
         indices = model.indices;
-        std::cout<< vertices.size() << "indices:  " << indices.size() << std::endl;
+        // std::cout<< vertices.size() << "indices:  " << indices.size() << std::endl;
         createVertexBuffer();
         createIndexBuffer();
         
@@ -339,5 +357,31 @@ public:
         // renderer_->setShaderResources(materialObj->shaderResources);
         // renderer_->setPipelineStates(materialObj->pipelineStates);
         // renderer_->draw();      
+    }
+
+    // void updateUniformModel() {
+        
+    // }
+
+    void updateUniformMaterial(Material &material, float specular) {
+        static UniformsMaterial uniformsMaterial{};
+
+        // uniformsMaterial.u_enableLight = config_.showLight ? 1u : 0u;
+        // uniformsMaterial.u_enableIBL = iBLEnabled() ? 1u : 0u;
+        // uniformsMaterial.u_enableShadow = config_.shadowMap ? 1u : 0u;
+
+        uniformsMaterial.u_enableLight = 0u;
+        uniformsMaterial.u_enableIBL = 0u;
+        uniformsMaterial.u_enableShadow = 0u;
+
+        uniformsMaterial.u_pointSize = material.pointSize;
+        uniformsMaterial.u_kSpecular = specular;
+        uniformsMaterial.u_baseColor = material.baseColor;
+        
+        // std::cout << "update uniform material" << std::endl;
+        
+        memcpy(materialBufferMapped, &uniformsMaterial, sizeof(uniformsMaterial));
+
+        // uniformBlockMaterial_->setData(&uniformsMaterial, sizeof(UniformsMaterial));
     }
 };  
