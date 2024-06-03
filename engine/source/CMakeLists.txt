@@ -11,7 +11,6 @@ add_library(json11 ${json_inlcude}/json11.cpp)
 set_target_properties(json11 PROPERTIES FOLDER "ThirdParty/json11" )
 
 # ---- Add source files ----
-
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files
 # automatically. Keep that in mind when changing files, or explicitly mention them here.
 file(GLOB_RECURSE HEADER_FILES "*.h")
@@ -38,6 +37,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC glfw)
 target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC glm)
 target_link_libraries(${TARGET_NAME} PUBLIC assimp)
+target_link_libraries(${TARGET_NAME} PUBLIC md5)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
 target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:json11>)
 
@@ -63,9 +63,8 @@ target_include_directories(
   PUBLIC $<BUILD_INTERFACE:${THIRD_PARTY_DIR}/vulkanmemoryallocator/include>
 )
 
-add_compile_definitions("DYNASTY_ROOT_DIR=${BINARY_ROOT_DIR}")
 
-target_compile_options(${TARGET_NAME} PUBLIC "$<$<COMPILE_LANG_AND_ID:CXX,MSVC>:/WX->")
+add_compile_definitions("DYNASTY_ROOT_DIR=${BINARY_ROOT_DIR}")
 
 add_custom_command(TARGET ${TARGET_NAME} POST_BUILD
 COMMAND ${CMAKE_COMMAND} -E make_directory "${BINARY_ROOT_DIR}"

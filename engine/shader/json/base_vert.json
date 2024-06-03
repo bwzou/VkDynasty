@@ -1,0 +1,16 @@
+{
+    "uniformsDesc": {
+        "UniformsMaterial": {
+            "binding": 1,
+            "location": 0,
+            "set": 0,
+            "type": 2
+        },
+        "UniformsModel": {
+            "binding": 0,
+            "location": 0,
+            "set": 0,
+            "type": 2
+        }
+    }
+}

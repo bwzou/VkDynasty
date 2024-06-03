@@ -36,8 +36,8 @@ public:
 };
 
 #ifndef NDEBUG
-    #define FUNCTION_TIMED(X) SoftGL::ScopedTimer _functionTimer = (X)
-    #define SCOPE_TIMED(X) if (SoftGL::ScopedTimer _scopeTimer = (X))
+    #define FUNCTION_TIMED(X) ScopedTimer _functionTimer = (X)
+    #define SCOPE_TIMED(X) if (ScopedTimer _scopeTimer = (X))
 #else
     #define FUNCTION_TIMED(X)
     #define SCOPE_TIMED(X)

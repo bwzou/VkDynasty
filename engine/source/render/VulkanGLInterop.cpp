@@ -1,0 +1,26 @@
+
+#include "VulKanGLInterop.h"
+#include "VulkanUtils.h"
+
+
+// #ifdef PLATFORM_WINDOWS
+// constexpr const char *HOST_MEMORY_EXTENSION_NAME = VK_KHR_EXTERNAL_MEMORY_WIN32_EXTENSION_NAME;
+// constexpr const char *HOST_SEMAPHORE_EXTENSION_NAME = VK_KHR_EXTERNAL_SEMAPHORE_WIN32_EXTENSION_NAME;
+// #else
+// constexpr const char *HOST_MEMORY_EXTENSION_NAME = VK_KHR_EXTERNAL_MEMORY_FD_EXTENSION_NAME;
+// constexpr const char *HOST_SEMAPHORE_EXTENSION_NAME = VK_KHR_EXTERNAL_SEMAPHORE_FD_EXTENSION_NAME;
+// #endif
+
+
+// const std::vector<const char *> VulKanGLInterop::requiredInstanceExtensions = {
+//     VK_KHR_EXTERNAL_SEMAPHORE_CAPABILITIES_EXTENSION_NAME,
+//     VK_KHR_EXTERNAL_MEMORY_CAPABILITIES_EXTENSION_NAME,
+// };
+
+// const std::vector<const char *> VulKanGLInterop::requiredDeviceExtensions = {
+//     VK_KHR_EXTERNAL_SEMAPHORE_EXTENSION_NAME,
+//     VK_KHR_EXTERNAL_MEMORY_EXTENSION_NAME,
+//     HOST_SEMAPHORE_EXTENSION_NAME,
+//     HOST_MEMORY_EXTENSION_NAME,
+// };
+

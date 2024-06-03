@@ -1,16 +1,4 @@
-
-#include <iostream>
-#include <set>
-#include <assimp/Importer.hpp>
-#include <assimp/postprocess.h>
-#include <assimp/GltfMaterial.h>
-
 #include "ModelLoader.h"
-#include "../code/util/ImageUtils.h"
-#include "../code/util/StringUtils.h"
-#include "../code/base/ThreadPool.h"
-#include "../code/log/LogSystem.h"
-#include "Cube.h"
 
 
 ModelLoader::ModelLoader(Config &config) : config_(config) {
@@ -171,6 +159,7 @@ bool ModelLoader::loadSkybox(const std::string &filepath) {
 }
 
 bool ModelLoader::loadModel(const std::string &filepath) {
+    // using a local lock_guard to lock modelLoadMutex_ guarantees unlocking on destruction / exception:
     std::lock_guard<std::mutex> lk(modelLoadMutex_);
     if (filepath.empty()) {
         return false;

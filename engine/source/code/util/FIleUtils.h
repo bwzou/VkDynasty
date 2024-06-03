@@ -10,6 +10,25 @@ public:
         return file.good();
     }
 
+    static std::vector<char> readFile(const std::string& filename) {
+        std::cerr << "filename: " << filename << std::endl;
+
+        std::ifstream file(filename, std::ios::ate | std::ios::binary);
+
+        if (!file.is_open()) {
+            throw std::runtime_error("failed to open file!");
+        }
+
+        size_t fileSize = (size_t) file.tellg();
+        std::vector<char> buffer(fileSize);
+
+        file.seekg(0);
+        file.read(buffer.data(), fileSize);
+
+        file.close();
+        return buffer;
+    }
+
     static std::vector<uint8_t> readBytes(const std::string &path) {
         std::vector<uint8_t> ret;
         std::ifstream file(path, std::ios::in | std::ios::binary | std::ios::ate);

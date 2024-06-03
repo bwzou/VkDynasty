@@ -1,0 +1,504 @@
+#include "DynastyViewer.h"
+
+
+bool DynastyViewer::iBLEnabled() {
+    return false;
+    // return config_.showSkybox && config_.pbrIbl && getSkyboxMaterial()->iblReady;
+}
+
+bool DynastyViewer::create(GLFWwindow* window, int width, int height, int outTexId) {
+    cleanup();
+
+    window_ = window;
+    width_ = width;
+    height_ = height;
+    outTexId_ = outTexId;
+
+    // main camera
+    camera_ = &cameraMain_;
+
+    // depth camera
+    if (!cameraDepth_) {
+        cameraDepth_ = std::make_shared<Camera>();
+        cameraDepth_->setPerspective(glm::radians(CAMERA_FOV),
+                                    (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT,
+                                    CAMERA_NEAR, CAMERA_FAR);
+    }
+
+
+    if (!renderer_) {
+        renderer_ = createRenderer();
+    }
+    if (!renderer_) {
+        std::runtime_error("DynastyViewer::create failed: createRenderer error");
+        return false;
+    }
+
+    // create default resources
+    uniformBlockScene_ = CREATE_UNIFORM_BLOCK(UniformsScene);
+    uniformBlockModel_ = CREATE_UNIFORM_BLOCK(UniformsModel);
+    uniformBlockMaterial_ = CREATE_UNIFORM_BLOCK(UniformsMaterial);
+
+    return true;
+}
+
+
+void DynastyViewer::destroy() {
+    cleanup();
+    if (renderer_) {
+        renderer_->destroy();
+    }
+    renderer_ = nullptr;
+}
+
+
+std::shared_ptr<Renderer> DynastyViewer::createRenderer() {
+    auto renderer = std::make_shared<Renderer>();
+    if (!renderer->create(window_)) {
+        return nullptr;
+    }
+    return renderer;
+}
+
+
+bool DynastyViewer::loadShaders(ShaderProgram &program, ShadingModel shading) {
+    auto *programVK = dynamic_cast<ShaderProgram *>(&program);
+    switch(shading) {
+        CASE_CREATE_SHADER_VK(Shading_BaseColor, base);
+        CASE_CREATE_SHADER_VK(Shading_BlinnPhong, BlinnPhongGLSL);
+        CASE_CREATE_SHADER_VK(Shading_PBR, PbrGLSL);
+        CASE_CREATE_SHADER_VK(Shading_Skybox, SkyboxGLSL);
+        CASE_CREATE_SHADER_VK(Shading_IBL_Irradiance, IBLIrradianceGLSL);
+        CASE_CREATE_SHADER_VK(Shading_IBL_Prefilter, IBLPrefilterGLSL);
+        CASE_CREATE_SHADER_VK(Shading_FXAA, FxaaGLSL);
+      default:
+        break;
+    }
+}
+
+
+void DynastyViewer::waitRenderIdle() {
+  if (renderer_) {
+    renderer_->waitIdle();
+  }
+}
+
+
+void DynastyViewer::drawFrame(DemoScene &scene) {
+    std:: cout << "DynastyViewer: start draw frame" << std::endl;
+    if (!renderer_) {
+        return;
+    }
+
+    renderer_->beginRender();
+
+    scene_ = &scene;
+    
+    // setup framebuffer
+    setupMainBuffers();
+    setupShadowMapBuffers();
+
+    // init skybox textures & ibl;
+    // initSkyboxIBL();
+
+    // setup model materials
+    setupScene();
+
+    // std:: cout << "DynastyViewer: finish draw scene" << std::endl;
+    // throw std::runtime_error("setupScene");
+
+    // draw shadow map
+    // drawShadowMap();
+
+    // setup fxaa
+    // processFXAASetup();
+
+    std:: cout << "DynastyViewer: finish draw scene" << std::endl;
+    // main fxaa
+    ClearStates clearStates{};
+    clearStates.colorFlag = true;
+    clearStates.depthFlag = config_.depthTest;
+    clearStates.clearColor = config_.clearColor;
+    clearStates.clearDepth = config_.reverseZ ? 0.f : 1.f;
+
+    // start main pass
+    renderer_->beginRenderPass(fboMain_, clearStates);
+    renderer_->setViewPort(0, 0, width_, height_);
+    
+    // draw scene
+    drawScene(false);
+
+    // end main pass
+    renderer_->endRenderPass();
+
+    renderer_->endRender();
+
+    std::cout << "DynastyViewer: end draw frame" << std::endl;
+    // draw fxaa
+    // processFXAADraw();
+}
+
+
+void DynastyViewer::setupScene() {
+    std::cout << "DynastyViewer::setup scene" <<  std::endl;
+    // model nodes
+    ModelNode &modelNode = scene_->model->rootNode;
+    setupModelNodes(modelNode, config_.wireframe);
+    
+}
+
+
+void DynastyViewer::setupPoints(ModelPoints &points) {
+
+}
+
+
+void DynastyViewer::setupLines(ModelLines &lines) {
+
+}
+
+
+void DynastyViewer::setupMeshBaseColor(ModelMesh &mesh, bool wireframe) {
+    // pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material},
+    //             [&](RenderStates &rs) -> void {
+    //               rs.polygonMode = wireframe ? PolygonMode_LINE : PolygonMode_FILL;  
+    //             });
+    pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
+}
+
+
+void DynastyViewer::setupMeshTextured(ModelMesh &mesh) {
+    pipelineSetup(mesh, mesh.material->shadingModel, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
+}
+
+
+void DynastyViewer::setupModelNodes(ModelNode &node, bool wireframe) {
+    for (auto &mesh : node.meshes) {
+        if (wireframe) {
+            setupMeshBaseColor(mesh, true);
+        } else {
+            setupMeshTextured(mesh);
+        }
+    }
+
+    // setup child
+    for (auto &childNode : node.children) {
+        setupModelNodes(childNode, wireframe);
+    }
+}
+
+
+void DynastyViewer::setupSkybox(ModelMesh &skybox) {
+
+}
+
+
+void DynastyViewer::drawScene(bool shadowPass) {
+    // updateUniformScene();
+    // updateUniformModel(glm::mat4(1.0f), camera_->viewMatrix());
+
+    // draw model nodes opaque
+    ModelNode &modelNode = scene_->model->rootNode;
+    count = 0;
+    std::cout << "--------------- drawScene -------" << std::endl;
+    drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Opaque);
+    printf("Alpha_Opaque model nodes: %d", count);
+
+    // draw model nodes blend
+    count = 0;
+    drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Blend);
+    printf("Alpha_Blend model nodes: %d", count);
+}
+
+
+void DynastyViewer::drawModelNodes(ModelNode &node, bool shadowPass, glm::mat4 &transform, AlphaMode mode, float specular) {
+    glm::mat4 modelMatrix = transform * node.transform;
+
+    // update model uniform
+    updateUniformModel(modelMatrix, camera_->viewMatrix());
+
+    // draw nodes
+    for (auto &mesh : node.meshes) {
+        if (mesh.material->alphaMode != mode) {
+            continue;
+        }
+
+        // frustum cull 四棱锥剔除
+        // if (!checkMeshFrustumCull(mesh, modelMatrix)) {
+        //     return;
+        // }
+
+        
+        std::cout << " ------------- drawModelMesh ----------------- " << count << std::endl;
+        count ++;
+        drawModelMesh(mesh, shadowPass, specular);
+    }
+
+    // draw child
+    for (auto &childNode : node.children) {
+        drawModelNodes(childNode, shadowPass, modelMatrix, mode, specular);
+    }
+}
+
+
+void DynastyViewer::drawModelMesh(ModelMesh &mesh, bool shadowPass, float specular) {
+    // update material
+    updateUniformMaterial(*mesh.material, specular);
+
+    // draw mesh
+    pipelineDraw(mesh);
+}
+
+
+void DynastyViewer::pipelineSetup(ModelBase &model, ShadingModel shading, const std::set<int> &uniformBlocks,
+                           const std::function<void(RenderStates &rs)> &extraStates) {
+    setupVertexArray(model);
+
+    // reset materialObj if ShadingModel changed
+    if (model.material->materialObj != nullptr) {
+        if (model.material->materialObj->shadingModel != shading) {
+            model.material->materialObj = nullptr;
+        }
+    }
+    setupMaterial(model, shading, uniformBlocks, extraStates);
+}
+
+
+void DynastyViewer::pipelineDraw(ModelBase &model) {
+    auto &materialObj = model.material->materialObj;
+
+    renderer_->setVertexArrayObject(model.vao);
+    renderer_->setShaderProgram(materialObj->shaderProgram);  
+    renderer_->setShaderResources(materialObj->shaderResources);
+    renderer_->setPipelineStates(materialObj->pipelineStates);
+    renderer_->draw();
+}
+    
+
+void DynastyViewer::setupMainBuffers() {
+    std::cout << "DynastyViewer::setup main buffers" << std::endl;
+    if (config_.aaType == AAType_MSAA) {
+        setupMainColorBuffer(true);
+        setupMainColorBuffer(true);
+    } else {
+        setupMainColorBuffer(false);
+        setupMainColorBuffer(false);
+    }
+
+    if (!fboMain_) {
+        fboMain_ = renderer_->createFrameBuffer(false);
+    }
+    fboMain_->setColorAttachment(texColorMain_, 0);
+    fboMain_->setDepthAttachment(texDepthMain_);
+    fboMain_->setOffscreen(false);
+
+    if (!fboMain_->isValid()) {
+        std::cout << "setupMainBuffers failed" << std::endl;
+    }
+}
+
+
+void DynastyViewer::setupShadowMapBuffers() {
+
+}
+
+
+void DynastyViewer::setupMainColorBuffer(bool multiSample) {
+
+}   
+
+
+void DynastyViewer::setupMainDepthBuffer(bool multiSample) {
+
+}
+
+
+void DynastyViewer::setupVertexArray(ModelVertexes &vertexes) {
+    std::cout << "DynastyViewer::setup vertex array" << std::endl;
+    if (!vertexes.vao) {
+        vertexes.vao = renderer_->createVertexArrayObject(vertexes);
+    }
+     std::cout << "DynastyViewer::end setup vertex array" << std::endl;
+}
+
+
+void DynastyViewer::setupSamplerUniforms(Material &material) {
+
+}
+
+
+bool DynastyViewer::setupShaderProgram(Material &material, ShadingModel shading) {
+    size_t cacheKey = getShaderProgramCacheKey(shading, material.shaderDefines);
+
+    auto cacheProgram = programCache_.find(cacheKey);
+    if (cacheProgram != programCache_.end()) { 
+        material.materialObj->shaderProgram = cacheProgram->second;
+        material.materialObj->shaderResources = std::make_shared<ShaderResources>();
+        return true;
+    }
+
+    auto program = renderer_->createShaderProgram();
+    // program->addDefines(material.shaderDefines);
+
+    bool success = loadShaders(*program, shading);
+    if (success) {
+        // add  to cache
+        programCache_[cacheKey] = program;
+        material.materialObj->shaderProgram = program;
+        material.materialObj->shaderResources = std::make_shared<ShaderResources>();
+    } else {
+        throw std::runtime_error("setupShaderProgram failed!");
+    }
+
+    return success;
+}
+
+
+void DynastyViewer::setupPipelineStates(ModelBase &model, const std::function<void(RenderStates &rs)> &extraStates) {
+    auto &material = *model.material;
+    RenderStates rs;
+    rs.blend = material.alphaMode == Alpha_Blend;
+    rs.blendParams.SetBlendFactor(BlendFactor_SRC_ALPHA, BlendFactor_ONE_MINUS_SRC_ALPHA);
+
+    rs.depthTest = config_.depthTest;
+    rs.depthMask = !rs.blend; // disable depth write if blending enabled
+    rs.depthFunc = config_.reverseZ ? DepthFunc_GREATER : DepthFunc_LESS;
+    
+    rs.cullFace = config_.cullFace && (!material.doubleSided);
+    rs.primitiveType = model.primitiveType;
+    rs.polygonMode = PolygonMode_FILL;
+
+    rs.lineWidth = material.lineWidth;
+
+    if (extraStates) {
+        extraStates(rs);
+    }
+
+    size_t cacheKey = getPipelineCacheKey(material, rs);
+    auto it = pipelineCache_.find(cacheKey);
+    if (it != pipelineCache_.end()) {
+        material.materialObj->pipelineStates = it->second;
+    } else {
+        auto pipelineStates = renderer_->createPipelineStates(rs);
+        material.materialObj->pipelineStates = pipelineStates;
+        pipelineCache_[cacheKey] = pipelineStates;
+    }
+}
+
+
+void DynastyViewer::setupMaterial(ModelBase &model, ShadingModel shading, const std::set<int> &uniformBlocks,
+                           const std::function<void(RenderStates &rs)> &extraStates) {
+    auto &material = *model.material;
+    std::cout << "setupMaterial: " << shading << std::endl;
+
+    // if (material.textures.empty()) {
+        
+    // }
+
+    // setup uniform && samplers
+    if (!material.materialObj) {
+        material.materialObj = std::make_shared<MaterialObject>();
+        material.materialObj->shadingModel = shading;
+
+        if (setupShaderProgram(material, shading)) {
+            setupSamplerUniforms(material);
+        }
+
+        // setup uniform blocks
+        for(auto &key : uniformBlocks) {
+            std::shared_ptr<UniformBlock> uniform = nullptr;
+            switch (key) {
+                case UniformBlock_Scene: {
+                    uniform = uniformBlockScene_;
+                    break;
+                }
+                case UniformBlock_Model: {
+                    uniform = uniformBlockModel_;
+                    break;
+                }
+                case UniformBlock_Material: {
+                    uniform = uniformBlockMaterial_;
+                    break;
+                }
+                default:
+                    break;
+            }
+            if (uniform) {
+                material.materialObj->shaderResources->blocks[key] = uniform;
+            }
+        }
+    }
+
+    setupPipelineStates(model, extraStates);
+}
+
+
+void DynastyViewer::updateUniformScene() {
+    static UniformsScene uniformsScene{};
+
+    uniformsScene.u_ambientColor = config_.ambientColor;
+    uniformsScene.u_cameraPosition = camera_->eye();
+    uniformsScene.u_pointLightPosition = config_.pointLightPosition;
+    uniformsScene.u_pointLightColor = config_.pointLightColor;
+
+    uniformBlockScene_->setData(&uniformsScene, sizeof(UniformsScene));
+}
+
+
+void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &view) {
+    std::cout << " ------------- updateUniformModel ----------------- " << std::endl;
+    static auto startTime = std::chrono::high_resolution_clock::now();
+
+    auto currentTime = std::chrono::high_resolution_clock::now();
+    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+    static UniformsModel uniformsModel{};
+
+    uniformsModel.u_reverseZ = config_.reverseZ ? 1u : 0u;
+    // uniformsModel.u_modelMatrix = model;
+    // uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * model;
+    uniformsModel.u_modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * (glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    uniformsModel.u_inverseTransposeModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
+
+    // shadow mvp
+    if (config_.shadowMap && cameraDepth_) {
+        const glm::mat4 biasMat = glm::mat4(0.5f, 0.0f, 0.0f, 0.0f,
+                                        0.0f, 0.5f, 0.0f, 0.0f,
+                                        0.0f, 0.0f, 1.0f, 0.0f,
+                                        0.5f, 0.5f, 0.0f, 1.0f);
+        uniformsModel.u_shadowMVPMatrix = biasMat * cameraDepth_->projectionMatrix() * cameraDepth_->viewMatrix() * model;                                
+    }
+
+    uniformBlockModel_->setData(&uniformsModel, sizeof(UniformsModel));
+}
+
+
+void DynastyViewer::updateUniformMaterial(Material &material, float specular) {
+    std::cout << " ------------- updateUniformMaterial ----------------- " << std::endl;
+    static UniformsMaterial uniformsMaterial{};
+
+    uniformsMaterial.u_enableLight = config_.showLight ? 1u : 0u;
+    uniformsMaterial.u_enableIBL = iBLEnabled() ? 1u : 0u;
+    uniformsMaterial.u_enableShadow = config_.shadowMap ? 1u : 0u;
+
+    uniformsMaterial.u_pointSize = material.pointSize;
+    uniformsMaterial.u_kSpecular = specular;
+    uniformsMaterial.u_baseColor = material.baseColor;
+
+    uniformBlockMaterial_->setData(&uniformsMaterial, sizeof(UniformsMaterial));
+}
+
+
+size_t DynastyViewer::getShaderProgramCacheKey(ShadingModel shadingModel, std::set<std::string> shaderDefines) {
+    size_t seed = 0;
+    HashUtils::hashCombine(seed, (int) shadingModel);
+    for (auto &def : shaderDefines) {
+        HashUtils::hashCombine(seed, def);
+    }
+    return seed;
+}
+
+size_t DynastyViewer::getPipelineCacheKey(Material &material, const RenderStates &rs) {
+
+}

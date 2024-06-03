@@ -3,11 +3,22 @@
 #include <unordered_map>
 #include <mutex>
 #include <assimp/scene.h>
+#include <iostream>
+#include <set>
+#include <assimp/Importer.hpp>
+#include <assimp/postprocess.h>
+#include <assimp/GltfMaterial.h>
 
-#include "../code/base/Buffer.h"
 #include "Model.h"
 #include "Config.h"
 // #include "ConfigPanel.h"
+#include "Cube.h"
+#include "../code/base/Buffer.h"
+#include "../code/base/ThreadPool.h"
+#include "../code/util/ImageUtils.h"
+#include "../code/util/StringUtils.h"
+#include "../code/log/LogSystem.h"
+
 
 class ModelLoader {
 public:
@@ -21,7 +32,7 @@ public:
 
     inline size_t getModelPrimitiveCnt() const {
         if (scene_.model) {
-        return scene_.model->primitiveCnt;
+            return scene_.model->primitiveCnt;
         }
         return 0;
     }

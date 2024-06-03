@@ -3,10 +3,10 @@
 #include <unordered_map>
 #include <functional>
 
-#include "../render/PipelineStates.h"
 #include "Texture.h"
 #include "Uniform.h"
-// #include "../render/ShaderProgram.h"
+#include "../render/PipelineStates.h"
+#include "../render/ShaderProgram.h"
 
 
 enum AlphaMode {
@@ -101,8 +101,8 @@ class MaterialObject {
 public:
     ShadingModel shadingModel = Shading_Unknown;
     std::shared_ptr<PipelineStates> pipelineStates;
-    // std::shared_ptr<ShaderProgram> shaderProgram;
-    // std::shared_ptr<ShaderResources> shaderResources;
+    std::shared_ptr<ShaderProgram> shaderProgram;
+    std::shared_ptr<ShaderResources> shaderResources;
 };
 
 class Material {

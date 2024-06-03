@@ -27,7 +27,7 @@
 
 layout (location = 0) out vec4 FragColor;
 
-layout (binding = 1) uniform UniformsMaterial {
+layout (binding = 1, std140) uniform UniformsMaterial {
     bool u_enableLight;
     bool u_enableIBL;
     bool u_enableShadow;
@@ -39,6 +39,5 @@ layout (binding = 1) uniform UniformsMaterial {
 
 void main() {
     FragColor = u_baseColor;
-    // FragColor = vec4(1.0);
 }
 

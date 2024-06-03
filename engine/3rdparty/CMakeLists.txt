@@ -53,3 +53,7 @@ if(NOT TARGET stb)
     set_target_properties(stb PROPERTIES FOLDER ${third_party_folder}/stb)
 endif()
 
+if(NOT TARGET md5)
+    include(md5.cmake)
+    set_target_properties(md5 PROPERTIES FOLDER ${third_party_folder}/md5)
+endif()

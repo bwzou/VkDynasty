@@ -1,6 +1,6 @@
 #pragma once
 
-#include "GLMInc.h"
+#include "../code/base/GLMInc.h"
 
 
 const glm::vec4 FrustumClipPlane[6] = {

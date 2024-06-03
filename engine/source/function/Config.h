@@ -5,7 +5,8 @@
 // #include "../render/Renderer.h"
 
 const std::string ASSETS_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/asset/";
-const std::string SHADER_GLSL_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/generated/spv";
+const std::string SHADER_GLSL_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/generated/spv/";
+const std::string SHADER_JSON_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/json/";
 
 enum AAType {
     AAType_NONE,
@@ -21,7 +22,7 @@ public:
     std::string skyboxPath;
 
     size_t triangleCount_ = 0;
-    bool wireframe = false;
+    bool wireframe = true;
     bool worldAxis = true;
     bool showSkybox = false;
     bool showFloor = true;

@@ -1,11 +1,6 @@
-/*
- * SoftGLRender
- * @author 	: keith@robot9.me
- *
- */
-
 #pragma once
 
+// 模版
 template<typename T> class UUID {
 public:
     UUID() : uuid_(uuidCounter_++) {}
