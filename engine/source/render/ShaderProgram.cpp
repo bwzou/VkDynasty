@@ -118,6 +118,8 @@ void ShaderProgram::createDescriptorPool() {
     if (uniformSamplerCnt > 0) {
         poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, uniformSamplerCnt * DESCRIPTOR_SET_POOL_MAX_SIZE});
     }
+    // 用于imgui
+    poolSizes.push_back({VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER, 1 * DESCRIPTOR_SET_POOL_MAX_SIZE});
     
     // 我们将为每一帧分配这些描述符之一。此池大小结构由 main 引用VkDescriptorPoolCreateInfo
     VkDescriptorPoolCreateInfo poolInfo{};

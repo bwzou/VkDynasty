@@ -196,7 +196,7 @@ public:
     bool createImageMemory(AllocatedImage &image, uint32_t properties, const void *pNext = nullptr);
     UniformBuffer *getNewUniformBuffer(VkDeviceSize size);
 
-    CommandBuffer* beginCommands(VkSemaphore waitSemaphores = VK_NULL_HANDLE);
+    CommandBuffer* beginCommands();
     void endCommands(CommandBuffer *commandBuffer, const std::vector<VkSemaphore> &waitSemaphores = {},  const std::vector<VkSemaphore> &signalSemaphores = {});
     void waitCommands(CommandBuffer *commandBuffer);
 

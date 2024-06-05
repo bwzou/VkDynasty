@@ -78,4 +78,20 @@ public:
     inline VulkanContext &getVkCtx() {
         return vkCtx_;
     }
+    inline FrameBuffer *getFbo() {
+        return fbo_;
+    }
+    inline PipelineStates *getPipelineStates() {
+        return pipelineStates_;
+    }
+    inline ShaderProgram *getShaderProgram() {
+        return shaderProgram_;
+    }
+    inline VkCommandBuffer getDrawCmd() {
+        return drawCmd_;
+    }
+    inline CommandBuffer* getCommandBuffer() {
+        return commandBuffer_;
+    }
+
 };

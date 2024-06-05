@@ -41,7 +41,8 @@ bool DynastyEngine::initEngine() {
     setupConfigPanelActions();
 
     // init config
-    return configPanel_->init(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT);
+    configPanel_->init(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT);
+    return true;
 }
 
 bool DynastyEngine::run() {
@@ -50,8 +51,11 @@ bool DynastyEngine::run() {
     while (!glfwWindowShouldClose(editorUI_->window())) {
         glfwPollEvents();
         drawFrame();
+        if (!configPanel_->initialize()) {
+            configPanel_->initImgui(editorUI_->window(), viewer_->getRenderer());
+        }
         // FIXME: 需要后面修复 
-        // drawPanel();
+        drawPanel();
     }
 }
 

@@ -84,7 +84,7 @@ void Renderer::beginRenderPass(std::shared_ptr<FrameBuffer> &frameBuffer, const 
         return;
     }
 
-    commandBuffer_ = vkCtx_.beginCommands(lastPassSemaphore_);
+    commandBuffer_ = vkCtx_.beginCommands();
 
     drawCmd_ = commandBuffer_->cmdBuffer;
 

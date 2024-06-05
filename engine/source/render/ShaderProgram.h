@@ -191,6 +191,9 @@ public:
     inline CommandBuffer *getCommandBuffer() {
         return currCmdBuffer_;
     }
+    inline VkDescriptorPool getDescriptorPool() {
+        return descriptorPool_;
+    }
 
 
 private: 

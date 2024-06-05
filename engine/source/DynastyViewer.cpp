@@ -195,7 +195,7 @@ void DynastyViewer::setupSkybox(ModelMesh &skybox) {
 
 void DynastyViewer::drawScene(bool shadowPass) {
     // updateUniformScene();
-    // updateUniformModel(glm::mat4(1.0f), camera_->viewMatrix());
+    updateUniformModel(glm::mat4(1.0f), camera_->viewMatrix());
 
     // draw model nodes opaque
     ModelNode &modelNode = scene_->model->rootNode;

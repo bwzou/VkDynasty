@@ -688,7 +688,7 @@ UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
 }
 
 
-CommandBuffer *VulkanContext::beginCommands(VkSemaphore waitSemaphores) {
+CommandBuffer *VulkanContext::beginCommands() {
     auto *commandBuffer = getNewCommandBuffer();
 
     // 立即开始记录命令缓冲区
