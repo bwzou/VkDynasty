@@ -22,6 +22,9 @@ public:
     void update();
     void updateSize(int width, int height);
 
+    bool wantCaptureKeyboard();
+    bool wantCaptureMouse();
+
     inline void setReloadModelFunc(const std::function<bool(const std::string &)> &func) {
         reloadModelFunc_ = func;
     }

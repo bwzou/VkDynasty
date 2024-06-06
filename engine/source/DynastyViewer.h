@@ -44,7 +44,6 @@
 
 #define CREATE_UNIFORM_BLOCK(name) renderer_->createUniformBlock(#name, sizeof(name))
 
-
 class DynastyViewer {
 public:
     DynastyViewer(Config &config, Camera &camera) : config_(config), cameraMain_(camera) {}
@@ -58,6 +57,11 @@ public:
 
     void waitRenderIdle();
 
+    void configRenderer() {
+        camera_->setReverseZ(config_.reverseZ);
+        cameraDepth_->setReverseZ(config_.reverseZ);
+    }
+
     std::shared_ptr<Renderer> getRenderer() {
         return renderer_;
     }
@@ -66,7 +70,7 @@ public:
         return (*((void **) (renderer_->getVkCtx().instance())));
     }
 
-    Config getConfig() {
+    inline Config getConfig() {
         return config_;
     }
 

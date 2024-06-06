@@ -2,23 +2,6 @@
 #include "DynastyEditorUI.h"
 
 
-void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
-    std::cout << "Do nothing!" << std::endl;
-}
-
-void mouseCallback(GLFWwindow *window, double xPos, double yPos) {
-    std::cout << "Do nothing!" << std::endl;
-}
-
-void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    std::cout << "Do nothing!" << std::endl;
-}
-
-void processInput(GLFWwindow *window) {
-     std::cout << "Do nothing!" << std::endl;
-}
-
-
 int DynastyEditorUI::initWindow() {
     /* Initialize the library */
     glfwSetErrorCallback(glfwErrorCallback);
@@ -42,12 +25,6 @@ int DynastyEditorUI::initWindow() {
         glfwTerminate();
         return -1;
     }
-
-    /* Make the window's context current */
-    glfwMakeContextCurrent(window_);
-    glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
-    glfwSetCursorPosCallback(window_, mouseCallback);
-    glfwSetScrollCallback(window_, scrollCallback);
 
     return 1;
 }

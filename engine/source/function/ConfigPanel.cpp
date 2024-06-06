@@ -296,6 +296,18 @@ void ConfigPanel::updateSize(int width, int height) {
 }
 
 
+bool ConfigPanel::wantCaptureKeyboard() {
+  ImGuiIO &io = ImGui::GetIO();
+  return io.WantCaptureKeyboard;
+}
+
+
+bool ConfigPanel::wantCaptureMouse() {
+  ImGuiIO &io = ImGui::GetIO();
+  return io.WantCaptureMouse;
+}
+
+
 bool ConfigPanel::loadConfig() {
     auto configPath = ASSETS_DIR + "assets.json";
     auto configStr = FileUtils::readText(configPath);

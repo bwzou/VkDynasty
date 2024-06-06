@@ -25,7 +25,6 @@ bool DynastyViewer::create(GLFWwindow* window, int width, int height, int outTex
                                     CAMERA_NEAR, CAMERA_FAR);
     }
 
-
     if (!renderer_) {
         renderer_ = createRenderer();
     }

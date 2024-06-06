@@ -1,11 +1,16 @@
 #include <stdlib.h>
 #include "DynastyEngine.h"
 
+
 #define DYNASTY_XSTR(s) DYNASTY_STR(s)
 #define DYNASTY_STR(s) #s 
 
+
+std::shared_ptr<DynastyEngine> app = nullptr;
+
+
 int main(int argc, char** argv) {
-    DynastyEngine app;
+    app = std::make_shared<DynastyEngine>();
 
 #if defined(__GNUC__)
     // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -33,7 +38,7 @@ int main(int argc, char** argv) {
     // std::filesystem::path config_file_path = executable_path.parent_path() / "PiccoloEditor.ini";
 
     try {
-        app.run();
+        app->run();
     } catch (const std::exception& e) {
         std::cerr << e.what() << std::endl;
         return EXIT_FAILURE;

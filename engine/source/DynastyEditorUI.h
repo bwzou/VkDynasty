@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <iostream>
 #include "./function/Config.h"
+// #include "constant.h"
 
 
 const uint32_t WIDTH = 1000;
@@ -25,9 +26,9 @@ private:
     Config &config_;
 
 public:
-     DynastyEditorUI(Config &config) : config_(config){
+    DynastyEditorUI(Config &config) : config_(config){
 
-     }
+    }
     ~DynastyEditorUI(){
         
     }

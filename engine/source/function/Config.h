@@ -33,7 +33,7 @@ public:
 
     bool cullFace = true;
     bool depthTest = true;
-    bool reverseZ = false;
+    bool reverseZ = true;
 
     glm::vec4 clearColor = {0.f, 0.f, 0.f, 0.f};
     glm::vec3 ambientColor = {0.5f, 0.5f, 0.5f};

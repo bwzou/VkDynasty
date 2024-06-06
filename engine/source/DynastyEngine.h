@@ -40,7 +40,6 @@
 #include "./render/FrameBuffer.h"
 
 
-
 #define RENDER_TYPE_NONE (-1)
 
 const unsigned int SCR_WIDTH = 1000;
@@ -50,6 +49,7 @@ const unsigned int SCR_HEIGHT = 800;
 class DynastyEngine {
 public:
     bool initEngine(); 
+    bool initEvent(GLFWwindow* window); 
     bool run();
     void drawFrame();
     void setupConfigPanelActions();
@@ -73,7 +73,25 @@ public:
     inline void togglePanelState() {
         showConfigPanel_ = !showConfigPanel_;
     }
+    inline bool wantCaptureKeyboard() {
+        return configPanel_->wantCaptureKeyboard();
+    }
 
+    inline bool wantCaptureMouse() {
+        return configPanel_->wantCaptureMouse();
+    }
+    inline void updateGestureZoom(float x, float y) {
+        orbitController_->zoomX = x;
+        orbitController_->zoomY = y;
+    }
+    inline void updateGestureRotate(float x, float y) {
+        orbitController_->rotateX = x;
+        orbitController_->rotateY = y;
+    }
+    inline void updateGesturePan(float x, float y) {
+        orbitController_->panX = x;
+        orbitController_->panY = y;
+    }
 
 public:
     std::shared_ptr<Config> config_;
@@ -90,4 +108,3 @@ public:
     int rendererType_ = RENDER_TYPE_NONE;
     bool dumpFrame_ = false;
 };  
-
