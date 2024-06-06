@@ -455,10 +455,10 @@ void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &
     static UniformsModel uniformsModel{};
 
     uniformsModel.u_reverseZ = config_.reverseZ ? 1u : 0u;
-    // uniformsModel.u_modelMatrix = model;
-    // uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * model;
-    uniformsModel.u_modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * (glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
+    uniformsModel.u_modelMatrix = model;
+    uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * model;
+    // uniformsModel.u_modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+    // uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * (glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     uniformsModel.u_inverseTransposeModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 
     // shadow mvp

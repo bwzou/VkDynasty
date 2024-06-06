@@ -131,14 +131,19 @@ void Renderer::setViewPort(int x, int y, int width, int height) {
     viewport_.y = (float) y;
     // 交换链及其图像的大小可能与窗口的WIDTH和HEIGHT不同。
     // 交换链的图像以后将被用作帧缓冲器，所以我们应该坚持它们的尺寸。
-    viewport_.width = (float) width;
-    viewport_.height = (float) height;
+    // viewport_.width = (float) width;
+    // viewport_.height = (float) height;
+    viewport_.width = vkCtx_.swapChainExtent().width;
+    viewport_.height = vkCtx_.swapChainExtent().height;
     // minDepth和maxDepth值指定了用于帧缓冲区的深度值范围。这些值必须在[0.0f, 1.0f]范围内
     viewport_.minDepth = 0.0f;
     viewport_.maxDepth = 1.0f;
 
-    scissor_.extent.width = width;
-    scissor_.extent.height = height;
+    // scissor_.extent.width = width;
+    // scissor_.extent.height = height;
+    scissor_.extent.width = vkCtx_.swapChainExtent().width;
+    scissor_.extent.height = vkCtx_.swapChainExtent().height;
+
 
     // viewport_.absMinDepth = std::min(viewport_.minDepth, viewport_.maxDepth);
     // viewport_.absMaxDepth = std::max(viewport_.minDepth, viewport_.maxDepth);

@@ -192,15 +192,15 @@ void ConfigPanel::onDraw() {
     static bool show_demo_window = false;
     static bool show_another_window = false;
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
-    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 50, main_viewport->WorkPos.y + 20),
-                            ImGuiCond_FirstUseEver);
+    // ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 661, main_viewport->WorkPos.y),
+    //                         ImGuiCond_FirstUseEver);
+    ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos), ImGuiCond_FirstUseEver);  
     {
         if (show_demo_window) {
             ImGui::ShowDemoWindow(&show_demo_window);
         }
         {
             static int counter = 0;
-
             ImGui::Begin("debug window");  // Create a window called "Hello, world!" and append into it.
 
             ImGui::Text("This is some useful text.");           // Display some text (you can use a format strings too)
