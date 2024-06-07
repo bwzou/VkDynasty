@@ -2,9 +2,10 @@
 
 #define MIN_ORBIT_ARM_LENGTH 1.f
 
-static const glm::vec3 init_eye_(-1.5, 3, 3);
+// static const glm::vec3 init_eye_(-1.5, 3, 3);
+static const glm::vec3 init_eye_(1.5, 3, 3);
 static const glm::vec3 init_center_(0, 1, 0);
-static const glm::vec3 init_up_(0, 1, 0);
+static const glm::vec3 init_up_(0, -1, 0);
 
 
 OrbitController::OrbitController(Camera &camera) : camera_(camera) {
