@@ -29,7 +29,7 @@ bool DynastyViewer::create(GLFWwindow* window, int width, int height, int outTex
         renderer_ = createRenderer();
     }
     if (!renderer_) {
-        std::runtime_error("DynastyViewer::create failed: createRenderer error");
+        throw std::runtime_error("DynastyViewer::create failed: createRenderer error");
         return false;
     }
 
@@ -64,8 +64,8 @@ bool DynastyViewer::loadShaders(ShaderProgram &program, ShadingModel shading) {
     auto *programVK = dynamic_cast<ShaderProgram *>(&program);
     switch(shading) {
         CASE_CREATE_SHADER_VK(Shading_BaseColor, base);
-        CASE_CREATE_SHADER_VK(Shading_BlinnPhong, BlinnPhongGLSL);
-        CASE_CREATE_SHADER_VK(Shading_PBR, PbrGLSL);
+        CASE_CREATE_SHADER_VK(Shading_BlinnPhong, blinn_phone);
+        CASE_CREATE_SHADER_VK(Shading_PBR, pbr);
         CASE_CREATE_SHADER_VK(Shading_Skybox, SkyboxGLSL);
         CASE_CREATE_SHADER_VK(Shading_IBL_Irradiance, IBLIrradianceGLSL);
         CASE_CREATE_SHADER_VK(Shading_IBL_Prefilter, IBLPrefilterGLSL);
@@ -102,9 +102,6 @@ void DynastyViewer::drawFrame(DemoScene &scene) {
 
     // setup model materials
     setupScene();
-
-    // std:: cout << "DynastyViewer: finish draw scene" << std::endl;
-    // throw std::runtime_error("setupScene");
 
     // draw shadow map
     // drawShadowMap();
@@ -158,11 +155,11 @@ void DynastyViewer::setupLines(ModelLines &lines) {
 
 
 void DynastyViewer::setupMeshBaseColor(ModelMesh &mesh, bool wireframe) {
-    // pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material},
-    //             [&](RenderStates &rs) -> void {
-    //               rs.polygonMode = wireframe ? PolygonMode_LINE : PolygonMode_FILL;  
-    //             });
-    pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
+    pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material},
+                [&](RenderStates &rs) -> void {
+                  rs.polygonMode = wireframe ? PolygonMode_LINE : PolygonMode_FILL;  
+                });
+    // pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
 }
 
 
@@ -226,7 +223,6 @@ void DynastyViewer::drawModelNodes(ModelNode &node, bool shadowPass, glm::mat4 &
         // if (!checkMeshFrustumCull(mesh, modelMatrix)) {
         //     return;
         // }
-
         
         std::cout << " ------------- drawModelMesh ----------------- " << count << std::endl;
         count ++;
@@ -278,10 +274,10 @@ void DynastyViewer::setupMainBuffers() {
     std::cout << "DynastyViewer::setup main buffers" << std::endl;
     if (config_.aaType == AAType_MSAA) {
         setupMainColorBuffer(true);
-        setupMainColorBuffer(true);
+        setupMainDepthBuffer(true);
     } else {
         setupMainColorBuffer(false);
-        setupMainColorBuffer(false);
+        setupMainDepthBuffer(false);
     }
 
     if (!fboMain_) {
@@ -322,7 +318,17 @@ void DynastyViewer::setupVertexArray(ModelVertexes &vertexes) {
 
 
 void DynastyViewer::setupSamplerUniforms(Material &material) {
-
+    std::cout << "setupSamplerUniforms: " << std::endl;
+    for (auto &kv: material.textures) {
+        // create sampler uniform
+        const char * samplerName = Material::samplerName((MaterialTexType) kv.first);
+        std::cout << samplerName << std::endl;
+        if (samplerName) {
+            auto uniform = renderer_->createUniformSampler(samplerName, *kv.second);
+            uniform->setTexture(kv.second);
+            material.materialObj->shaderResources->samplers[kv.first] = std::move(uniform);
+        }
+    }
 }
 
 
@@ -337,7 +343,6 @@ bool DynastyViewer::setupShaderProgram(Material &material, ShadingModel shading)
     }
 
     auto program = renderer_->createShaderProgram();
-    // program->addDefines(material.shaderDefines);
 
     bool success = loadShaders(*program, shading);
     if (success) {
@@ -390,9 +395,9 @@ void DynastyViewer::setupMaterial(ModelBase &model, ShadingModel shading, const 
     auto &material = *model.material;
     std::cout << "setupMaterial: " << shading << std::endl;
 
-    // if (material.textures.empty()) {
-        
-    // }
+    if (material.textures.empty()) {
+        setupTextures(material);
+    }
 
     // setup uniform && samplers
     if (!material.materialObj) {
@@ -432,6 +437,53 @@ void DynastyViewer::setupMaterial(ModelBase &model, ShadingModel shading, const 
 }
 
 
+void DynastyViewer::setupTextures(Material &material) {
+    std::cout << "setupTextures" << std::endl;
+    for (auto&kv : material.textureData) {
+        TextureDesc texDesc{};
+        texDesc.width = (int) kv.second.width;
+        texDesc.height = (int) kv.second.height;
+        texDesc.format = TextureFormat_RGBA8;
+        texDesc.usage = TextureUsage_Sampler | TextureUsage_UploadData;
+        texDesc.useMipmaps = false;
+        texDesc.multiSample = false;
+
+        SamplerDesc sampler{};
+        sampler.wrapS = kv.second.wrapModeU;
+        sampler.wrapT = kv.second.wrapModeV;
+        sampler.filterMin = Filter_LINEAR;
+        sampler.filterMag = Filter_LINEAR;
+
+        std::shared_ptr<Texture> texture = nullptr;
+        std::cout << "setupTextures 1" << std::endl;
+        switch(kv.first) {
+            case MaterialTexType_IBL_IRRADIANCE:
+            case MaterialTexType_IBL_PREFILTER: {
+                break;
+            }
+            case MaterialTexType_CUBE: {
+                texDesc.type = TextureType_CUBE;
+                sampler.wrapR = kv.second.wrapModeW;
+            }
+            default: {
+                texDesc.type = TextureType_2D;
+                texDesc.useMipmaps = config_.mipmaps;
+                sampler.filterMin =  config_.mipmaps ? Filter_LINEAR_MIPMAP_LINEAR : Filter_LINEAR;
+                break;
+            }
+        }
+        std::cout << "setupTextures 2" << std::endl;
+        texture = renderer_->createTexture(texDesc);
+        texture->setSamplerDesc(sampler);
+        std::cout << "setupTextures 3" << std::endl;
+        texture->setImageData(kv.second.data);
+        texture->tag = kv.second.tag;
+        material.textures[kv.first] = texture;
+        std::cout << "setupTextures 4" << std::endl;
+    }
+}
+
+
 void DynastyViewer::updateUniformScene() {
     static UniformsScene uniformsScene{};
 
@@ -446,18 +498,11 @@ void DynastyViewer::updateUniformScene() {
 
 void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &view) {
     std::cout << " ------------- updateUniformModel ----------------- " << std::endl;
-    static auto startTime = std::chrono::high_resolution_clock::now();
-
-    auto currentTime = std::chrono::high_resolution_clock::now();
-    float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
-
     static UniformsModel uniformsModel{};
 
     uniformsModel.u_reverseZ = config_.reverseZ ? 1u : 0u;
     uniformsModel.u_modelMatrix = model;
     uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * model;
-    // uniformsModel.u_modelMatrix = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
-    // uniformsModel.u_modelViewProjectionMatrix = camera_->projectionMatrix() * view * (glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f)));
     uniformsModel.u_inverseTransposeModelMatrix = glm::mat3(glm::transpose(glm::inverse(model)));
 
     // shadow mvp

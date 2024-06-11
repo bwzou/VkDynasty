@@ -202,6 +202,7 @@ public:
 
     void allocateCommandBuffer(VkCommandBuffer &cmdBuffer);
     CommandBuffer* getNewCommandBuffer();
+    uint32_t getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties);
     void purgeCommandBuffers();
 
     void beforeDrawFrame();

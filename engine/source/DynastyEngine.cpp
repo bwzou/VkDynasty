@@ -8,7 +8,6 @@ bool firstMouse = true;
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
     std::cout << "Do nothing!" << std::endl;
-
 }
 
 
@@ -82,7 +81,6 @@ void DynastyEngine::drawFrame() {
     // update triangle count
     config_->triangleCount_ = modelLoader_->getModelPrimitiveCnt();
     
-    // viewer_->create(SCR_WIDTH, SCR_HEIGHT, outTexId_);
     viewer_->create(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT, NULL);
     
     viewer_->configRenderer();
@@ -108,7 +106,7 @@ bool DynastyEngine::initEngine() {
     viewer_ = std::make_shared<DynastyViewer>(*config_, *camera_);
 
     editorUI_ = std::make_shared<DynastyEditorUI>(*config_);
-    editorUI_ ->initWindow();
+    editorUI_->initWindow();
     initEvent(editorUI_->window());
         
     modelLoader_ = std::make_shared<ModelLoader>(*config_);

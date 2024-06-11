@@ -28,7 +28,12 @@ std::shared_ptr<FrameBuffer> Renderer::createFrameBuffer(bool offscreen) {
 
 // texture
 std::shared_ptr<Texture> Renderer::createTexture(const TextureDesc &desc) {
-
+    switch (desc.type) {
+        case TextureType_2D:
+        case TextureType_CUBE:
+            return std::make_shared<TextureVulkan>(vkCtx_, desc);
+    }
+    return nullptr;
 }
 
 
@@ -56,8 +61,8 @@ std::shared_ptr<UniformBlock> Renderer::createUniformBlock(const std::string &na
 }
 
 
-std::shared_ptr<UniformSampler> createUniformSampler(const std::string &name, const TextureDesc &desc) {
-
+std::shared_ptr<UniformSampler> Renderer::createUniformSampler(const std::string &name, const TextureDesc &desc) {
+    return std::make_shared<UniformSamplerVulkan> (vkCtx_, name, desc.type, desc.format);
 }
 
 

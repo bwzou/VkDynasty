@@ -104,7 +104,7 @@ public:
         writeDescriptorSets_.push_back(writeDesc);
     }
 
-    void bindUniformSampler(VkDescriptorBufferInfo &info, uint32_t binding) {
+    void bindUniformSampler(VkDescriptorImageInfo &info, uint32_t binding) {
         VkWriteDescriptorSet writeDesc{};
         // 前两个字段指定要更新的描述符集和绑定。
         writeDesc.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -116,7 +116,7 @@ public:
         writeDesc.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
         writeDesc.descriptorCount = 1;
         // 该pBufferInfo字段用于引用缓冲区数据的描述符
-        writeDesc.pBufferInfo = &info;
+        writeDesc.pImageInfo = &info;
         writeDescriptorSets_.push_back(writeDesc);
     }
 

@@ -22,7 +22,7 @@ public:
     std::string skyboxPath;
 
     size_t triangleCount_ = 0;
-    bool wireframe = true;
+    bool wireframe = false;
     bool worldAxis = true;
     bool showSkybox = false;
     bool showFloor = true;

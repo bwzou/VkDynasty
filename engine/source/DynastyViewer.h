@@ -102,7 +102,7 @@ private:
     bool setupShaderProgram(Material&material, ShadingModel shading);
     void setupPipelineStates(ModelBase &model, const std::function<void(RenderStates &rs)> &extraStates);
     void setupMaterial(ModelBase &model, ShadingModel shading, const std::set<int> &uniformBlocks, const std::function<void(RenderStates &rs)> &extraStates);
-
+    void setupTextures(Material &material); 
 
     void updateUniformScene();
     void updateUniformModel(const glm::mat4 &model, const glm::mat4 &view);

@@ -654,7 +654,32 @@ void VulkanContext::createStagingBuffer(AllocatedBuffer &buffer, VkDeviceSize si
 
 
 bool VulkanContext::createImageMemory(AllocatedImage &image, uint32_t properties, const void *pNext) {
+    if (image.memory != VK_NULL_HANDLE) {
+        return true;
+    }
 
+    VkMemoryRequirements memReqs;
+    vkGetImageMemoryRequirements(device_, image.image, &memReqs);
+    image.allocationSize = memReqs.size;
+
+    VkMemoryAllocateInfo memAllocaInfo{};
+    memAllocaInfo.sType = VK_STRUCTURE_TYPE_MEMORY_ALLOCATE_INFO;
+    memAllocaInfo.pNext = pNext;
+    memAllocaInfo.allocationSize = memReqs.size;
+    memAllocaInfo.memoryTypeIndex = getMemoryTypeIndex(memReqs.memoryTypeBits, properties);
+    if (memAllocaInfo.memoryTypeIndex == VK_MAX_MEMORY_TYPES) {
+        throw std::runtime_error("vulkan memory type not available, property flags");
+        return;
+    }
+
+    if (VK_SUCCESS != vkAllocateMemory(device_, &memAllocaInfo, nullptr, &image.memory)) {
+        throw std::runtime_error("vulkan allocate memory error!");
+        return;
+    }
+    if (VK_SUCCESS != vkBindImageMemory(device_, image.image, image.memory, 0)) {
+        throw std::runtime_error("vulkan bind image memory error!");
+        return;
+    }
 }
 
 UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
@@ -679,12 +704,26 @@ UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
     buff.mapPtr = buff.buffer.allocInfo.pMappedData;
     pool.push_back(buff);
     maxUniformBufferPoolSize_ = std::max(maxUniformBufferPoolSize_, pool.size());
+    std::cout << "maxUniformBufferPoolSize" << maxUniformBufferPoolSize_ << std::endl;
     if (maxUniformBufferPoolSize_ >= UNIFORM_BUFFER_POOL_MAX_SIZE) {
         // throw std::runtime_error("error: uniform buffer pool size exceed");
         std::cout << "error: uniform buffer pool size exceed" << std::endl;
         return;
     } 
     return &pool.back();
+}
+
+
+uint32_t VulkanContext::getMemoryTypeIndex(uint32_t typeBits, VkMemoryPropertyFlags properties) {
+    for (uint32_t i = 0; i < deviceMemoryProperties_.memoryTypeCount; i++) {
+        if ((typeBits & 1) == 1) {
+            if ((deviceMemoryProperties_.memoryTypes[i].propertyFlags & properties) == properties) {
+                return i;
+            }
+        }
+        typeBits >>= 1;
+    }
+    return VK_MAX_MEMORY_TYPES;
 }
 
 
