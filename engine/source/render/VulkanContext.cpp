@@ -685,6 +685,7 @@ bool VulkanContext::createImageMemory(AllocatedImage &image, uint32_t properties
 UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
     auto it = uniformBufferPool_.find(size);
     if (it == uniformBufferPool_.end()) {
+        std::cout << "uniformBufferPool_" << size << std::endl;
         std::vector<UniformBuffer> uboPool;
         // reserver函数用来给vector预分配存储区大小，即capacity的值 ，但是没有给这段内存进行初始化
         uboPool.reserve(UNIFORM_BUFFER_POOL_MAX_SIZE);
@@ -693,6 +694,7 @@ UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
     auto &pool = uniformBufferPool_[size];
     for (auto &buff : pool) {
         if (!buff.inUse) {
+            std::cout << "uniformBufferPool_ inUse" << size << std::endl;
             buff.inUse = true;
             return &buff;
         }

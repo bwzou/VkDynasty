@@ -326,6 +326,7 @@ void TextureVulkan::setImageDataInternal(const std::vector<const void *> &buffer
     }
 
     vkCtx_.endCommands(copyCmd);
+    vkCtx_.waitCommands(copyCmd);
 
     if (needMipmaps_) {
         generateMipmaps();
