@@ -6,6 +6,10 @@ layout (location = 2) in vec3 a_normal;
 layout (location = 3) in vec3 a_tangent;
 
 layout (location = 0) out vec2 v_texCoord;
+layout (location = 1) out vec3 v_normalVector;
+layout (location = 2) out vec3 v_worldPos;
+layout (location = 3) out vec3 v_cameraDirection;
+layout (location = 4) out vec3 v_lightDirection;
 
 layout (binding = 0, std140) uniform UniformsModel {
     bool u_reverseZ;
@@ -15,7 +19,15 @@ layout (binding = 0, std140) uniform UniformsModel {
     mat4 u_shadowMVPMatrix;
 };
 
-layout (binding = 1, std140) uniform UniformsMaterial {
+
+layout (binding = 1, std140) uniform UniformsScene {
+    vec3 u_ambientColor;
+    vec3 u_cameraPosition;
+    vec3 u_pointLightPosition;
+    vec3 u_pointLightColor;
+};
+
+layout (binding = 2, std140) uniform UniformsMaterial {
     bool u_enableLight;
     bool u_enableIBL;
     bool u_enableShadow;

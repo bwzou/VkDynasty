@@ -84,7 +84,7 @@ void Renderer::endRender() {
 
 // pipeline
 void Renderer::beginRenderPass(std::shared_ptr<FrameBuffer> &frameBuffer, const ClearStates &states) {
-    std::cout << "----- beginRenderPass ----" << std::endl;
+    std::cout << "----- beginRenderPass ----" << states.clearDepth << std::endl;
     if (!frameBuffer) {
         return;
     }
@@ -123,9 +123,15 @@ void Renderer::beginRenderPass(std::shared_ptr<FrameBuffer> &frameBuffer, const 
     // renderPassInfo.pClearValues = clearValues_.data();
     renderPassInfo.renderArea.extent = vkCtx_.swapChainExtent();
     // 透明颜色定义为简单的黑色，不透明度为 100%。
-    VkClearValue clearColor = {{{0.0f, 0.5f, 0.5f, 1.0f}}};
-    renderPassInfo.clearValueCount = 1;
-    renderPassInfo.pClearValues = &clearColor;
+    // VkClearValue clearColor = {{{0.0f, 0.5f, 0.5f, 1.0f}}};
+    // renderPassInfo.clearValueCount = 1;
+    // renderPassInfo.pClearValues = &clearColor;
+
+    std::array<VkClearValue, 2> clearValues{};
+    clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
+    clearValues[1].depthStencil = {1.0f, 0};
+    renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
+    renderPassInfo.pClearValues = clearValues.data();
 
     vkCmdBeginRenderPass(drawCmd_, &renderPassInfo, VK_SUBPASS_CONTENTS_INLINE);
 }

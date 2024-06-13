@@ -1,18 +1,12 @@
 {
     "uniformsDesc": {
         "UniformsMaterial": {
-            "binding": 1,
+            "binding": 2,
             "location": 0,
             "set": 0,
             "type": 2
         },
         "u_albedoMap": {
-            "binding": 2,
-            "location": 0,
-            "set": 0,
-            "type": 1
-        },
-        "u_emissiveMap": {
             "binding": 3,
             "location": 0,
             "set": 0,
@@ -24,8 +18,14 @@
             "set": 0,
             "type": 1
         },
-        "u_metalRoughnessMap": {
+        "u_emissiveMap": {
             "binding": 5,
+            "location": 0,
+            "set": 0,
+            "type": 1
+        },
+        "u_metalRoughnessMap": {
+            "binding": 6,
             "location": 0,
             "set": 0,
             "type": 1

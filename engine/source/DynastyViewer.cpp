@@ -64,9 +64,9 @@ bool DynastyViewer::loadShaders(ShaderProgram &program, ShadingModel shading) {
     auto *programVK = dynamic_cast<ShaderProgram *>(&program);
     switch(shading) {
         CASE_CREATE_SHADER_VK(Shading_BaseColor, base);
-        CASE_CREATE_SHADER_VK(Shading_BlinnPhong, blinn_phone);
+        CASE_CREATE_SHADER_VK(Shading_BlinnPhong, blinn_phong);
         CASE_CREATE_SHADER_VK(Shading_PBR, pbr);
-        CASE_CREATE_SHADER_VK(Shading_Skybox, SkyboxGLSL);
+        CASE_CREATE_SHADER_VK(Shading_Skybox, skybox);
         CASE_CREATE_SHADER_VK(Shading_IBL_Irradiance, IBLIrradianceGLSL);
         CASE_CREATE_SHADER_VK(Shading_IBL_Prefilter, IBLPrefilterGLSL);
         CASE_CREATE_SHADER_VK(Shading_FXAA, FxaaGLSL);
@@ -155,11 +155,11 @@ void DynastyViewer::setupLines(ModelLines &lines) {
 
 
 void DynastyViewer::setupMeshBaseColor(ModelMesh &mesh, bool wireframe) {
-    pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material},
-                [&](RenderStates &rs) -> void {
-                  rs.polygonMode = wireframe ? PolygonMode_LINE : PolygonMode_FILL;  
-                });
-    // pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
+    // pipelineSetup(mesh, Shading_BaseColor, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material},
+    //             [&](RenderStates &rs) -> void {
+    //               rs.polygonMode = wireframe ? PolygonMode_LINE : PolygonMode_FILL;  
+    //             });
+    pipelineSetup(mesh, Shading_BlinnPhong, {UniformBlock_Model, UniformBlock_Scene, UniformBlock_Material});
 }
 
 
@@ -190,13 +190,13 @@ void DynastyViewer::setupSkybox(ModelMesh &skybox) {
 
 
 void DynastyViewer::drawScene(bool shadowPass) {
-    // updateUniformScene();
+    std::cout << "--------------- drawScene -------" << std::endl;
+    updateUniformScene();
     updateUniformModel(glm::mat4(1.0f), camera_->viewMatrix());
 
     // draw model nodes opaque
     ModelNode &modelNode = scene_->model->rootNode;
     count = 0;
-    std::cout << "--------------- drawScene -------" << std::endl;
     drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Opaque);
     printf("Alpha_Opaque model nodes: %d", count);
 
@@ -224,7 +224,6 @@ void DynastyViewer::drawModelNodes(ModelNode &node, bool shadowPass, glm::mat4 &
         //     return;
         // }
         
-        std::cout << " ------------- drawModelMesh ----------------- " << count << std::endl;
         count ++;
         drawModelMesh(mesh, shadowPass, specular);
     }
