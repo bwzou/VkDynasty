@@ -303,7 +303,24 @@ void DynastyViewer::setupMainColorBuffer(bool multiSample) {
 
 
 void DynastyViewer::setupMainDepthBuffer(bool multiSample) {
+    if (!texDepthMain_ || texDepthMain_->multiSample != multiSample) {
+        TextureDesc texDesc{};
+        texDesc.width = renderer_->getVkCtx().swapChainExtent().width;
+        texDesc.height = renderer_->getVkCtx().swapChainExtent().height;
+        texDesc.type = TextureType_2D;
+        texDesc.format = TextureFormat_FLOAT32;
+        texDesc.usage = TextureUsage_AttachmentDepth;
+        texDesc.useMipmaps = false;
+        texDesc.multiSample = multiSample;
+        texDepthMain_ = renderer_->createTexture(texDesc);
 
+        SamplerDesc sampler{};
+        sampler.filterMin = Filter_NEAREST;
+        sampler.filterMag = Filter_NEAREST;
+        texDepthMain_->setSamplerDesc(sampler);
+
+        texDepthMain_->initImageData();
+    }
 }
 
 

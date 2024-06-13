@@ -144,7 +144,7 @@ public:
         return swapChainImageViews_;
     };
 
-    inline uint32_t imageIndex(){
+    inline uint32_t imageIndex() {
         return imageIndex_;
     }
 
@@ -189,6 +189,10 @@ public:
     VkPresentModeKHR chooseSwapPresentMode(const std::vector<VkPresentModeKHR>& availablePresentModes);
     VkExtent2D chooseSwapExtent(const VkSurfaceCapabilitiesKHR& capabilities);
     SwapChainSupportDetails querySwapChainSupport(VkPhysicalDevice device);
+
+    VkFormat findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features);
+    VkFormat findDepthFormat();
+
 
     void createGPUBuffer(AllocatedBuffer &buffer, VkDeviceSize size, VkBufferUsageFlags usage);
     void createUniformBuffer(AllocatedBuffer &buffer, VkDeviceSize size);

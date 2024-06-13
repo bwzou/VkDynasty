@@ -247,7 +247,20 @@ VkImageView TextureVulkan::createResolveView() {
 
 
 VkImageView TextureVulkan::createAttachmentView(VkImageAspectFlags aspect, uint32_t layer, uint32_t level) {
-
+    VkImageView view{};
+    VkImageViewCreateInfo imageViewCreateInfo{};
+    imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+    imageViewCreateInfo.viewType = VK_IMAGE_VIEW_TYPE_2D;  // force view type 2D
+    imageViewCreateInfo.format = vkFormat_;
+    imageViewCreateInfo.subresourceRange = {};
+    imageViewCreateInfo.subresourceRange.aspectMask = aspect;
+    imageViewCreateInfo.subresourceRange.baseMipLevel = level;
+    imageViewCreateInfo.subresourceRange.levelCount = 1;
+    imageViewCreateInfo.subresourceRange.baseArrayLayer = layer;
+    imageViewCreateInfo.subresourceRange.layerCount = 1;
+    imageViewCreateInfo.image = image_.image;
+    VK_CHECK(vkCreateImageView(device_, &imageViewCreateInfo, nullptr, &view));
+    return view;
 }
 
 

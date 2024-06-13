@@ -61,22 +61,22 @@ bool FrameBuffer::createRenderPass() {
     //     attachments.push_back(colorAttachment);
     // }
 
-    // if (depthReady_) {
-    //     auto *depthTex = getAttachmentDepth();
+    if (depthReady_) {
+        auto *depthTex = getAttachmentDepth();
 
-    //     VkAttachmentDescription depthAttachment{};
-    //     depthAttachment.format = cvtImageFormat(depthTex->format, depthTex->usage);
-    //     depthAttachment.samples = getAttachmentDepth()->getSampleCount();
-    //     depthAttachment.loadOp = clearStates_.depthFlag ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-    //     depthAttachment.storeOp = colorReady_ ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-    //     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-    //     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-    //     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-    //     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        VkAttachmentDescription depthAttachment{};
+        depthAttachment.format = cvtImageFormat(depthTex->format, depthTex->usage);
+        depthAttachment.samples = getAttachmentDepth()->getSampleCount();
+        depthAttachment.loadOp = clearStates_.depthFlag ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+        depthAttachment.storeOp = colorReady_ ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
+        depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-    //     depthAttachmentRef.attachment = attachments.size();
-    //     attachments.push_back(depthAttachment);
-    // }
+        depthAttachmentRef.attachment = attachments.size();
+        attachments.push_back(depthAttachment);
+    }
 
     // if (colorReady_) {
     //     auto *colorTex = getAttachmentColor();
@@ -136,10 +136,10 @@ bool FrameBuffer::createFramebuffer() {
     //     auto *texColor = getAttachmentColor();
     //     currFbo_->attachments.push_back(texColor->createAttachmentView(VK_IMAGE_ASPECT_COLOR_BIT, colorAttachment_.layer, colorAttachment_.level));
     // }
-    // if (depthReady_) {
-    //     auto *texDepth = getAttachmentDepth();
-    //     currFbo_->attachments.push_back(texDepth->createAttachmentView(VK_IMAGE_ASPECT_DEPTH_BIT, depthAttachment_.layer, depthAttachment_.level));
-    // }
+    if (depthReady_) {
+        auto *texDepth = getAttachmentDepth();
+        currFbo_->attachments.push_back(texDepth->createAttachmentView(VK_IMAGE_ASPECT_DEPTH_BIT, depthAttachment_.layer, depthAttachment_.level));
+    }
     // if (colorReady_ && isMultiSample()) {
     //     auto *texColor = getAttachmentColor();
     //     currFbo_->attachments.push_back(texColor->createResolveView());

@@ -321,6 +321,37 @@ SwapChainSupportDetails VulkanContext::querySwapChainSupport(VkPhysicalDevice de
 }
 
 
+ VkFormat VulkanContext::findSupportedFormat(const std::vector<VkFormat>& candidates, VkImageTiling tiling, VkFormatFeatureFlags features) {
+    for (VkFormat format : candidates) {
+        VkFormatProperties props;
+        vkGetPhysicalDeviceFormatProperties(physicalDevice_, format, &props);
+
+        if (tiling == VK_IMAGE_TILING_LINEAR && (props.linearTilingFeatures & features) == features) {
+            return format;
+        } else if (tiling == VK_IMAGE_TILING_OPTIMAL && (props.optimalTilingFeatures & features) == features) {
+            return format;
+        }
+    }
+
+    throw std::runtime_error("failed to find supported format!");
+}
+
+VkFormat VulkanContext::findDepthFormat() {
+    // 和纹理图像不同，深度图像不需要特定的图像数据格式，这是因为实际上我们不需要直接访问深度图像。
+    // 只需要保证深度数据能够有一个合理的精度即可，通常这一合理精度是至少为深度数据提供 24 位的位宽，下面这些值满足 24 位的需求
+    return findSupportedFormat(
+        {
+            VK_FORMAT_D32_SFLOAT, 
+            VK_FORMAT_D32_SFLOAT_S8_UINT, 
+            VK_FORMAT_D24_UNORM_S8_UINT
+        },
+        VK_IMAGE_TILING_OPTIMAL,
+        VK_FORMAT_FEATURE_DEPTH_STENCIL_ATTACHMENT_BIT
+    );
+}
+
+
+
 bool VulkanContext::createInstance() {
     if (enableValidationLayers && !checkValidationLayerSupport()) {
         throw std::runtime_error("validation layers requested, but not available!");
