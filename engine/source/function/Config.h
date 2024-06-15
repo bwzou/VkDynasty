@@ -22,7 +22,7 @@ public:
     std::string skyboxPath;
 
     size_t triangleCount_ = 0;
-    bool wireframe = true;
+    bool wireframe = false;
     bool worldAxis = true;
     bool showSkybox = false;
     bool showFloor = true;
@@ -39,8 +39,10 @@ public:
     glm::vec3 ambientColor = {0.5f, 0.5f, 0.5f};
 
     bool showLight = true;
-    glm::vec3 pointLightPosition = {0.f, 0.f, 0.f};
+    // glm::vec3 pointLightPosition = {0.f, 0.f, 0.f};
     glm::vec3 pointLightColor = {0.5f, 0.5f, 0.5f};
+    glm::vec3 pointLightPosition = {9.942f, 23.796f, 25.7738f};
+    // glm::vec3 pointLightColor = {1.f, 1.f, 1.f};
 
     int aaType = AAType_NONE;
     // int rendererType = Renderer_SOFT;

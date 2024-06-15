@@ -10,6 +10,8 @@ layout (location = 1) out vec3 v_normalVector;
 layout (location = 2) out vec3 v_worldPos;
 layout (location = 3) out vec3 v_cameraDirection;
 layout (location = 4) out vec3 v_lightDirection;
+layout (location = 5) out vec3 v_normal;
+layout (location = 6) out vec3 v_tangent;
 
 layout (binding = 0, std140) uniform UniformsModel {
     bool u_reverseZ;
@@ -38,8 +40,21 @@ layout (binding = 2, std140) uniform UniformsMaterial {
 };
 
 void main() {
-    gl_Position = u_modelViewProjectionMatrix * vec4(a_position, 1.0);
+    vec4 position = vec4(a_position, 1.0);
+    gl_Position = u_modelViewProjectionMatrix * position;
     v_texCoord = a_texCoord;
+
+    v_worldPos = vec3(u_modelMatrix * position);
+    v_normalVector = mat3(u_modelMatrix) * a_normal;
+    v_lightDirection = u_pointLightPosition - v_worldPos;
+    v_cameraDirection = u_cameraPosition - v_worldPos;
+
+    // 计算世界空间的 v_normal 和 v_tangent
+    vec3 N = normalize(u_inverseTransposeModelMatrix * a_normal);
+    vec3 T = normalize(u_inverseTransposeModelMatrix * a_tangent);
+    v_normal = N;
+    // 保证 v_normal 和 v_tangent是垂直的
+    v_tangent = normalize(T - dot(T, N) * N);
 
     gl_PointSize = u_pointSize;
 }

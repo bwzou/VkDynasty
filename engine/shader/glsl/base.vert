@@ -70,5 +70,5 @@ layout (binding = 1, std140) uniform UniformsMaterial {
 
 void main() {
     gl_Position = u_modelViewProjectionMatrix * vec4(a_position, 1.0);
-    gl_PointSize = u_pointSize;
+    gl_PointSize = 20.f;
 }

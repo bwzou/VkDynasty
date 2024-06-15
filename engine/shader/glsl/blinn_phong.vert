@@ -48,5 +48,5 @@ void main() {
     v_lightDirection = u_pointLightPosition - v_worldPos;
     v_cameraDirection = u_cameraPosition - v_worldPos;
 
-    gl_PointSize = u_pointSize;
+    // gl_PointSize = u_pointSize;
 }

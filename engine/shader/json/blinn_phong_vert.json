@@ -11,12 +11,6 @@
             "location": 0,
             "set": 0,
             "type": 2
-        },
-        "UniformsMaterial": {
-            "binding": 2,
-            "location": 0,
-            "set": 0,
-            "type": 2
         }
     }
 }

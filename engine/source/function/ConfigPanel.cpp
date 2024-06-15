@@ -231,6 +231,22 @@ void ConfigPanel::onDraw() {
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
 
+
+            ImGui::Separator();
+            ImGui::Checkbox("point light", &config_.showLight);
+            if (config_.showLight) {
+                ImGui::Text("light color");
+                ImGui::ColorEdit3("light color", (float *) &config_.pointLightColor, ImGuiColorEditFlags_NoLabel);
+
+                ImGui::Text("light position");
+                ImGui::SliderFloat("position x", &config_.pointLightPosition[0], -100.0f, 100.f);
+                ImGui::SliderFloat("position y", &config_.pointLightPosition[1], -100.0f, 100.f);
+                ImGui::SliderFloat("position z", &config_.pointLightPosition[2], -100.0f, 100.f);
+
+                
+                ImGui::SliderAngle("##light position", &lightPositionAngle_, 0, 360.f);
+            }
+
             if (ImGui::Button(
                     "Button")) {  // Buttons return true when clicked (most widgets return true when edited/activated)
                 counter++;
@@ -286,7 +302,14 @@ void ConfigPanel::drawSettings() {
 
 
 void ConfigPanel::update() {
-
+    std::cout << "ConfigPanel::update" << config_.pointLightPosition[0] << " " << config_.pointLightPosition[1] << " " << config_.pointLightPosition[2] << std::endl;
+    std::cout << "ConfigPanel::update" << config_.pointLightColor[0] << " " << config_.pointLightColor[1] << " " << config_.pointLightColor[2] << std::endl;
+    // config_.pointLightPosition = 2.f * glm::vec3(glm::sin(lightPositionAngle_),
+    //                                            1.2f,
+    //                                            glm::cos(lightPositionAngle_));
+    if (updateLightFunc_) {
+        updateLightFunc_(config_.pointLightPosition, config_.pointLightColor);
+    }                                           
 }
     
 

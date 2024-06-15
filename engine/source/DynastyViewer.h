@@ -135,7 +135,7 @@ private:
 
 public:
     int count = 0;
-    Config config_;
+    Config &config_;
 
     Camera &cameraMain_;
     std::shared_ptr<Camera> cameraDepth_ = nullptr;

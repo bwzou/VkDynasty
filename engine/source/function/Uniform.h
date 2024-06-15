@@ -35,6 +35,7 @@ public:
 
     virtual void setSubData(void *data, int len, int offset) = 0;
     virtual void setData(void *data, int len) = 0;
+    virtual bool bindToCmd() = 0;
 
 protected:
     int blockSize;

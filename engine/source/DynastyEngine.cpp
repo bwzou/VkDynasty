@@ -154,6 +154,14 @@ void DynastyEngine::setupConfigPanelActions() {
     // configPanel_->setFrameDumpFunc([&]() -> void {
     //   dumpFrame_ = true;
     // });
+    configPanel_->setUpdateLightFunc([&](glm::vec3 &position, glm::vec3 &color) -> void {
+
+      auto &scene = modelLoader_->getScene();
+      scene.pointLight.vertexes[0].a_position = position;
+      scene.pointLight.UpdateVertexes();
+      scene.pointLight.material->baseColor = glm::vec4(color, 1.f);
+      std::cout << "scene.pointLight.material->baseColor" << scene.pointLight.material->baseColor[0] << " " << scene.pointLight.material->baseColor[1] << " " << scene.pointLight.material->baseColor[2] << std::endl;
+    });
 }
 
 

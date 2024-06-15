@@ -23,7 +23,7 @@ PipelineContainer PipelineStates::createGraphicsPipeline(VkPipelineVertexInputSt
 
     VkPipelineInputAssemblyStateCreateInfo inputAssembly{};
     inputAssembly.sType = VK_STRUCTURE_TYPE_PIPELINE_INPUT_ASSEMBLY_STATE_CREATE_INFO;
-    inputAssembly.topology = VK_PRIMITIVE_TOPOLOGY_TRIANGLE_LIST;
+    inputAssembly.topology = cvtPrimitiveTopology(renderStates.primitiveType);
     inputAssembly.primitiveRestartEnable = VK_FALSE;
 
     // 将这个视口和剪切形矩形组合成一个视口状态

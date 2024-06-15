@@ -28,10 +28,12 @@ public:
     inline void setReloadModelFunc(const std::function<bool(const std::string &)> &func) {
         reloadModelFunc_ = func;
     }
+    inline void setUpdateLightFunc(const std::function<void(glm::vec3 &, glm::vec3 &)> &func) {
+        updateLightFunc_ = func;
+    }
     inline bool initialize() {
         return initialize_;
     }
-
 
 private:
     bool loadConfig();
@@ -50,6 +52,8 @@ private:
     int frameWidth_ = 0;
     int frameHeight_ = 0;
 
+    float lightPositionAngle_ = glm::radians(235.f);
+
     bool initialize_ = false;
 
     std::unordered_map<std::string, std::string> modelPaths_;
@@ -59,4 +63,5 @@ private:
     std::vector<const char *> skyboxNames_;
 
     std::function<bool(const std::string &path)> reloadModelFunc_;
+    std::function<void(glm::vec3 &position, glm::vec3 &color)> updateLightFunc_;
 };

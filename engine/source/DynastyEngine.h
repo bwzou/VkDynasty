@@ -76,7 +76,6 @@ public:
     inline bool wantCaptureKeyboard() {
         return configPanel_->wantCaptureKeyboard();
     }
-
     inline bool wantCaptureMouse() {
         return configPanel_->wantCaptureMouse();
     }
