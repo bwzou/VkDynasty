@@ -10,6 +10,7 @@
 #include "../function/Uniform.h"
 #include "../code/base/UUID.h"
 #include "../code/util/FileUtils.h"
+#include "../code/base/macro.h"
 
 #define DESCRIPTOR_SET_POOL_MAX_SIZE 64
 
@@ -81,7 +82,6 @@ public:
     void bindResources(ShaderResources &resources) {
         // bind resources
         for (auto &kv : resources.blocks) {
-            std::cout << "bindResources " << (Uniform*) kv.second->getHash() << std::endl;
             bindUniform(*kv.second);
         }
         for (auto &kv : resources.samplers) {
@@ -135,7 +135,6 @@ public:
 
     void endBindUniforms() {
         if (!writeDescriptorSets_.empty()) {
-            std::cout << "writeDescriptorSets_" << writeDescriptorSets_.size() << std::endl;
             vkUpdateDescriptorSets(device_, writeDescriptorSets_.size(), writeDescriptorSets_.data(), 0, nullptr);
         }
 

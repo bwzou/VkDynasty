@@ -6,6 +6,7 @@
 #include "RenderStates.h"
 #include "TextureVulkan.h"
 #include "../code/base/UUID.h"
+#include "../code/base/macro.h"
 #include "../function/Texture.h"
 
 
@@ -144,7 +145,7 @@ public:
     std::vector<VkSemaphore> &getAttachmentsSemaphoresSignal();
 
     bool create(const ClearStates &states) {
-        std::cout << "------- FrameBuffer: create FrameBuffer! -----" << std::endl;
+        LOG_INFO( "=== FrameBuffer: start create FrameBuffer! ===");
         // TODO 暂时注释掉
         // if (!isValid()) {
         //     return false;
@@ -156,23 +157,19 @@ public:
         fboDirty_ = true;
 
         if (renderPassDirty_) {
-            std::cout << "------- FrameBuffer: createRenderPass! -----" << std::endl;
             renderPassDirty_ = false;
             renderPassCache_.emplace_back(); // emplace_back()则直接在容器尾部创建这个元素省去了拷贝或移动元素的过程
             currRenderPass_ = &renderPassCache_.back();
             success = createRenderPass();
-            std::cout << "------- FrameBuffer: createRenderPass end! -----" << std::endl;
         }
         if (success && fboDirty_) { 
-            std::cout << "------- FrameBuffer: createFramebuffer! -----" << std::endl;
             fboDirty_ = false;
             fboCache_.emplace_back();
             currFbo_ = &fboCache_.back();
             success = createFramebuffer();
-            std::cout << "------- FrameBuffer: createFramebuffer end! -----" << std::endl;
         }
 
-        std::cout << "------- FrameBuffer: create end! -----" << std::endl;
+        LOG_INFO( "=== FrameBuffer: end create FrameBuffer! ===");
         return success;
     }
 

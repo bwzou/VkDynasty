@@ -11,6 +11,7 @@
 #include "VertexVulkan.h"
 #include "UniformVulkan.h"
 #include "../function/Texture.h"
+#include "../code/base/macro.h"
 
 class Renderer {
 private:

@@ -30,8 +30,8 @@ bool ShaderProgram::compileAndLinkGLSL(const std::vector<char> &vsSource,
 std::unordered_map<std::string, ShaderUniformDesc> ShaderProgram::readFromFile(std::string jsonFilePath) {
     std::unordered_map<std::string, ShaderUniformDesc> uniformsDesc;
 
-    std::cout << "/////////////////////////////////////////" << std::endl;
-    std::cout << jsonFilePath << std::endl;
+    LOG_INFO("=== ShaderProgram::readFromFile ===");
+    LOG_INFO(jsonFilePath);
     if (!FileUtils::exists(jsonFilePath)) {
         return uniformsDesc;
     }
@@ -40,18 +40,16 @@ std::unordered_map<std::string, ShaderUniformDesc> ShaderProgram::readFromFile(s
     const auto &uniformsObj = json["uniformsDesc"].object_items();
     for (const auto &kv : uniformsObj) {
         const auto &name = kv.first;
-        std::cout << "name：" << name << std::endl;
         const auto &descJson = kv.second;
         ShaderUniformDesc desc;
         desc.name = name;
         desc.type = static_cast<ShaderUniformType>(descJson["type"].int_value());
-        std::cout << "type：" << desc.type<< std::endl;
         desc.location = descJson["location"].int_value();
-        std::cout << "location：" << desc.location << std::endl;
+        LOG_INFO("location：", desc.location)
         desc.binding = descJson["binding"].int_value();
-        std::cout << "binding：" << desc.binding << std::endl;
+        LOG_INFO("binding：", desc.binding)
         desc.set = descJson["set"].int_value();
-        std::cout << "set：" <<  desc.set << std::endl;
+        LOG_INFO("set：", desc.set)
         uniformsDesc[name] = desc;
     }
     return uniformsDesc;

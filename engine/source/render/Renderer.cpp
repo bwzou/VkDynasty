@@ -84,7 +84,7 @@ void Renderer::endRender() {
 
 // pipeline
 void Renderer::beginRenderPass(std::shared_ptr<FrameBuffer> &frameBuffer, const ClearStates &states) {
-    std::cout << "----- beginRenderPass ----" << states.clearDepth << std::endl;
+    LOG_INFO("=== Renderer::beginRenderPass ===");
     if (!frameBuffer) {
         return;
     }
@@ -172,7 +172,7 @@ void Renderer::setViewPort(int x, int y, int width, int height) {
 
 
 void Renderer::setVertexArrayObject(std::shared_ptr<VertexArrayObject> &vao) {
-    std::cout << "------------ setVertexArrayObject -----------" << std::endl;
+    LOG_INFO("=== Renderer::setVertexArrayObject ===");
     if (!vao) {
         return;
     }
@@ -199,18 +199,16 @@ void Renderer::setShaderResources(std::shared_ptr<ShaderResources> &resources) {
 
 
 void Renderer::setPipelineStates(std::shared_ptr<PipelineStates> &states) {
-    std::cout << "------- setPipelineStates: state start! -----" << &states << std::endl;
     if (!states) {
         return;
     }
-    std::cout << "------- setPipelineStates: state exist! -----" << &states << std::endl;
     pipelineStates_ = dynamic_cast<PipelineStates *>(states.get());
     pipelineStates_->create(vao_->getVertexInputInfo(), shaderProgram_, fbo_->getRenderPass(), fbo_->getSampleCount());
 }
 
 
 void Renderer::draw() {
-    std::cout << "------- Renderer: draw start! -----" << drawCmd_ << std::endl;
+    LOG_INFO("=== Renderer:: start draw ===");
     // 我们现在可以绑定图形管道：
     vkCmdBindPipeline(drawCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineStates_->getGraphicsPipeline());
 
@@ -230,7 +228,7 @@ void Renderer::draw() {
                             0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
 
     vkCmdDrawIndexed(drawCmd_, vao_->getIndicesCnt(), 1, 0, 0, 0);
-    std::cout << "------- Renderer: draw end! -----" << std::endl;
+    LOG_INFO("=== Renderer:: end draw ===");
 }
 
 
@@ -255,8 +253,6 @@ void Renderer::endRenderPass() {
         semaphoresSignal_.push_back(commandBuffer_->semaphore);
     }
     semaphoresSignal_.push_back(vkCtx_.renderFinishedSemaphore());
-    std::cout << "semaphoresWait_" << semaphoresWait_.size() << std::endl;
-    std::cout << "semaphoresSignal_" << semaphoresSignal_.size() << std::endl;
 
     vkCtx_.endCommands(commandBuffer_, semaphoresWait_, semaphoresSignal_);
     lastPassSemaphore_ = commandBuffer_->semaphore;

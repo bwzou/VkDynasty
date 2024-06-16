@@ -1,4 +1,5 @@
 #include <stdlib.h>
+#include "./code/log/LogSystem.h"
 #include "DynastyEngine.h"
 
 
@@ -7,6 +8,7 @@
 
 
 std::shared_ptr<DynastyEngine> app = nullptr;
+std::shared_ptr<LogSystem> mLoggerSystem = std::make_shared<LogSystem>();
 
 
 int main(int argc, char** argv) {

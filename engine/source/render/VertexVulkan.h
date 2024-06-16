@@ -8,7 +8,6 @@
 class VertexArrayObjectVulkan : public VertexArrayObject {
 public:
     VertexArrayObjectVulkan(VulkanContext  &ctx, const VertexArray &vertexArr) : vkCtx_(ctx) {
-        std::cout << "create Vertex Array Object" << std::endl;
         device_ = ctx.device();
         if (!vertexArr.vertexesBuffer || !vertexArr.indexBuffer) {
             return ;
@@ -35,9 +34,6 @@ public:
         vertexInputInfo_.vertexAttributeDescriptionCount = attributeDescriptions_.size();
         vertexInputInfo_.pVertexAttributeDescriptions = attributeDescriptions_.data();
 
-        std::cout << "before create Vertex Array Object" << std::endl;
-        std::cout << "before createGPUBuffer " << vertexArr.vertexesBufferLength << std::endl;
-        std::cout << "before createGPUBuffer " << vertexArr.indexBufferLength << std::endl;
         // create buffers
         vkCtx_.createGPUBuffer(vertexBuffer_, vertexArr.vertexesBufferLength, VK_BUFFER_USAGE_VERTEX_BUFFER_BIT);
         vkCtx_.createGPUBuffer(indexBuffer_, vertexArr.indexBufferLength, VK_BUFFER_USAGE_INDEX_BUFFER_BIT);
@@ -46,12 +42,9 @@ public:
         vkCtx_.createStagingBuffer(vertexStagingBuffer_, vertexArr.vertexesBufferLength);
         vkCtx_.createStagingBuffer(indexStagingBuffer_, vertexArr.indexBufferLength);
         
-        std::cout << "before uploadBufferData" << std::endl;
         // upload data
         uploadBufferData(vertexBuffer_, vertexStagingBuffer_, vertexArr.vertexesBuffer, vertexArr.vertexesBufferLength, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT);
         uploadBufferData(indexBuffer_, indexStagingBuffer_, vertexArr.indexBuffer, vertexArr.indexBufferLength, VK_ACCESS_INDEX_READ_BIT);
-
-        std:: cout << "end create Vertex Array Object" << std::endl;
     }
     ~VertexArrayObjectVulkan() {
         vertexBuffer_.destroy(vkCtx_.allocator());

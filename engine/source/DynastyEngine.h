@@ -34,6 +34,7 @@
 #include "./function/OrbitController.h"
 #include "./function/ModelLoader.h"
 #include "./code/util/FileUtils.h"
+#include "./code/base/macro.h"
 
 #include "DynastyEditorUI.h"
 #include "DynastyViewer.h"

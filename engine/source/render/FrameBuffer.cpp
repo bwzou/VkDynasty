@@ -125,7 +125,7 @@ bool FrameBuffer::createRenderPass() {
 
 
 bool FrameBuffer::createFramebuffer() {
-    std::cout << "------- createFramebuffer: start! -----" << vkCtx_.imageIndex() << std::endl;
+    LOG_INFO("=== FrameBuffer:: start create Framebuffer! ===");
     currFbo_->attachments.clear();
 
 
@@ -161,7 +161,7 @@ bool FrameBuffer::createFramebuffer() {
     framebufferInfo.layers = 1;
     VK_CHECK(vkCreateFramebuffer(device_, &framebufferInfo, nullptr, &currFbo_->framebuffer));
 
-    std::cout << "------- createFramebuffer: end! -----" << std::endl;
+    LOG_INFO("=== FrameBuffer:: end create Framebuffer! ===");
     return true;
 }
 

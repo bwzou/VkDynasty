@@ -154,7 +154,5 @@ PipelineContainer PipelineStates::createGraphicsPipeline(VkPipelineVertexInputSt
         throw std::runtime_error("failed to create graphics pipeline!");
     }
 
-    std::cout << "------- createGraphicsPipeline: end! -----" << std::endl;
-
     return ret;
 }

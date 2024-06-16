@@ -220,7 +220,6 @@ void TextureVulkan::createImage(const void *pNext) {
 
 
 void TextureVulkan::createImageView(VkImageView &view, VkImage &image) {
-    std::cout << "createImageView" << std::endl;
     VkImageViewCreateInfo imageViewCreateInfo{};
     imageViewCreateInfo.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
     imageViewCreateInfo.viewType = cvtImageViewType(type);

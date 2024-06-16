@@ -30,6 +30,7 @@
 #include "./function/ModelLoader.h"
 #include "./code/util/FileUtils.h"
 #include "./code/util/HashUtils.h"
+#include "./code/base/macro.h"
 
 #include "./render/FrameBuffer.h"
 #include "./render/Renderer.h"

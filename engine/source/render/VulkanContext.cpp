@@ -97,7 +97,6 @@ bool VulkanContext::create(GLFWwindow* window, bool debugOutput) {
     if (vmaCreateAllocator(&allocatorCreateInfo, &allocator_) != VK_SUCCESS) {
         throw std::runtime_error("vma create error!");
     }
-    std:: cout << "vma create allocator" << std::endl;
 
     return true;
 }
@@ -359,9 +358,9 @@ bool VulkanContext::createInstance() {
 
     VkApplicationInfo appInfo{};
     appInfo.sType = VK_STRUCTURE_TYPE_APPLICATION_INFO;
-    appInfo.pApplicationName = "Hello Triangle";
+    appInfo.pApplicationName = "Hello Dynasty";
     appInfo.applicationVersion = VK_MAKE_VERSION(1, 0, 0);
-    appInfo.pEngineName = "No Engine";
+    appInfo.pEngineName = "Dynasty Engine";
     appInfo.engineVersion = VK_MAKE_VERSION(1, 0, 0);
     appInfo.apiVersion = VK_API_VERSION_1_0;
 
@@ -443,7 +442,6 @@ bool VulkanContext::pickPhysicalDevice() {
 
 
 bool VulkanContext::createLogicalDevice() {
-    std:: cout << "create logical device-------------------------------------------------------------" << std::endl;
     QueueFamilyIndices indices = findQueueFamilies(physicalDevice_);
 
     std::vector<VkDeviceQueueCreateInfo> queueCreateInfos;
@@ -491,7 +489,6 @@ bool VulkanContext::createLogicalDevice() {
 
 
 bool VulkanContext::createSwapchain() {
-    std::cout << "create swap chain" << std::endl;
     SwapChainSupportDetails swapChainSupport = querySwapChainSupport(physicalDevice_);
 
     // 如果满足了swapChainAdequate的条件，那么支持肯定是足够的，但是仍然可能有许多不同的模式，有不同的优化。我们现在要写几个函数来找到最佳交换链的正确设置。有三种类型的设置需要确定。
@@ -563,7 +560,6 @@ bool VulkanContext::createSwapchain() {
 
 // 创建createImageViews函数，并在交换链创建后立即调用它。
 bool VulkanContext::createSwapchainImageViews() {
-    std::cout << "create swapchain imageviews" << std::endl;
     // 调整列表的大小，以适应我们将要创建的所有图像视图。
     swapChainImageViews_.resize(swapChainImages_.size());
 
@@ -617,7 +613,6 @@ bool VulkanContext::createSyncObjects() {
 }
 
 bool VulkanContext::createCommandPool() {
-    std::cout << "create command pool" << std::endl;
     // 命令池创建只需要两个参数
     QueueFamilyIndices queueFamilyIndices = findQueueFamilies(physicalDevice_);
 
@@ -638,7 +633,6 @@ bool VulkanContext::createCommandPool() {
 
 
 void VulkanContext::createGPUBuffer(AllocatedBuffer &buffer, VkDeviceSize size, VkBufferUsageFlags usage) {
-    std::cout << "start create GPU Buffer" << std::endl;
     VkBufferCreateInfo bufferInfo{};
     bufferInfo.sType = VK_STRUCTURE_TYPE_BUFFER_CREATE_INFO;
     bufferInfo.size = size;
@@ -648,9 +642,8 @@ void VulkanContext::createGPUBuffer(AllocatedBuffer &buffer, VkDeviceSize size, 
     VmaAllocationCreateInfo allocInfo{};
     allocInfo.usage = VMA_MEMORY_USAGE_GPU_ONLY;
 
-    VkResult result = vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo);
-    std::cout << "end create GPU Buffer" << std::endl;
-    // VK_CHECK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo));
+    // VkResult result = vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo);
+    VK_CHECK(vmaCreateBuffer(allocator_, &bufferInfo, &allocInfo, &buffer.buffer, &buffer.allocation, &buffer.allocInfo));
 }
 
 
@@ -735,10 +728,10 @@ UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
     buff.mapPtr = buff.buffer.allocInfo.pMappedData;
     pool.push_back(buff);
     maxUniformBufferPoolSize_ = std::max(maxUniformBufferPoolSize_, pool.size());
-    std::cout << "maxUniformBufferPoolSize" << maxUniformBufferPoolSize_ << std::endl;
+    LOG_INFO("=== VulkanContext maxUniformBufferPoolSize:", maxUniformBufferPoolSize_ )
     if (maxUniformBufferPoolSize_ >= UNIFORM_BUFFER_POOL_MAX_SIZE) {
         // throw std::runtime_error("error: uniform buffer pool size exceed");
-        std::cout << "error: uniform buffer pool size exceed" << std::endl;
+        LOG_ERROR("error: uniform buffer pool size exceed");
         return;
     } 
     return &pool.back();
@@ -926,7 +919,6 @@ void VulkanContext::beforeDrawFrame() {
 
 
 void VulkanContext::afterDrawFrame(VkCommandBuffer &drawCmd) {
-    std::cout << "VulkanContext::afterDrawFrame" << std::endl;
     // VkSubmitInfo submitInfo{};
     // submitInfo.sType = VK_STRUCTURE_TYPE_SUBMIT_INFO;
     // // 指定在执行开始之前要等待的信号量以及要等待的管道阶段

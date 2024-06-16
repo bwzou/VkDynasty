@@ -63,7 +63,6 @@ bool ConfigPanel::init(void *window, int width, int height) {
 bool ConfigPanel::initImgui(void *window, std::shared_ptr<Renderer> renderer) {
     if (renderer) {
         initialize_ = true;
-        std::cout << "--- imgui initialize 1 ---" << std::endl;
         renderer_ = renderer.get();
         VkAttachmentDescription colorAttachment{};
         colorAttachment.format = VK_FORMAT_B8G8R8A8_UNORM;
@@ -147,7 +146,6 @@ bool ConfigPanel::initImgui(void *window, std::shared_ptr<Renderer> renderer) {
 
 
 void ConfigPanel::onDraw() {
-    // std::cout << "--- imgui initialize 2 ---" << std::endl;
     // // Start the ImGui frame
     // ImGui_ImplVulkan_NewFrame();
     // ImGui_ImplGlfw_NewFrame();
@@ -155,7 +153,6 @@ void ConfigPanel::onDraw() {
     // ImGuiIO& io = ImGui::GetIO();
     // (void)io;
 
-    // std::cout << "--- imgui initialize 2 1---" << std::endl;
     // // Settings window
     // ImGui::Begin("Settings", nullptr, ImGuiWindowFlags_NoSavedSettings | ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_AlwaysAutoResize);
     // drawSettings();
@@ -169,7 +166,6 @@ void ConfigPanel::onDraw() {
     
     // ImGui::Render();
 
-    std::cout << "--- imgui initialize 2 3---" << std::endl;
     ImguiDebugInfo debugInfo{};
     debugInfo.speed = 90.0F;
     debugInfo.look_x = 2.0f;
@@ -281,7 +277,6 @@ void ConfigPanel::onDraw() {
 
 
 void ConfigPanel::drawSettings() {
-    std::cout << "--- imgui initialize 3 ---" << std::endl;
 
     // clear Color
     ImGui::Separator();

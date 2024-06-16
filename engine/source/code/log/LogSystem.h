@@ -56,3 +56,5 @@ class LogSystem final{
     private:
         std::shared_ptr<spdlog::logger> m_logger;
 };
+
+extern std::shared_ptr<LogSystem> mLoggerSystem;

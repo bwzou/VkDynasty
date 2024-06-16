@@ -21,7 +21,7 @@
 #include <vk_mem_alloc.h>
 
 #include "../code/base/Timer.h"
-#include "VulKanGLInterop.h"
+#include "../code/base/macro.h"
 
 
 #ifdef NDEBUG

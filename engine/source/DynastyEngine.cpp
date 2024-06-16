@@ -7,12 +7,13 @@ double lastY = SCR_HEIGHT;
 bool firstMouse = true;
 
 void framebufferSizeCallback(GLFWwindow *window, int width, int height) {
-    std::cout << "Do nothing!" << std::endl;
+    LOG_INFO("=== Do nothing! framebufferSizeCallback ===");
 }
 
 
 void mouseCallback(GLFWwindow *window, double xPos, double yPos) {
-    std::cout << "Do nothing! mouseCallback" << std::endl;
+    LOG_INFO("=== Do nothing! mouseCallback ===");
+
     if (!app || app->wantCaptureMouse()) {
         return;
     }
@@ -40,7 +41,7 @@ void mouseCallback(GLFWwindow *window, double xPos, double yPos) {
 
 
 void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
-    std::cout << "Do nothing! scrollCallback" << std::endl;
+    LOG_INFO("=== Do nothing! scrollCallback ===");
 
     if (!app || app->wantCaptureMouse()) {
         return;
@@ -50,7 +51,8 @@ void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) {
 
 
 void processInput(GLFWwindow *window) {
-    std::cout << "Do nothing! processInput" << std::endl;
+    LOG_INFO("=== Do nothing! processInput ===");
+
     if (!app || app->wantCaptureKeyboard()) {
         return;
     }
@@ -88,7 +90,6 @@ void DynastyEngine::drawFrame() {
     viewer_->drawFrame(modelLoader_->getScene());
 
     // viewer_->swapBuffer();
-    std::cout << "viewer swap" << std::endl;
 }
 
 
@@ -161,7 +162,6 @@ void DynastyEngine::setupConfigPanelActions() {
       scene.pointLight.vertexes[0].a_position = position;
       scene.pointLight.UpdateVertexes();
       scene.pointLight.material->baseColor = glm::vec4(color, 1.f);
-      std::cout << "scene.pointLight.material->baseColor" << scene.pointLight.material->baseColor[0] << " " << scene.pointLight.material->baseColor[1] << " " << scene.pointLight.material->baseColor[2] << std::endl;
     });
 }
 

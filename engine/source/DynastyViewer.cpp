@@ -84,7 +84,7 @@ void DynastyViewer::waitRenderIdle() {
 
 
 void DynastyViewer::drawFrame(DemoScene &scene) {
-    std:: cout << "DynastyViewer: start draw frame" << std::endl;
+    LOG_INFO("=== DynastyViewer: start draw frame ===")
     if (!renderer_) {
         return;
     }
@@ -109,7 +109,6 @@ void DynastyViewer::drawFrame(DemoScene &scene) {
     // setup fxaa
     // processFXAASetup();
 
-    std:: cout << "DynastyViewer: finish setup scene" << std::endl;
     // main fxaa
     ClearStates clearStates{};
     clearStates.colorFlag = true;
@@ -129,16 +128,15 @@ void DynastyViewer::drawFrame(DemoScene &scene) {
 
     renderer_->endRender();
 
-    std::cout << "DynastyViewer: end draw frame" << std::endl;
     // draw fxaa
     // processFXAADraw();
 
-    // throw std::runtime_error("error");
+    LOG_INFO("=== DynastyViewer: end draw frame ===")
 }
 
 
 void DynastyViewer::setupScene() {
-    std::cout << "DynastyViewer::setup scene" <<  std::endl;
+    LOG_INFO("=== DynastyViewer::setup scene ===")
     // point light
     if (config_.showLight) {
         setupPoints(scene_->pointLight);
@@ -149,7 +147,6 @@ void DynastyViewer::setupScene() {
         setupLines(scene_->worldAxis);
     }
 
-    std::cout << "DynastyViewer::setup scene model nodes" <<  std::endl;
     // model nodes
     ModelNode &modelNode = scene_->model->rootNode;
     setupModelNodes(modelNode, config_.wireframe);
@@ -157,13 +154,11 @@ void DynastyViewer::setupScene() {
 
 
 void DynastyViewer::setupPoints(ModelPoints &points) {
-    std::cout<< "setupPoints" << points.material->shadingModel << std::endl;
     pipelineSetup(points, points.material->shadingModel, {UniformBlock_Model, UniformBlock_Material});
 }
 
 
 void DynastyViewer::setupLines(ModelLines &lines) {
-    std::cout<< "setupLines" << lines.material->shadingModel << std::endl;
     pipelineSetup(lines, lines.material->shadingModel, {UniformBlock_Model, UniformBlock_Material});
 }
 
@@ -204,13 +199,12 @@ void DynastyViewer::setupSkybox(ModelMesh &skybox) {
 
 
 void DynastyViewer::drawScene(bool shadowPass) {
-    std::cout << "--------------- drawScene -------" << std::endl;
+    LOG_INFO("=== DynastyViewer::draw scene ===")
     updateUniformScene();
     updateUniformModel(glm::mat4(1.0f), camera_->viewMatrix());
 
     // draw point light
     if (!shadowPass && config_.showLight) {
-        std::cout << "--------------- drawPoint -------" << std::endl;
         updateUniformMaterial(*scene_->pointLight.material);
         pipelineDraw(scene_->pointLight);
     }
@@ -225,12 +219,12 @@ void DynastyViewer::drawScene(bool shadowPass) {
     ModelNode &modelNode = scene_->model->rootNode;
     count = 0;
     drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Opaque);
-    printf("Alpha_Opaque model nodes: %d", count);
+    LOG_INFO("Alpha_Opaque model nodes: ", count)
 
     // draw model nodes blend
     count = 0;
     drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Blend);
-    printf("Alpha_Blend model nodes: %d", count);
+    LOG_INFO("Alpha_Blend model nodes: ", count)
 }
 
 
@@ -297,7 +291,6 @@ void DynastyViewer::pipelineDraw(ModelBase &model) {
     
 
 void DynastyViewer::setupMainBuffers() {
-    std::cout << "DynastyViewer::setup main buffers" << std::endl;
     if (config_.aaType == AAType_MSAA) {
         setupMainColorBuffer(true);
         setupMainDepthBuffer(true);
@@ -352,17 +345,14 @@ void DynastyViewer::setupMainDepthBuffer(bool multiSample) {
 
 
 void DynastyViewer::setupVertexArray(ModelVertexes &vertexes) {
-    std::cout << "DynastyViewer::setup vertex array" << std::endl;
+    LOG_INFO("=== DynastyViewer::setup vertex array ===")
     if (!vertexes.vao) {
         vertexes.vao = renderer_->createVertexArrayObject(vertexes);
     }
-     std::cout << "DynastyViewer::end setup vertex array" << std::endl;
-    
 }
 
 
 void DynastyViewer::setupSamplerUniforms(Material &material) {
-    std::cout << "setupSamplerUniforms: " << std::endl;
     for (auto &kv: material.textures) {
         // create sampler uniform
         const char * samplerName = Material::samplerName((MaterialTexType) kv.first);
@@ -437,7 +427,6 @@ void DynastyViewer::setupPipelineStates(ModelBase &model, const std::function<vo
 void DynastyViewer::setupMaterial(ModelBase &model, ShadingModel shading, const std::set<int> &uniformBlocks,
                            const std::function<void(RenderStates &rs)> &extraStates) {
     auto &material = *model.material;
-    std::cout << "setupMaterial: " << shading << std::endl;
 
     if (material.textures.empty()) {
         setupTextures(material);
@@ -482,7 +471,6 @@ void DynastyViewer::setupMaterial(ModelBase &model, ShadingModel shading, const 
 
 
 void DynastyViewer::setupTextures(Material &material) {
-    std::cout << "setupTextures" << std::endl;
     for (auto &kv : material.textureData) {
         TextureDesc texDesc{};
         texDesc.width = (int) kv.second.width;
@@ -499,7 +487,6 @@ void DynastyViewer::setupTextures(Material &material) {
         sampler.filterMag = Filter_LINEAR;
 
         std::shared_ptr<Texture> texture = nullptr;
-        std::cout << "setupTextures 1" << std::endl;
         switch(kv.first) {
             case MaterialTexType_IBL_IRRADIANCE:
             case MaterialTexType_IBL_PREFILTER: {
@@ -516,37 +503,28 @@ void DynastyViewer::setupTextures(Material &material) {
                 break;
             }
         }
-        std::cout << "setupTextures 2" << std::endl;
         texture = renderer_->createTexture(texDesc);
         texture->setSamplerDesc(sampler);
-        std::cout << "setupTextures 3" << std::endl;
         texture->setImageData(kv.second.data);
         texture->tag = kv.second.tag;
         material.textures[kv.first] = texture;
-        std::cout << "setupTextures 4" << std::endl;
     }
 }
 
 
 void DynastyViewer::updateUniformScene() {
-    std::cout << " ------------- updateUniformScene ----------------- " << " " << uniformBlockScene_->bindToCmd() << " " << uniformBlockScene_->getHash() << std::endl;
     static UniformsScene uniformsScene{};
 
     uniformsScene.u_ambientColor = config_.ambientColor;
     uniformsScene.u_cameraPosition = camera_->eye();
     uniformsScene.u_pointLightPosition = config_.pointLightPosition;
     uniformsScene.u_pointLightColor = config_.pointLightColor;
-    std::cout << "pointLightPosition " << config_.pointLightPosition[0] << " " << config_.pointLightPosition[1] << " " << config_.pointLightPosition[2] << std::endl;
-    std::cout << "u_pointLightColor " << config_.pointLightColor[0] << " " << config_.pointLightColor[1] << " " << config_.pointLightColor[2] << std::endl;
-    std::cout << "pointLightPosition " << uniformsScene.u_pointLightPosition[0] << " " << uniformsScene.u_pointLightPosition[1] << " " << uniformsScene.u_pointLightPosition[2] << std::endl;
-    std::cout << "u_pointLightColor " << uniformsScene.u_pointLightColor[0] << " " << uniformsScene.u_pointLightColor[1] << " " << uniformsScene.u_pointLightColor[2] << std::endl;
 
     uniformBlockScene_->setData(&uniformsScene, sizeof(UniformsScene));
 }
 
 
 void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &view) {
-    std::cout << " ------------- updateUniformModel ----------------- " << " " << uniformBlockModel_->bindToCmd() << " " << uniformBlockModel_->getHash() << std::endl;
     static UniformsModel uniformsModel{};
 
     uniformsModel.u_reverseZ = config_.reverseZ ? 1u : 0u;
@@ -568,7 +546,6 @@ void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &
 
 
 void DynastyViewer::updateUniformMaterial(Material &material, float specular) {
-    std::cout << " ------------- updateUniformMaterial ----------------- " << material.pointSize << " " << uniformBlockMaterial_->bindToCmd() << " " << uniformBlockMaterial_->getHash() << std::endl;
     static UniformsMaterial uniformsMaterial{};
 
     uniformsMaterial.u_enableLight = config_.showLight ? 1u : 0u;
