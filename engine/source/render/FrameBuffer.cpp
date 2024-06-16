@@ -125,7 +125,7 @@ bool FrameBuffer::createRenderPass() {
 
 
 bool FrameBuffer::createFramebuffer() {
-    std::cout << "------- createFramebuffer: start! -----" << std::endl;
+    std::cout << "------- createFramebuffer: start! -----" << vkCtx_.imageIndex() << std::endl;
     currFbo_->attachments.clear();
 
 

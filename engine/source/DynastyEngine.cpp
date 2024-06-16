@@ -81,7 +81,7 @@ void DynastyEngine::drawFrame() {
     // update triangle count
     config_->triangleCount_ = modelLoader_->getModelPrimitiveCnt();
     
-    viewer_->create(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT, NULL);
+    // viewer_->create(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT, NULL);
     
     viewer_->configRenderer();
     
@@ -103,11 +103,12 @@ bool DynastyEngine::initEngine() {
     config_ = std::make_shared<Config>();
     configPanel_ = std::make_shared<ConfigPanel>(*config_);
 
-    viewer_ = std::make_shared<DynastyViewer>(*config_, *camera_);
-
     editorUI_ = std::make_shared<DynastyEditorUI>(*config_);
     editorUI_->initWindow();
     initEvent(editorUI_->window());
+    
+    viewer_ = std::make_shared<DynastyViewer>(*config_, *camera_);
+    viewer_->create(editorUI_->window(), SCR_WIDTH, SCR_HEIGHT, NULL);
         
     modelLoader_ = std::make_shared<ModelLoader>(*config_);
     // setup config panel actions callback

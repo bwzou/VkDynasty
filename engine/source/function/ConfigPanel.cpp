@@ -231,6 +231,9 @@ void ConfigPanel::onDraw() {
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
 
+            // world axis
+            ImGui::Separator();
+            ImGui::Checkbox("world axis", &config_.worldAxis);
 
             ImGui::Separator();
             ImGui::Checkbox("point light", &config_.showLight);
@@ -302,11 +305,9 @@ void ConfigPanel::drawSettings() {
 
 
 void ConfigPanel::update() {
-    std::cout << "ConfigPanel::update" << config_.pointLightPosition[0] << " " << config_.pointLightPosition[1] << " " << config_.pointLightPosition[2] << std::endl;
-    std::cout << "ConfigPanel::update" << config_.pointLightColor[0] << " " << config_.pointLightColor[1] << " " << config_.pointLightColor[2] << std::endl;
-    // config_.pointLightPosition = 2.f * glm::vec3(glm::sin(lightPositionAngle_),
-    //                                            1.2f,
-    //                                            glm::cos(lightPositionAngle_));
+    config_.pointLightPosition = 2.f * glm::vec3(glm::sin(lightPositionAngle_),
+                                               1.2f,
+                                               glm::cos(lightPositionAngle_));
     if (updateLightFunc_) {
         updateLightFunc_(config_.pointLightPosition, config_.pointLightColor);
     }                                           

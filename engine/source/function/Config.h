@@ -41,7 +41,7 @@ public:
     bool showLight = true;
     // glm::vec3 pointLightPosition = {0.f, 0.f, 0.f};
     glm::vec3 pointLightColor = {0.5f, 0.5f, 0.5f};
-    glm::vec3 pointLightPosition = {9.942f, 23.796f, 25.7738f};
+    glm::vec3 pointLightPosition = {1.942f, 2.796f, 0.7738f};
     // glm::vec3 pointLightColor = {1.f, 1.f, 1.f};
 
     int aaType = AAType_NONE;

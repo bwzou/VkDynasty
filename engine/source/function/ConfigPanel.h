@@ -52,7 +52,7 @@ private:
     int frameWidth_ = 0;
     int frameHeight_ = 0;
 
-    float lightPositionAngle_ = glm::radians(235.f);
+    float lightPositionAngle_ = glm::radians(120.f);
 
     bool initialize_ = false;
 

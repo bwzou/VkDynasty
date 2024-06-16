@@ -128,8 +128,8 @@ private:
         uniformBlockScene_ = nullptr;
         uniformBlockModel_ = nullptr;
         uniformBlockMaterial_ = nullptr;
-        // programCache_.clear();
-        // pipelineCache_.clear();
+        programCache_.clear();
+        pipelineCache_.clear();
     }
 
 

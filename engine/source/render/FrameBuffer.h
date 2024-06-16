@@ -34,7 +34,7 @@ protected:
 
 private:
     UUID<FrameBuffer> uuid_;
-    VulkanContext vkCtx_; 
+    VulkanContext& vkCtx_; 
     VkDevice device_ = VK_NULL_HANDLE;
 
     uint32_t width_ = 0;
@@ -152,6 +152,8 @@ public:
         clearStates_ = states;
 
         bool success = true;
+        renderPassDirty_ = true;
+        fboDirty_ = true;
 
         if (renderPassDirty_) {
             std::cout << "------- FrameBuffer: createRenderPass! -----" << std::endl;

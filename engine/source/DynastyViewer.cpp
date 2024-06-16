@@ -146,7 +146,7 @@ void DynastyViewer::setupScene() {
 
     // world axis
     if (config_.worldAxis) {
-        
+        setupLines(scene_->worldAxis);
     }
 
     std::cout << "DynastyViewer::setup scene model nodes" <<  std::endl;
@@ -163,7 +163,8 @@ void DynastyViewer::setupPoints(ModelPoints &points) {
 
 
 void DynastyViewer::setupLines(ModelLines &lines) {
-
+    std::cout<< "setupLines" << lines.material->shadingModel << std::endl;
+    pipelineSetup(lines, lines.material->shadingModel, {UniformBlock_Model, UniformBlock_Material});
 }
 
 
@@ -212,6 +213,12 @@ void DynastyViewer::drawScene(bool shadowPass) {
         std::cout << "--------------- drawPoint -------" << std::endl;
         updateUniformMaterial(*scene_->pointLight.material);
         pipelineDraw(scene_->pointLight);
+    }
+
+    // draw world axis 
+    if (!shadowPass && config_.worldAxis) {
+        updateUniformMaterial(*scene_->worldAxis.material);
+        pipelineDraw(scene_->worldAxis);
     }
 
     // draw model nodes opaque

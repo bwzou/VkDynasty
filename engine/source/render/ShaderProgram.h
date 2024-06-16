@@ -81,6 +81,7 @@ public:
     void bindResources(ShaderResources &resources) {
         // bind resources
         for (auto &kv : resources.blocks) {
+            std::cout << "bindResources " << (Uniform*) kv.second->getHash() << std::endl;
             bindUniform(*kv.second);
         }
         for (auto &kv : resources.samplers) {

@@ -19,7 +19,7 @@ public:
         return shaderProgram->getUniformLocation(name);
     }
 
-    void bindProgram(ShaderProgram &program, int location) {
+    void bindProgram(ShaderProgram &program, int location) override {
         auto shaderProgram = dynamic_cast<ShaderProgram *>(&program);
         if (ubo_ == nullptr) {
             throw std::runtime_error("uniform bind program error: data not set");
@@ -33,24 +33,20 @@ public:
         }
 
         cmd->uniformBuffers.push_back(ubo_);
-        std::cout << "cmd->uniformBuffers" << cmd << " " << cmd->uniformBuffers.size() << std::endl;
         shaderProgram->bindUniformBuffer(descriptorBufferInfo_, location);
         bindToCmd_ = true;
-        std::cout << "name:  " << name << " bindToCmd_ " << bindToCmd_ << std::endl;
     }
 
-    void setSubData(void *data, int len, int offset) {
-        std::cout << "setSubData name:  " << name << " bindToCmd_ " << bindToCmd_ << std::endl;
+    void setSubData(void *data, int len, int offset) override {
         if (bindToCmd_) {
             ubo_ = vkCtx_.getNewUniformBuffer(blockSize);
             descriptorBufferInfo_.buffer = ubo_->buffer.buffer;
-            std::cout << "ubo_  " << ubo_  <<  " " << std::endl;
         }
         memcpy((uint8_t *)ubo_->mapPtr + offset, data, len);
         bindToCmd_ = false;
     }
 
-    void setData(void *data, int len)  { 
+    void setData(void *data, int len) override { 
         setSubData(data, len, 0);
     }
 
