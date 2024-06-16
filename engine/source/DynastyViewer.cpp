@@ -147,6 +147,15 @@ void DynastyViewer::setupScene() {
         setupLines(scene_->worldAxis);
     }
 
+    // world axis
+    if (config_.showFloor) {
+        if (config_.wireframe) {
+            setupMeshBaseColor(scene_->floor, true);
+        } else {
+            setupMeshTextured(scene_->floor);
+        }
+    }
+
     // model nodes
     ModelNode &modelNode = scene_->model->rootNode;
     setupModelNodes(modelNode, config_.wireframe);
@@ -215,16 +224,21 @@ void DynastyViewer::drawScene(bool shadowPass) {
         pipelineDraw(scene_->worldAxis);
     }
 
+    // draw floor
+    if (!shadowPass && config_.showFloor) {
+       drawModelMesh(scene_->floor, shadowPass, 0.f);
+    }
+
     // draw model nodes opaque
     ModelNode &modelNode = scene_->model->rootNode;
     count = 0;
     drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Opaque);
-    LOG_INFO("Alpha_Opaque model nodes: ", count)
+    LOG_INFO("Alpha_Opaque model nodes: {}", count)
 
     // draw model nodes blend
     count = 0;
     drawModelNodes(modelNode, shadowPass, scene_->model->centeredTransform, Alpha_Blend);
-    LOG_INFO("Alpha_Blend model nodes: ", count)
+    LOG_INFO("Alpha_Blend model nodes: {}", count)
 }
 
 
@@ -403,6 +417,7 @@ void DynastyViewer::setupPipelineStates(ModelBase &model, const std::function<vo
     rs.depthFunc = config_.reverseZ ? DepthFunc_GREATER : DepthFunc_LESS;
     
     rs.cullFace = config_.cullFace && (!material.doubleSided);
+
     rs.primitiveType = model.primitiveType;
     rs.polygonMode = PolygonMode_FILL;
 
@@ -570,5 +585,28 @@ size_t DynastyViewer::getShaderProgramCacheKey(ShadingModel shadingModel, std::s
 }
 
 size_t DynastyViewer::getPipelineCacheKey(Material &material, const RenderStates &rs) {
+    size_t seed = 0;
 
+    HashUtils::hashCombine(seed, (int) material.materialObj->shadingModel);
+
+    // TODO pack together
+    HashUtils::hashCombine(seed, rs.blend);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendFuncRgb);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendSrcRgb);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendDstRgb);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendFuncAlpha);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendSrcAlpha);
+    HashUtils::hashCombine(seed, (int) rs.blendParams.blendDstAlpha);
+
+    HashUtils::hashCombine(seed, rs.depthTest);
+    HashUtils::hashCombine(seed, rs.depthMask);
+    HashUtils::hashCombine(seed, (int) rs.depthFunc);
+
+    HashUtils::hashCombine(seed, rs.cullFace);
+    HashUtils::hashCombine(seed, (int) rs.primitiveType);
+    HashUtils::hashCombine(seed, (int) rs.polygonMode);
+
+    HashUtils::hashCombine(seed, rs.lineWidth);
+
+    return seed;
 }
