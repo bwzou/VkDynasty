@@ -5,6 +5,7 @@ layout (location = 1) in vec3 v_normalVector;
 layout (location = 2) in vec3 v_worldPos;
 layout (location = 3) in vec3 v_cameraDirection;
 layout (location = 4) in vec3 v_lightDirection;
+layout (location = 5) in vec4 v_shadowFragPos;
 
 layout (location = 0) out vec4 FragColor;
 
@@ -33,6 +34,26 @@ layout (binding = 2, std140) uniform UniformsMaterial {
 
 // layout (binding = 5) uniform sampler2D u_metalRoughnessMap;
 
+layout (binding = 3) uniform sampler2D u_shadowMap;
+
+// 传统的 two-pass 阴影算法
+float ShadowCalculation(vec4 fragPos, vec3 normal) {
+    vec3 projCoords = fragPos.xyz / fragPos.w;
+    float currentDepth = projCoords.z;
+
+    float shadow = 0.0;
+    float depth = texture(u_shadowMap, projCoords.xy).r;
+
+    if (currentDepth > depth) {
+        shadow = 1.0;
+    } else {
+        shadow = 0.0;
+    }
+    return shadow;
+}
+
+
+
 void main() {
     // FragColor = u_baseColor;
     vec4 baseColor = u_baseColor;
@@ -55,6 +76,10 @@ void main() {
     int specularExponent = 5;
     float specular = clamp(dot(halfVector, v_normalVector), 0.0, 1.0);
     vec3 specularColor = u_kSpecular * vec3(pow(specular, specularExponent));
+
+    float shadow = 1.0 - ShadowCalculation(v_shadowFragPos, normalVector);
+    diffuseColor *= shadow;
+    specularColor *= shadow;
 
     // 计算每一个片元的输出颜色
     FragColor = vec4(ambientColor + diffuseColor + specularColor, baseColor.a);

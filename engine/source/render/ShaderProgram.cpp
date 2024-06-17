@@ -45,11 +45,11 @@ std::unordered_map<std::string, ShaderUniformDesc> ShaderProgram::readFromFile(s
         desc.name = name;
         desc.type = static_cast<ShaderUniformType>(descJson["type"].int_value());
         desc.location = descJson["location"].int_value();
-        LOG_INFO("location：", desc.location)
+        LOG_INFO("location：{}", desc.location)
         desc.binding = descJson["binding"].int_value();
-        LOG_INFO("binding：", desc.binding)
+        LOG_INFO("binding：{}", desc.binding)
         desc.set = descJson["set"].int_value();
-        LOG_INFO("set：", desc.set)
+        LOG_INFO("set：{}", desc.set)
         uniformsDesc[name] = desc;
     }
     return uniformsDesc;

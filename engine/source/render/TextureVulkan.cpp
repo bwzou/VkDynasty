@@ -350,7 +350,7 @@ void TextureVulkan::transitionImageLayout(VkCommandBuffer commandBuffer, VkImage
                                           VkImageSubresourceRange subresourceRange,
                                           VkAccessFlags srcMask,
                                           VkAccessFlags dstMask,
-                                          VkImageLayout oldLayout,
+                                          VkImageLayout oldLayout, // 转换时会改变Image Memory的字节格式，会先读取Image然后再写入成新的格式
                                           VkImageLayout newLayout,
                                           VkPipelineStageFlags srcStage,
                                           VkPipelineStageFlags dstStage) {

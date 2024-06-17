@@ -238,13 +238,16 @@ void ConfigPanel::onDraw() {
                 ImGui::ColorEdit3("light color", (float *) &config_.pointLightColor, ImGuiColorEditFlags_NoLabel);
 
                 ImGui::Text("light position");
-                ImGui::SliderFloat("position x", &config_.pointLightPosition[0], -100.0f, 100.f);
-                ImGui::SliderFloat("position y", &config_.pointLightPosition[1], -100.0f, 100.f);
-                ImGui::SliderFloat("position z", &config_.pointLightPosition[2], -100.0f, 100.f);
-
-                
+                // ImGui::SliderFloat("position x", &config_.pointLightPosition[0], -50.0f, 50.f);
+                // ImGui::SliderFloat("position y", &config_.pointLightPosition[1], -50.0f, 50.f);
+                // ImGui::SliderFloat("position z", &config_.pointLightPosition[2], -50.0f, 50.f);
                 ImGui::SliderAngle("##light position", &lightPositionAngle_, 0, 360.f);
             }
+
+            // shadow floor
+            ImGui::Separator();
+            ImGui::Checkbox("shadow floor", &config_.showFloor);
+            config_.shadowMap = config_.showFloor;
 
             if (ImGui::Button(
                     "Button")) {  // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -305,7 +308,8 @@ void ConfigPanel::update() {
                                                glm::cos(lightPositionAngle_));
     if (updateLightFunc_) {
         updateLightFunc_(config_.pointLightPosition, config_.pointLightColor);
-    }                                           
+    }        
+    
 }
     
 

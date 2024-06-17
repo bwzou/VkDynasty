@@ -211,7 +211,6 @@ void Renderer::draw() {
     LOG_INFO("=== Renderer:: start draw ===");
     // 我们现在可以绑定图形管道：
     vkCmdBindPipeline(drawCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineStates_->getGraphicsPipeline());
-
     // 视口基本上描述了输出将被渲染到的framebuffer的区域。
     vkCmdSetViewport(drawCmd_, 0, 1, &viewport_);
     // 只想在整个帧缓冲区内作画，所以我们将指定一个完全覆盖它的剪切矩形
@@ -221,12 +220,11 @@ void Renderer::draw() {
     VkDeviceSize offsets[] = {0};
     vkCmdBindVertexBuffers(drawCmd_, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(drawCmd_, vao_->getIndexBuffer(), 0, VK_INDEX_TYPE_UINT32);
-
+    
     // 实际将每个帧的正确描述符集绑定到着色器中的描述符vkCmdBindDescriptorSets。这需要在调用之前完成vkCmdDrawIndexed
     auto &descriptorSets = shaderProgram_->getDescriptorSet();
     vkCmdBindDescriptorSets(drawCmd_, VK_PIPELINE_BIND_POINT_GRAPHICS, pipelineStates_->getGraphicsPipelineLayout(), 
                             0, descriptorSets.size(), descriptorSets.data(), 0, nullptr);
-
     vkCmdDrawIndexed(drawCmd_, vao_->getIndicesCnt(), 1, 0, 0, 0);
     LOG_INFO("=== Renderer:: end draw ===");
 }
@@ -248,11 +246,16 @@ void Renderer::endRenderPass() {
     if (lastPassSemaphore_ != VK_NULL_HANDLE) {
         semaphoresWait_.push_back(lastPassSemaphore_);
     }
-    semaphoresWait_.push_back(vkCtx_.imageAvailableSemaphore());
+    if (!fbo_->isOffscreen()) { 
+        semaphoresWait_.push_back(vkCtx_.imageAvailableSemaphore());
+    }
     if (commandBuffer_->semaphore != VK_NULL_HANDLE) {
         semaphoresSignal_.push_back(commandBuffer_->semaphore);
     }
-    semaphoresSignal_.push_back(vkCtx_.renderFinishedSemaphore());
+    // 第一次获取深度图的渲染不需要等待最终的信号量
+    if (!fbo_->isOffscreen()) { 
+        semaphoresSignal_.push_back(vkCtx_.renderFinishedSemaphore());
+    }
 
     vkCtx_.endCommands(commandBuffer_, semaphoresWait_, semaphoresSignal_);
     lastPassSemaphore_ = commandBuffer_->semaphore;

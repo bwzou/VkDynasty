@@ -17,6 +17,12 @@
             "location": 0,
             "set": 0,
             "type": 2
+        },
+        "u_shadowMap": {
+            "binding": 3,
+            "location": 0,
+            "set": 0,
+            "type": 1
         }
     }
 }

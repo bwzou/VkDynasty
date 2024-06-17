@@ -17,7 +17,7 @@ bool FrameBuffer::createRenderPass() {
     resolveAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
     std::vector<VkAttachmentDescription> attachments;
-    if (true) {
+    // if (!isOffscreen()) {
         // auto *colorTex = getAttachmentColor();
 
         // 只有一个单一的颜色缓冲区附件，由交换链中的一个图像代表
@@ -37,7 +37,7 @@ bool FrameBuffer::createRenderPass() {
 
         colorAttachmentRef.attachment = attachments.size();
         attachments.push_back(colorAttachment);
-    }
+    // }
 
     // if (colorReady_) {
     //     auto *colorTex = getAttachmentColor();
@@ -129,9 +129,9 @@ bool FrameBuffer::createFramebuffer() {
     currFbo_->attachments.clear();
 
 
-    if (true) {
+    // if (!isOffscreen()) {
         currFbo_->attachments.push_back(vkCtx_.swapChainImageViews()[vkCtx_.imageIndex()]);
-    }
+    // }
     // if (colorReady_) {
     //     auto *texColor = getAttachmentColor();
     //     currFbo_->attachments.push_back(texColor->createAttachmentView(VK_IMAGE_ASPECT_COLOR_BIT, colorAttachment_.layer, colorAttachment_.level));
@@ -167,13 +167,11 @@ bool FrameBuffer::createFramebuffer() {
 
 
 void FrameBuffer::transitionLayoutBeginPass(VkCommandBuffer cmdBuffer) {
-    // if (!isOffscreen()) {
-    //     return;
-    // }
-
+    if (!isOffscreen()) {
+        return;
+    }
     // if (isColorReady()) {
     //     auto *colorTex = getAttachmentColor();
-
     //     if (colorTex->usage & TextureUsage_Sampler) {
     //         VkImageSubresourceRange subRange{};
     //         subRange.aspectMask = colorTex->getImageAspect();
@@ -191,34 +189,33 @@ void FrameBuffer::transitionLayoutBeginPass(VkCommandBuffer cmdBuffer) {
     //                                             VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT);
     //     }
     // }
+    if (isDepthReady()) {
+        auto *depthTex = getAttachmentDepth();
 
-    // if (isDepthReady()) {
-    //     auto *depthTex = getAttachmentDepth();
+        if (depthTex->usage & TextureUsage_Sampler) {
+        VkImageSubresourceRange subRange{};
+        subRange.aspectMask = depthTex->getImageAspect();
+        subRange.baseMipLevel = getDepthAttachment().level;
+        subRange.baseArrayLayer = getDepthAttachment().layer;
+        subRange.levelCount = 1;
+        subRange.layerCount = 1;
 
-    //     if (depthTex->usage & TextureUsage_Sampler) {
-    //     VkImageSubresourceRange subRange{};
-    //     subRange.aspectMask = depthTex->getImageAspect();
-    //     subRange.baseMipLevel = getDepthAttachment().level;
-    //     subRange.baseArrayLayer = getDepthAttachment().layer;
-    //     subRange.levelCount = 1;
-    //     subRange.layerCount = 1;
-
-    //     TextureVulkan::transitionImageLayout(cmdBuffer, depthTex->getVkImage(), subRange,
-    //                                         0,
-    //                                         VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //                                         VK_IMAGE_LAYOUT_UNDEFINED,
-    //                                         VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-    //                                         VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,
-    //                                         VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT);
-    //     }
-    // }
+        TextureVulkan::transitionImageLayout(cmdBuffer, depthTex->getVkImage(), subRange,
+                                            0,
+                                            VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // 用来存储图像，该图像用作深度或模板附件
+                                            VK_IMAGE_LAYOUT_UNDEFINED,
+                                            VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                            VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT,  // 图形管线任何一部分的操作都已经完成
+                                            VK_PIPELINE_STAGE_EARLY_FRAGMENT_TESTS_BIT); // 在片段着色器开始运行之前可能发生的所有逐片段测试都已经完成了
+        }
+    }
 }
 
 
 void FrameBuffer::transitionLayoutEndPass(VkCommandBuffer cmdBuffer) {
-    // if (!isOffscreen()) {
-    //     return;
-    // }
+    if (!isOffscreen()) {
+        return;
+    }
     // if (isColorReady()) {
     //     auto *colorTex = getAttachmentColor();
     //     if (colorTex->usage & TextureUsage_Sampler) {
@@ -238,27 +235,26 @@ void FrameBuffer::transitionLayoutEndPass(VkCommandBuffer cmdBuffer) {
     //                                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
     //     }
     // }
+    if (isDepthReady()) {
+        auto *depthTex = getAttachmentDepth();
 
-    // if (isDepthReady()) {
-    //     auto *depthTex = getAttachmentDepth();
+        if (depthTex->usage & TextureUsage_Sampler) {
+            VkImageSubresourceRange subRange{};
+            subRange.aspectMask = depthTex->getImageAspect();
+            subRange.baseMipLevel = getDepthAttachment().level;
+            subRange.baseArrayLayer = getDepthAttachment().layer;
+            subRange.levelCount = 1;
+            subRange.layerCount = 1;
 
-    //     if (depthTex->usage & TextureUsage_Sampler) {
-    //         VkImageSubresourceRange subRange{};
-    //         subRange.aspectMask = depthTex->getImageAspect();
-    //         subRange.baseMipLevel = getDepthAttachment().level;
-    //         subRange.baseArrayLayer = getDepthAttachment().layer;
-    //         subRange.levelCount = 1;
-    //         subRange.layerCount = 1;
-
-    //         TextureVulkan::transitionImageLayout(cmdBuffer, depthTex->getVkImage(), subRange,
-    //                                             VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT,
-    //                                             VK_ACCESS_SHADER_READ_BIT,
-    //                                             VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
-    //                                             VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
-    //                                             VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT,
-    //                                             VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT);
-    //     }
-    // }
+            TextureVulkan::transitionImageLayout(cmdBuffer, depthTex->getVkImage(), subRange,
+                                                VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT, // 用来存储图像，该图像用作深度或模板附件
+                                                VK_ACCESS_SHADER_READ_BIT, // 引用的内存用于存储一个图像对象，在着色器内使用图像加载或者纹理读取的操作来读取该对象
+                                                VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL,
+                                                VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL,
+                                                VK_PIPELINE_STAGE_LATE_FRAGMENT_TESTS_BIT, // 在片段着色器开始运行之后可能发生的所有逐片段测试都已经完成了
+                                                VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT); // 当一个绘制命令产生的所有片段着色器调用都完成时，这个阶段通过
+        }
+    }
 }   
 
 

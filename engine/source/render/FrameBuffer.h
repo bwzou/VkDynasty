@@ -63,7 +63,7 @@ private:
     
 
 public:
-    FrameBuffer(VulkanContext &ctx, bool offscreen) : vkCtx_(ctx) {
+    FrameBuffer(VulkanContext &ctx, bool offscreen) : vkCtx_(ctx), offscreen_(offscreen) {
         device_ = ctx.device();
     }
     ~FrameBuffer() {

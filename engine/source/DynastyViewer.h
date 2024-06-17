@@ -86,6 +86,7 @@ private:
     void setupModelNodes(ModelNode &node, bool wireframe);
     void setupSkybox(ModelMesh &skybox);
 
+    void drawShadowMap();
     void drawScene(bool shadowPass);
     void drawModelNodes(ModelNode &node, bool shadowPass, glm::mat4 &tranform, AlphaMode mode, float specular = 1.f);
     void drawModelMesh(ModelMesh &mesh, bool shadowPass, float specular);
@@ -108,6 +109,9 @@ private:
     void updateUniformScene();
     void updateUniformModel(const glm::mat4 &model, const glm::mat4 &view);
     void updateUniformMaterial(Material &material, float specular = 1.f);
+    void updateShadowTextures(MaterialObject *materialObj, bool shadowPass);
+
+    std::shared_ptr<Texture> createTexture2DDefault(int width, int height, TextureFormat format, uint32_t usage, bool mipmaps = false);
 
     static size_t getShaderProgramCacheKey(ShadingModel shadingModel, std::set<std::string> shaderDefines);
     size_t getPipelineCacheKey(Material &material, const RenderStates &rs);
@@ -119,9 +123,9 @@ private:
         fboMain_ = nullptr;
         texColorMain_ = nullptr;
         texDepthMain_ = nullptr;
-        // fboShadow_ = nullptr;
-        // texDepthShadow_ = nullptr;
-        // shadowPlaceholder_ = nullptr;
+        fboShadow_ = nullptr;
+        texDepthShadow_ = nullptr;
+        shadowPlaceholder_ = nullptr;
         // fxaaFilter_ = nullptr;
         // texColorFxaa_ = nullptr;
         // iblPlaceholder_ = nullptr;
@@ -166,6 +170,9 @@ public:
     std::shared_ptr<Texture> texDepthMain_ = nullptr;
 
     // shadow map
+    std::shared_ptr<FrameBuffer> fboShadow_ = nullptr;
+    std::shared_ptr<Texture> texDepthShadow_ = nullptr;
+    std::shared_ptr<Texture> shadowPlaceholder_ = nullptr;
 
     // uniforms
     std::shared_ptr<UniformBlock> uniformBlockScene_;

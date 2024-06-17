@@ -121,7 +121,7 @@ private:
 
 private:
     UUID<VertexArrayObjectVulkan> uuid_;
-    VulkanContext vkCtx_;
+    VulkanContext& vkCtx_;
     VkDevice device_;
 
     uint32_t indicesCnt_ = 0;

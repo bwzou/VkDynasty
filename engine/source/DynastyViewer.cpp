@@ -38,6 +38,8 @@ bool DynastyViewer::create(GLFWwindow* window, int width, int height, int outTex
     uniformBlockModel_ = CREATE_UNIFORM_BLOCK(UniformsModel);
     uniformBlockMaterial_ = CREATE_UNIFORM_BLOCK(UniformsMaterial);
 
+    shadowPlaceholder_ = createTexture2DDefault(1, 1, TextureFormat_FLOAT32, TextureUsage_Sampler);
+
     return true;
 }
 
@@ -104,7 +106,7 @@ void DynastyViewer::drawFrame(DemoScene &scene) {
     setupScene();
 
     // draw shadow map
-    // drawShadowMap();
+    drawShadowMap();
 
     // setup fxaa
     // processFXAASetup();
@@ -207,6 +209,34 @@ void DynastyViewer::setupSkybox(ModelMesh &skybox) {
 }
 
 
+void DynastyViewer::drawShadowMap() {
+    // 绘制阴影的时候，我们需要先绘制一遍获得一个深度图，然后通过深度图作为输入，再绘制物体，绘制物体的时候通过深度图计算最终的颜色。
+    LOG_INFO("=== DynastyViewer::draw shadow map ===")
+
+
+    // main fxaa
+    ClearStates clearDepth{};
+    clearDepth.depthFlag = true;
+    clearDepth.clearDepth = config_.reverseZ ? 0.f : 1.f;
+
+    renderer_->beginRenderPass(fboShadow_, clearDepth);
+    renderer_->setViewPort(0, 0, SHADOW_MAP_WIDTH, SHADOW_MAP_HEIGHT);
+
+    // set camera
+    cameraDepth_->lookAt(config_.pointLightPosition, glm::vec3(0), glm::vec3(0, 1, 0));
+    cameraDepth_->update();
+    camera_ = cameraDepth_.get();
+
+    // draw scene
+    drawScene(true);
+
+    renderer_->endRenderPass();
+   
+    // set back to main camera
+    camera_ = &cameraMain_;
+}   
+
+
 void DynastyViewer::drawScene(bool shadowPass) {
     LOG_INFO("=== DynastyViewer::draw scene ===")
     updateUniformScene();
@@ -214,21 +244,25 @@ void DynastyViewer::drawScene(bool shadowPass) {
 
     // draw point light
     if (!shadowPass && config_.showLight) {
+        LOG_INFO("draw point light");
         updateUniformMaterial(*scene_->pointLight.material);
         pipelineDraw(scene_->pointLight);
     }
 
     // draw world axis 
     if (!shadowPass && config_.worldAxis) {
+        LOG_INFO("draw world axis");
         updateUniformMaterial(*scene_->worldAxis.material);
         pipelineDraw(scene_->worldAxis);
     }
 
     // draw floor
     if (!shadowPass && config_.showFloor) {
+        LOG_INFO("draw floor");
        drawModelMesh(scene_->floor, shadowPass, 0.f);
     }
 
+    LOG_INFO("draw model");
     // draw model nodes opaque
     ModelNode &modelNode = scene_->model->rootNode;
     count = 0;
@@ -273,6 +307,11 @@ void DynastyViewer::drawModelNodes(ModelNode &node, bool shadowPass, glm::mat4 &
 void DynastyViewer::drawModelMesh(ModelMesh &mesh, bool shadowPass, float specular) {
     // update material
     updateUniformMaterial(*mesh.material, specular);
+
+    // update shadow textures
+    if (config_.shadowMap) {
+        updateShadowTextures(mesh.material->materialObj.get(), shadowPass);
+    }
 
     // draw mesh
     pipelineDraw(mesh);
@@ -321,13 +360,49 @@ void DynastyViewer::setupMainBuffers() {
     fboMain_->setOffscreen(false);
 
     if (!fboMain_->isValid()) {
-        std::cout << "setupMainBuffers failed" << std::endl;
+        LOG_ERROR("+++ setupMainBuffers failed +++");
     }
 }
 
 
 void DynastyViewer::setupShadowMapBuffers() {
+    LOG_INFO("DynastyViewer: setup shadow map buffers");
+    if (!config_.shadowMap) {
+        return;
+    }
 
+    if (!fboShadow_) {
+        fboShadow_ = renderer_->createFrameBuffer(true);
+    }
+
+    if (!texDepthShadow_) {
+        TextureDesc texDesc{};
+        // texDesc.width = SHADOW_MAP_WIDTH;
+        // texDesc.height = SHADOW_MAP_HEIGHT;
+        texDesc.width = renderer_->getVkCtx().swapChainExtent().width;
+        texDesc.height = renderer_->getVkCtx().swapChainExtent().height;
+        texDesc.type = TextureType_2D;
+        texDesc.format = TextureFormat_FLOAT32;
+        texDesc.usage = TextureUsage_Sampler | TextureUsage_AttachmentDepth;
+        texDesc.useMipmaps = false;
+        texDesc.multiSample = false;
+        texDepthShadow_ = renderer_->createTexture(texDesc);
+
+        SamplerDesc sampler{};
+        sampler.filterMin = Filter_NEAREST;
+        sampler.filterMag = Filter_NEAREST;
+        sampler.wrapS = Wrap_CLAMP_TO_BORDER;
+        sampler.wrapT = Wrap_CLAMP_TO_BORDER;
+        sampler.borderColor = config_.reverseZ ? Border_BLACK : Border_WHITE;
+        texDepthShadow_->setSamplerDesc(sampler);
+
+        texDepthShadow_->initImageData();
+        fboShadow_->setDepthAttachment(texDepthShadow_); // 获取深度图
+
+        if (!fboShadow_->isValid()) {
+            LOG_ERROR("+++ setupShadowMapBuffers failed +++");
+        }
+    }
 }
 
 
@@ -524,6 +599,11 @@ void DynastyViewer::setupTextures(Material &material) {
         texture->tag = kv.second.tag;
         material.textures[kv.first] = texture;
     }
+
+    // default shadow depth texture
+    if (material.shadingModel != Shading_Skybox) {
+        material.textures[MaterialTexType_SHADOWMAP]=  shadowPlaceholder_;
+    }
 }
 
 
@@ -575,6 +655,44 @@ void DynastyViewer::updateUniformMaterial(Material &material, float specular) {
 }
 
 
+void DynastyViewer::updateShadowTextures(MaterialObject *materialObj, bool shadowPass) {
+    if (!materialObj->shaderResources) {
+        return;
+    }
+
+    auto &samplers = materialObj->shaderResources->samplers;
+    if (shadowPass) {
+        samplers[MaterialTexType_SHADOWMAP]->setTexture(shadowPlaceholder_);
+    } else {
+        samplers[MaterialTexType_SHADOWMAP]->setTexture(texDepthShadow_);
+    }
+}
+
+
+std::shared_ptr<Texture> DynastyViewer::createTexture2DDefault(int width, int height, TextureFormat format, uint32_t usage, bool mipmaps) {
+    TextureDesc texDesc{};
+    texDesc.width = width;
+    texDesc.height = height;
+    texDesc.type = TextureType_2D;
+    texDesc.format = format;
+    texDesc.usage = usage;
+    texDesc.useMipmaps = mipmaps;
+    texDesc.multiSample = false;
+    auto texture2d = renderer_->createTexture(texDesc);
+    if (!texture2d) {
+        return nullptr;
+    }
+
+    SamplerDesc sampler{};
+    sampler.filterMin = mipmaps ? Filter_LINEAR_MIPMAP_LINEAR : Filter_LINEAR;
+    sampler.filterMag = Filter_LINEAR;
+    texture2d->setSamplerDesc(sampler);
+
+    texture2d->initImageData();
+    return texture2d;
+}
+
+
 size_t DynastyViewer::getShaderProgramCacheKey(ShadingModel shadingModel, std::set<std::string> shaderDefines) {
     size_t seed = 0;
     HashUtils::hashCombine(seed, (int) shadingModel);
@@ -583,6 +701,7 @@ size_t DynastyViewer::getShaderProgramCacheKey(ShadingModel shadingModel, std::s
     }
     return seed;
 }
+
 
 size_t DynastyViewer::getPipelineCacheKey(Material &material, const RenderStates &rs) {
     size_t seed = 0;

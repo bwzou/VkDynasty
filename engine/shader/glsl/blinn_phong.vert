@@ -10,6 +10,7 @@ layout (location = 1) out vec3 v_normalVector;
 layout (location = 2) out vec3 v_worldPos;
 layout (location = 3) out vec3 v_cameraDirection;
 layout (location = 4) out vec3 v_lightDirection;
+layout (location = 5) out vec4 v_shadowFragPos;
 
 layout (binding = 0, std140) uniform UniformsModel {
     bool u_reverseZ;
@@ -41,12 +42,11 @@ void main() {
     vec4 position = vec4(a_position, 1.0);
     gl_Position = u_modelViewProjectionMatrix * position;
     v_texCoord = a_texCoord;
+    v_shadowFragPos = u_shadowMVPMatrix * position;
 
     // world space
     v_worldPos = vec3(u_modelMatrix * position);
     v_normalVector = mat3(u_modelMatrix) * a_normal;
     v_lightDirection = u_pointLightPosition - v_worldPos;
     v_cameraDirection = u_cameraPosition - v_worldPos;
-
-    // gl_PointSize = u_pointSize;
 }

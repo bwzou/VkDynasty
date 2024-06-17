@@ -728,7 +728,7 @@ UniformBuffer *VulkanContext::getNewUniformBuffer(VkDeviceSize size) {
     buff.mapPtr = buff.buffer.allocInfo.pMappedData;
     pool.push_back(buff);
     maxUniformBufferPoolSize_ = std::max(maxUniformBufferPoolSize_, pool.size());
-    LOG_INFO("=== VulkanContext maxUniformBufferPoolSize:", maxUniformBufferPoolSize_ )
+    LOG_INFO("=== VulkanContext maxUniformBufferPoolSize: {}", maxUniformBufferPoolSize_ )
     if (maxUniformBufferPoolSize_ >= UNIFORM_BUFFER_POOL_MAX_SIZE) {
         // throw std::runtime_error("error: uniform buffer pool size exceed");
         LOG_ERROR("error: uniform buffer pool size exceed");
@@ -780,7 +780,7 @@ void VulkanContext::endCommands(CommandBuffer *commandBuffer,
 
     if (!waitSemaphores.empty()) {
         if (waitSemaphores.size() > SEMAPHORE_MAX_SIZE) {
-            std::runtime_error("endCommands error: wait semaphores max size exceeded");
+            throw std::runtime_error("endCommands error: wait semaphores max size exceeded");
         }
         // 指定在执行开始之前要等待的信号量以及要等待的管道阶段
         static std::vector<VkPipelineStageFlags> waitStageMasks(SEMAPHORE_MAX_SIZE, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT);
@@ -858,6 +858,7 @@ CommandBuffer* VulkanContext::getNewCommandBuffer() {
 
     commandBuffers_.push_back(cmd);
     maxCommandBufferPoolSize_ = std::max(maxCommandBufferPoolSize_, commandBuffers_.size());
+    LOG_INFO("maxCommandBufferPoolSize_: {}", maxCommandBufferPoolSize_);
     if (maxCommandBufferPoolSize_ >= COMMAND_BUFFER_POOL_MAX_SIZE) {
         std::runtime_error("error: command buffer pool size exceed");
     }
