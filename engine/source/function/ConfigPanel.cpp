@@ -238,9 +238,9 @@ void ConfigPanel::onDraw() {
                 ImGui::ColorEdit3("light color", (float *) &config_.pointLightColor, ImGuiColorEditFlags_NoLabel);
 
                 ImGui::Text("light position");
-                // ImGui::SliderFloat("position x", &config_.pointLightPosition[0], -50.0f, 50.f);
-                // ImGui::SliderFloat("position y", &config_.pointLightPosition[1], -50.0f, 50.f);
-                // ImGui::SliderFloat("position z", &config_.pointLightPosition[2], -50.0f, 50.f);
+                ImGui::SliderFloat("position x", &config_.pointLightPosition[0], -50.0f, 50.f);
+                ImGui::SliderFloat("position y", &config_.pointLightPosition[1], -50.0f, 50.f);
+                ImGui::SliderFloat("position z", &config_.pointLightPosition[2], -50.0f, 50.f);
                 ImGui::SliderAngle("##light position", &lightPositionAngle_, 0, 360.f);
             }
 

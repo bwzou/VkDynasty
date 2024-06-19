@@ -36,7 +36,7 @@ public:
     bool reverseZ = false;
 
     glm::vec4 clearColor = {0.f, 0.f, 0.f, 0.f};
-    glm::vec3 ambientColor = {0.5f, 0.5f, 0.5f};
+    glm::vec3 ambientColor = {0.2f, 0.2f, 0.2f};
 
     bool showLight = true;
     // glm::vec3 pointLightPosition = {0.f, 0.f, 0.f};

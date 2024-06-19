@@ -31,14 +31,14 @@ void ModelLoader::loadCubeMesh(ModelVertexes &mesh) {
 void ModelLoader::loadWorldAxis() {
     float axisY = -0.01f;
     int idx = 0;
-    for (int i = -16; i<= 16; i++) {
-        scene_.worldAxis.vertexes.push_back({glm::vec3(-3.2, axisY, 0.2f * (float) i)});
-        scene_.worldAxis.vertexes.push_back({glm::vec3(3.2, axisY, 0.2f * (float) i)});
+    for (int i = -32; i<= 32; i++) {
+        scene_.worldAxis.vertexes.push_back({glm::vec3(-6.4, axisY, 0.2f * (float) i)});
+        scene_.worldAxis.vertexes.push_back({glm::vec3(6.4, axisY, 0.2f * (float) i)});
         scene_.worldAxis.indices.push_back(idx++);
         scene_.worldAxis.indices.push_back(idx++);
 
-        scene_.worldAxis.vertexes.push_back({glm::vec3(0.2f * (float) i, axisY, -3.2)});
-        scene_.worldAxis.vertexes.push_back({glm::vec3(0.2f * (float) i, axisY, 3.2)});
+        scene_.worldAxis.vertexes.push_back({glm::vec3(0.2f * (float) i, axisY, -6.4)});
+        scene_.worldAxis.vertexes.push_back({glm::vec3(0.2f * (float) i, axisY, 6.4)});
         scene_.worldAxis.indices.push_back(idx++);
         scene_.worldAxis.indices.push_back(idx++);
     }
@@ -70,7 +70,7 @@ void ModelLoader::loadLights() {
 
 void ModelLoader::loadFloor() {
     float floorY = 0.01f;
-    float floorSize = 2.0f;
+    float floorSize = 4.0f;
 
     scene_.floor.vertexes.push_back({glm::vec3(-floorSize, floorY, floorSize), glm::vec2(0.f, 1.f),
                                    glm::vec3(0.f, 1.f, 0.f)});
@@ -95,7 +95,7 @@ void ModelLoader::loadFloor() {
     scene_.floor.material->baseColor = glm::vec4(1.0f);
     scene_.floor.material->doubleSided = true;
 
-    scene_.floor.aabb = BoundingBox(glm::vec3(-2, 0, -2), glm::vec3(2, 0, 2));
+    scene_.floor.aabb = BoundingBox(glm::vec3(-4, 0, -4), glm::vec3(4, 0, 4));
     scene_.floor.InitVertexes();
 }
 
