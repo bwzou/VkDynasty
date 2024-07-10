@@ -62,10 +62,12 @@ struct UniformsScene {
 
 struct UniformsModel {
     glm::uint32_t u_reverseZ;
+    glm::uint32_t u_Animated;
     glm::mat4 u_modelMatrix;
     glm::mat4 u_modelViewProjectionMatrix;
     glm::mat3 u_inverseTransposeModelMatrix;
     glm::mat4 u_shadowMVPMatrix;
+    glm::mat4 u_bones[100]; // 切记，不能传递vertor
 };
 
 struct UniformsMaterial {

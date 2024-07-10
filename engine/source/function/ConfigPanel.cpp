@@ -188,6 +188,7 @@ void ConfigPanel::onDraw() {
     static bool show_demo_window = false;
     static bool show_another_window = false;
     const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+    size_t shadowMapType = 2;
     // ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos.x + 661, main_viewport->WorkPos.y),
     //                         ImGuiCond_FirstUseEver);
     ImGui::SetNextWindowPos(ImVec2(main_viewport->WorkPos), ImGuiCond_FirstUseEver);  
@@ -227,7 +228,20 @@ void ConfigPanel::onDraw() {
             ImGui::SliderFloat("z_near", &debugInfo.z_near, .1f, 10.f);
             ImGui::SliderFloat("z_far", &debugInfo.z_far, .1f, 10.f);
 
-            // world axis
+            // model
+            ImGui::Separator();
+            ImGui::Text("load model");
+            int modelIdx = 0;
+            for (; modelIdx < modelNames_.size(); modelIdx++) {
+                if (config_.modelName == modelNames_[modelIdx]) {
+                    break;
+                }
+            }
+            if (ImGui::Combo("##load model", &modelIdx, modelNames_.data(), (int) modelNames_.size())) {
+                 reloadModel(modelNames_[modelIdx]);
+            }
+
+            // world axis 
             ImGui::Separator();
             ImGui::Checkbox("world axis", &config_.worldAxis);
 
@@ -248,6 +262,16 @@ void ConfigPanel::onDraw() {
             ImGui::Separator();
             ImGui::Checkbox("shadow floor", &config_.showFloor);
             config_.shadowMap = config_.showFloor;
+
+            ImGui::Separator();
+            ImGui::Checkbox("shadow map", &config_.shadowMap);
+            if (config_.shadowMap) {
+                smType = config_.shadowMapType;
+                if (ImGui::RadioButton("SM", smType == SM)) { smType = SM; } ImGui::SameLine();
+                if (ImGui::RadioButton("PCSS", smType == PCSS)) { smType = PCSS; } ImGui::SameLine();
+                if (ImGui::RadioButton("VSM", smType == VSM)) { smType = VSM; } ImGui::SameLine();
+                if (ImGui::RadioButton("CSM", smType == CSM)) { smType = CSM; }
+            }
 
             if (ImGui::Button(
                     "Button")) {  // Buttons return true when clicked (most widgets return true when edited/activated)
@@ -306,10 +330,11 @@ void ConfigPanel::update() {
     config_.pointLightPosition = 2.f * glm::vec3(glm::sin(lightPositionAngle_),
                                                1.2f,
                                                glm::cos(lightPositionAngle_));
+    config_.shadowMapType = smType;  
+    LOG_INFO("config_.shadowMapType: {}", config_.shadowMapType);
     if (updateLightFunc_) {
         updateLightFunc_(config_.pointLightPosition, config_.pointLightColor);
     }        
-    
 }
     
 

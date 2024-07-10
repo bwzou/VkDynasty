@@ -64,4 +64,6 @@ private:
 
     std::function<bool(const std::string &path)> reloadModelFunc_;
     std::function<void(glm::vec3 &position, glm::vec3 &color)> updateLightFunc_;
+
+    int smType = 0;
 };

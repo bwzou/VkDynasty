@@ -15,11 +15,32 @@
 		"BoomBox": {
 			"path": "objects/BoomBox/BoomBox.gltf"
 		},
+		"Boxing": {
+			"path": "objects/Boxing/scene.gltf"
+		},
 		"GlassTable": {
 			"path": "objects/GlassTable/scene.gltf"
 		},
 		"Robot": {
 			"path": "objects/Robot/scene.gltf"
+		},
+		"Sunwukong": {
+			"path": "objects/Sunwukong/scene.gltf"
+		},
+		"Hand": {
+			"path": "objects/Hand/scene.gltf"
+		},
+		"Turn": {
+			"path": "objects/felix-richter-idle-animation/source/Felix.FBX"
+		},
+		"Capoeira": {
+			"path": "objects/Capoeira/Capoeira.fbx"
+		},
+		"Right": {
+			"path": "objects/Turn/Right.fbx"
+		},
+		"Dancing-stormtrooper": {
+			"path": "objects/Dancing-stormtrooper/source/silly_dancing.fbx"
 		}
 	},
 	"skybox": {

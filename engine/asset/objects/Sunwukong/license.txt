@@ -1,0 +1,11 @@
+Model Information:
+* title:	卡通孙悟空带骨骼动画模型
+* source:	https://sketchfab.com/3d-models/6fa5c634c8cb44cca3dcf8b1a1ab04d9
+* author:	zhaofengalagong (https://sketchfab.com/zhaofengalagong)
+
+Model License:
+* license type:	CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)
+* requirements:	Author must be credited. Commercial use is allowed.
+
+If you use this 3D model in your project be sure to copy paste this credit wherever you share it:
+This work is based on "卡通孙悟空带骨骼动画模型" (https://sketchfab.com/3d-models/6fa5c634c8cb44cca3dcf8b1a1ab04d9) by zhaofengalagong (https://sketchfab.com/zhaofengalagong) licensed under CC-BY-4.0 (http://creativecommons.org/licenses/by/4.0/)

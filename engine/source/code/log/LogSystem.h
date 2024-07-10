@@ -1,9 +1,11 @@
 #pragma once
 
 #include <spdlog/spdlog.h>
-
 #include <cstdint>
 #include <stdexcept>
+#include <iostream>
+#include "../base/GLMInc.h"
+
 
 class LogSystem final{
     public:
@@ -43,6 +45,15 @@ class LogSystem final{
                     break;
                 default:
                     break;
+            }
+        }
+
+        void logMat4(glm::mat4 mat) {
+            for (int i = 0; i < 4; i++) {
+                for (int j = 0; j < 4; j++) {
+                    std::cout << mat[i][j] << " ";
+                }
+                std::cout << std::endl;
             }
         }
 

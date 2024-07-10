@@ -14,6 +14,13 @@ enum AAType {
     AAType_FXAA,
 };
 
+enum Mode {
+    SM,
+    PCSS,
+    VSM,
+    CSM
+};
+
 class Config {
 public:
     std::string modelName;
@@ -28,6 +35,8 @@ public:
     bool showFloor = true;
 
     bool shadowMap = true;
+    size_t shadowMapType = 0; // 0 SM; 1 PCSS; 2 VSM; 3 CSM
+
     bool pbrIbl = false;
     bool mipmaps = false;
 

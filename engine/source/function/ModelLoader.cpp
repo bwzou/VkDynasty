@@ -68,6 +68,7 @@ void ModelLoader::loadLights() {
     scene_.pointLight.InitVertexes();
 }
 
+
 void ModelLoader::loadFloor() {
     float floorY = 0.01f;
     float floorSize = 4.0f;
@@ -98,6 +99,7 @@ void ModelLoader::loadFloor() {
     scene_.floor.aabb = BoundingBox(glm::vec3(-4, 0, -4), glm::vec3(4, 0, 4));
     scene_.floor.InitVertexes();
 }
+
 
 bool ModelLoader::loadSkybox(const std::string &filepath) {
     if (filepath.empty()) {
@@ -158,6 +160,7 @@ bool ModelLoader::loadSkybox(const std::string &filepath) {
     return true;
 }
 
+
 bool ModelLoader::loadModel(const std::string &filepath) {
     // using a local lock_guard to lock modelLoadMutex_ guarantees unlocking on destruction / exception:
     std::lock_guard<std::mutex> lk(modelLoadMutex_);
@@ -178,6 +181,8 @@ bool ModelLoader::loadModel(const std::string &filepath) {
 
     // load model
     Assimp::Importer importer;
+    // 添加下一个代码，您将得到一个独立节点， 修复用ASSIMP导入程序加载文件时，就会添加原始fbx文件中不存在的奇怪节点的问题。
+    importer.SetPropertyBool(AI_CONFIG_IMPORT_FBX_PRESERVE_PIVOTS, false);
     if (filepath.empty()) {
         std::cout << "ModelLoader::loadModel, empty model file path." << std::endl;
         return false;
@@ -189,7 +194,15 @@ bool ModelLoader::loadModel(const std::string &filepath) {
     // aiProcess_GenNormals：如果模型不包含法向量的话，就为每个顶点创建法线。
     // aiProcess_SplitLargeMeshes：将比较大的网格分割成更小的子网格，如果你的渲染有最大顶点数限制，只能渲染较小的网格，那么它会非常有用。
     // aiProcess_OptimizeMeshes：和上个选项相反，它会将多个小网格拼接为一个大的网格，减少绘制调用从而进行优化
-    const aiScene *scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_CalcTangentSpace | aiProcess_FlipUVs | aiProcess_GenBoundingBoxes);
+    const aiScene *scene = importer.ReadFile(filepath, 
+    aiProcess_Triangulate 
+    | aiProcess_CalcTangentSpace 
+    | aiProcess_SortByPType 
+    | aiProcess_GenNormals 
+    | aiProcess_GenUVCoords 
+    | aiProcess_ValidateDataStructure 
+    | aiProcess_FlipUVs 
+    | aiProcess_GenBoundingBoxes);
     // 检查场景和其根节点不为null，并且检查了它的一个标记(Flag)，来查看返回的数据是不是不完整的。
     if (!scene || scene->mFlags == AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode) {
         std::cout << "ModelLoader::loadModel, description: %s" << importer.GetErrorString() << std::endl;
@@ -202,9 +215,22 @@ bool ModelLoader::loadModel(const std::string &filepath) {
     preloadTextureFiles(scene, scene_.model->resourcePath);
 
     auto currTransform = glm::mat4(1.f);
-    if (!processNode(scene->mRootNode, scene, scene_.model->rootNode, currTransform)) {
-        std::cout << "ModelLoader::loadModel, process node failed." << std::endl;
-        return false;
+    if (scene->HasAnimations()) {
+        scene_.model->bAnimated = true;
+        if (!processNode(scene->mRootNode, scene, scene_.model->rootNode, currTransform)) {
+            std::cout << "ModelLoader::loadModel, process node failed." << std::endl;
+            return false;
+        }
+        scene_.model->mAnimation = Animation(scene);
+        // 读取骨骼数据
+        scene_.model->ReadMissingBones(scene_.model->mAnimation.animation);
+        scene_.model->mAnimator = Animator(&scene_.model->mAnimation);
+
+    } else {
+        if (!processNode(scene->mRootNode, scene, scene_.model->rootNode, currTransform)) {
+            std::cout << "ModelLoader::loadModel, process node failed." << std::endl;
+            return false;
+        }
     }
 
     // model center transform
@@ -219,7 +245,7 @@ bool ModelLoader::processNode(const aiNode *ai_node, const aiScene *ai_scene, Mo
         return false;
     }
 
-    outNode.transform = convertMatrix(ai_node->mTransformation);
+    outNode.transform = Utils::ConvertMatrixToGLMFormat(ai_node->mTransformation);
     auto currTransform = transform * outNode.transform;
 
     for (size_t i = 0; i < ai_node->mNumMeshes; i++) {
@@ -249,6 +275,7 @@ bool ModelLoader::processNode(const aiNode *ai_node, const aiScene *ai_scene, Mo
     return true;
 }
 
+
 // aiMesh是Mesh对象, Mesh中包含顶点位置数据、法向量、纹理数据，每个Mesh可以包含一个或者多个Face
 bool ModelLoader::processMesh(const aiMesh *ai_mesh, const aiScene * ai_scene, ModelMesh &outMesh) {
     std::vector<Vertex> vertexes;
@@ -256,6 +283,11 @@ bool ModelLoader::processMesh(const aiMesh *ai_mesh, const aiScene * ai_scene, M
 
     for (size_t i = 0; i < ai_mesh->mNumVertices; i++) {
         Vertex vertex{};
+
+        if (scene_.model->bAnimated) {
+			Utils::SetVertexBoneDataToDefault(vertex);
+		}
+
         if (ai_mesh->HasPositions()) {
             vertex.a_position.x = ai_mesh->mVertices[i].x;
             vertex.a_position.y = ai_mesh->mVertices[i].y;
@@ -288,6 +320,45 @@ bool ModelLoader::processMesh(const aiMesh *ai_mesh, const aiScene * ai_scene, M
         }
         for (size_t j = 0; j < face.mNumIndices; ++j) { // 每个面都有顶点索引
             indices.push_back((int) (face.mIndices[j])); // 将索引存储在容器中，类似于VEO
+        }
+    }
+
+    // Bones
+    if (scene_.model->bAnimated) {
+        for (size_t boneIndex = 0; boneIndex < ai_mesh->mNumBones; ++boneIndex) {
+            int boneID = -1;
+            std::string boneName = ai_mesh->mBones[boneIndex]->mName.C_Str();
+            if (scene_.model->mBoneInfoMap.find(boneName) == scene_.model->mBoneInfoMap.end()) {
+                BoneInfo newBoneInfo;
+                newBoneInfo.id = scene_.model->mBoneCounter;
+                newBoneInfo.offset = convertMatrix(ai_mesh->mBones[boneIndex]->mOffsetMatrix);
+                scene_.model->mBoneInfoMap[boneName] = newBoneInfo;
+                boneID = scene_.model->mBoneCounter;
+                scene_.model->mBoneCounter++;
+            } else {
+                boneID = scene_.model->mBoneInfoMap[boneName].id;
+            }
+
+            if (boneID == -1) {
+                break;
+            }
+            
+            auto weights = ai_mesh->mBones[boneIndex]->mWeights;
+            int numWeights = ai_mesh->mBones[boneIndex]->mNumWeights;
+            for (int weightIndex = 0; weightIndex < numWeights; ++weightIndex) {
+                int vertexId = weights[weightIndex].mVertexId;
+                float weight = weights[weightIndex].mWeight;
+                if (vertexId > vertexes.size()) {
+                    break;
+                }
+                for (int i = 0; i < MAX_BONES_PER_VERTEX; ++i) {
+                    if (vertexes[vertexId].a_boneIDs[i] < 0) {
+                        vertexes[vertexId].a_boneWeights[i] = weight;
+                        vertexes[vertexId].a_boneIDs[i] = boneID;
+                        break;
+                    }
+                }
+            }
         }
     }
 
@@ -336,6 +407,7 @@ bool ModelLoader::processMesh(const aiMesh *ai_mesh, const aiScene * ai_scene, M
 
     return true;
 }
+
 
 void ModelLoader::processMaterial(const aiMaterial *ai_material, aiTextureType textureType, Material &material) {
     if (ai_material->GetTextureCount(textureType) <= 0) {
@@ -390,6 +462,7 @@ void ModelLoader::processMaterial(const aiMaterial *ai_material, aiTextureType t
     }
 }
 
+
 glm::mat4 ModelLoader::convertMatrix(const aiMatrix4x4 &m) {
     glm::mat4 ret;
     for (int i = 0; i < 4; i++) {
@@ -400,12 +473,14 @@ glm::mat4 ModelLoader::convertMatrix(const aiMatrix4x4 &m) {
     return ret;
 }
 
+
 BoundingBox ModelLoader::convertBoundingBox(const aiAABB &aabb) {
     BoundingBox ret{};
     ret.min = glm::vec3(aabb.mMin.x, aabb.mMin.y, aabb.mMin.z);
     ret.max = glm::vec3(aabb.mMax.x, aabb.mMax.y, aabb.mMax.z);
     return ret;
 }
+
 
 WrapMode ModelLoader::convertTexWrapMode(const aiTextureMapMode &mode) {
     WrapMode retWrapMode;
@@ -427,6 +502,7 @@ WrapMode ModelLoader::convertTexWrapMode(const aiTextureMapMode &mode) {
     return retWrapMode;
 }
 
+
 glm::mat4 ModelLoader::adjustModelCenter(BoundingBox &bounds) {
     glm::mat4 modelTransform(1.0f);
     glm::vec3 trans = (bounds.max + bounds.min) / -2.f;
@@ -436,6 +512,7 @@ glm::mat4 ModelLoader::adjustModelCenter(BoundingBox &bounds) {
     modelTransform = glm::translate(modelTransform, trans);
     return modelTransform;
 }
+
 
 void ModelLoader::preloadTextureFiles(const aiScene *scene, const std::string &resDir) {
   std::set<std::string> texPaths;
@@ -465,6 +542,7 @@ void ModelLoader::preloadTextureFiles(const aiScene *scene, const std::string &r
     });
   }
 }
+
 
 std::shared_ptr<Buffer<RGBA>> ModelLoader::loadTextureFile(const std::string &path) {
   texCacheMutex_.lock();

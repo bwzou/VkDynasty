@@ -105,6 +105,11 @@ void DynastyViewer::drawFrame(DemoScene &scene) {
     // setup model materials
     setupScene();
 
+    if (scene_->model->bPlayAnim) {
+		if (!scene_->model->bStopAnim)
+			scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
+	}
+
     // draw shadow map
     drawShadowMap();
 
@@ -635,6 +640,19 @@ void DynastyViewer::updateUniformModel(const glm::mat4 &model, const glm::mat4 &
                                         0.5f, 0.5f, 0.0f, 1.0f);
         uniformsModel.u_shadowMVPMatrix = biasMat * cameraDepth_->projectionMatrix() * cameraDepth_->viewMatrix() * model;                                
     }
+
+    uniformsModel.u_Animated = 0u;
+    if (scene_->model->bPlayAnim) {
+        uniformsModel.u_Animated = 1u;
+		// if (!scene_->model->bStopAnim)
+		// 	scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
+
+        // 更新骨骼矩阵数据 
+		auto transforms = scene_->model->mAnimator.GetFinalBoneMatrices();
+		for (int i = 0; i < transforms.size(); ++i) {
+            uniformsModel.u_bones[i] = transforms[i];
+        }
+	}
 
     uniformBlockModel_->setData(&uniformsModel, sizeof(UniformsModel));
 }

@@ -156,7 +156,8 @@ float PCF(sampler2D shadowMap, vec4 shadowCoord, float filterSize) {
     return  float(PCF_NUM_SAMPLES - sumBlock) / float(PCF_NUM_SAMPLES);
 }
 
-
+// https://yangwc.com/2021/04/14/PCSS/
+// https://blog.csdn.net/n5/article/details/128955520
 float PCSSCalculation(vec4 fragPos, vec3 normal) {
     vec3 projCoords = fragPos.xyz / fragPos.w;
     float currentDepth = projCoords.z;
@@ -195,6 +196,9 @@ float VSMCalculation(vec4 fragPos, vec3 normal) {
     }
     return shadow;
 }
+
+// CSM 阴影算法 --------------------------------------------------
+
 
 
 void main() {
