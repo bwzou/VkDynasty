@@ -55,7 +55,10 @@ public:
 
     int aaType = AAType_NONE;
     // int rendererType = Renderer_SOFT;
-    int rendererType = 0; // 用那种技术渲染
+    int rendererType = 0; // 用哪种技术渲染
+
+    bool showSSR= false;
+    
 };
 
 

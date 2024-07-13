@@ -6,7 +6,7 @@
 #include <GLFW/glfw3.h>
 #include <stdlib.h>
 #include <iostream>
-#include "./function/Config.h"
+#include "../function/Config.h"
 // #include "constant.h"
 
 

@@ -5,9 +5,9 @@
 #include <iostream>
 #include <functional>
 #include <unordered_map>
-#include "Config.h"
-#include "../render/Renderer.h"
-#include "../code/util/FileUtils.h"
+#include "../../function/Config.h"
+#include "../../render/Renderer.h"
+#include "../../code/util/FileUtils.h"
 
 
 class ConfigPanel {

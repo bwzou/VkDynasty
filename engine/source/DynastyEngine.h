@@ -29,14 +29,14 @@
 #include "./function/Model.h"
 #include "./function/Material.h"
 #include "./function/Config.h"
-#include "./function/ConfigPanel.h"
+#include "./editor/panels/ConfigPanel.h"
 #include "./function/Camera.h"
 #include "./function/OrbitController.h"
 #include "./function/ModelLoader.h"
 #include "./code/util/FileUtils.h"
 #include "./code/base/macro.h"
 
-#include "DynastyEditorUI.h"
+#include "./editor/DynastyEditorUI.h"
 #include "DynastyViewer.h"
 #include "./render/FrameBuffer.h"
 
