@@ -3,80 +3,94 @@
 #include <memory>
 #include "Camera.h"
 
-class OrbitController {
-public:
-    explicit OrbitController(Camera &camera);
-    
-    void update();
+namespace DynastyEngine
+{
+    class OrbitController 
+    {
+    public:
+        explicit OrbitController(Camera &camera);
+        
+        void update();
 
-    void panByPixels(double dx, double dy);
-     
-    void rotateByPixels(double dx, double dy);
-    
-    void zoomByPixels(double dx, double dy);
+        void panByPixels(double dx, double dy);
+        
+        void rotateByPixels(double dx, double dy);
+        
+        void zoomByPixels(double dx, double dy);
 
-    void reset();
+        void reset();
 
-private:
-    Camera &camera_;
+    private:
+        Camera &camera_;
 
-    glm::vec3 eye_{};
-    glm::vec3 center_{};
-    glm::vec3 up_{};
+        glm::vec3 eye_{};
+        glm::vec3 center_{};
+        glm::vec3 up_{};
 
-    float armLength_ = 0.f;
-    glm::vec3 armDir_{};
+        float armLength_ = 0.f;
+        glm::vec3 armDir_{};
 
-    float panSensitivity_ = 0.1f;
-    float zoomSensitivity_ = 0.2f;
-    float rotateSensitivity_ = 0.2f;
-};
+        float panSensitivity_ = 0.1f;
+        float zoomSensitivity_ = 0.2f;
+        float rotateSensitivity_ = 0.2f;
+    };
 
-class SmoothOrbitController {
-public:
-    explicit SmoothOrbitController(std::shared_ptr<OrbitController> orbitController) : orbitController_(std::move(orbitController)) {}
+    class SmoothOrbitController 
+    {
+    public:
+        explicit SmoothOrbitController(std::shared_ptr<OrbitController> orbitController) : orbitController_(std::move(orbitController)) {}
 
-    void update() {
-        if (std::abs(zoomX) > motionEps || std::abs(zoomY) > motionEps) {
-            zoomX /= motionSentivity;
-            zoomY /= motionSentivity;
-            orbitController_->zoomByPixels(zoomX, zoomY);
-        } else {
-            zoomX = 0;
-            zoomY = 0;
+        void update() 
+        {
+            if (std::abs(zoomX) > motionEps || std::abs(zoomY) > motionEps) 
+            {
+                zoomX /= motionSentivity;
+                zoomY /= motionSentivity;
+                orbitController_->zoomByPixels(zoomX, zoomY);
+            } 
+            else 
+            {
+                zoomX = 0;
+                zoomY = 0;
+            }
+
+            if (std::abs(rotateX) > motionEps || std::abs(rotateY) > motionEps) 
+            {
+                rotateX /= motionSentivity;
+                rotateY /= motionSentivity;
+                orbitController_->rotateByPixels(rotateX, rotateY);
+            } 
+            else 
+            {
+                rotateX = 0;
+                rotateY = 0;
+            }
+
+            if (std::abs(panX) > motionEps || std::abs(panY) > motionEps) 
+            {
+                orbitController_->panByPixels(panX, panY);
+                panX = 0;
+                panY = 0;
+            }
+
+            orbitController_->update();
         }
 
-        if (std::abs(rotateX) > motionEps || std::abs(rotateY) > motionEps) {
-            rotateX /= motionSentivity;
-            rotateY /= motionSentivity;
-            orbitController_->rotateByPixels(rotateX, rotateY);
-        } else {
-            rotateX = 0;
-            rotateY = 0;
+        inline void reset() 
+        {
+            orbitController_->reset();
         }
 
-        if (std::abs(panX) > motionEps || std::abs(panY) > motionEps) {
-            orbitController_->panByPixels(panX, panY);
-            panX = 0;
-            panY = 0;
-        }
+        double zoomX = 0;
+        double zoomY = 0;
+        double rotateX = 0;
+        double rotateY = 0;
+        double panX = 0;
+        double panY = 0;
 
-        orbitController_->update();
-    }
-
-    inline void reset() {
-        orbitController_->reset();
-    }
-
-    double zoomX = 0;
-    double zoomY = 0;
-    double rotateX = 0;
-    double rotateY = 0;
-    double panX = 0;
-    double panY = 0;
-
-private:
-    std::shared_ptr<OrbitController> orbitController_;
-    const double motionEps = 0.001f;
-    const double motionSentivity = 1.2f;
-};
+    private:
+        std::shared_ptr<OrbitController> orbitController_;
+        const double motionEps = 0.001f;
+        const double motionSentivity = 1.2f;
+    };
+}

@@ -2,7 +2,10 @@
 
 namespace DynastyEngine 
 {
-    class ContentBrowerPanel {
-        
+    class ContentBrowserPanel {
+    public:
+        ContentBrowserPanel() {
+
+        }
     };
 }

@@ -19,4 +19,7 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtx/hash.hpp>
 
-using RGBA = glm::u8vec4;
+namespace DynastyEngine
+{
+    using RGBA = glm::u8vec4;
+}

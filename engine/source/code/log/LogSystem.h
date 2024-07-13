@@ -6,8 +6,10 @@
 #include <iostream>
 #include "../base/GLMInc.h"
 
-
-class LogSystem final{
+namespace DynastyEngine
+{
+    class LogSystem final
+    {
     public:
         enum class LogLevel : uint8_t
         {
@@ -17,7 +19,7 @@ class LogSystem final{
             error,
             fatal
         };
-
+    
     public:
         LogSystem();
         ~LogSystem();
@@ -66,6 +68,7 @@ class LogSystem final{
 
     private:
         std::shared_ptr<spdlog::logger> m_logger;
-};
+    };
+}
 
-extern std::shared_ptr<LogSystem> mLoggerSystem;
+extern std::shared_ptr<DynastyEngine::LogSystem> mLoggerSystem;

@@ -43,68 +43,81 @@
 
 #define RENDER_TYPE_NONE (-1)
 
-const unsigned int SCR_WIDTH = 1000;
-const unsigned int SCR_HEIGHT = 800;
 
+namespace DynastyEngine
+{
+    const unsigned int SCR_WIDTH = 1000;
+    const unsigned int SCR_HEIGHT = 800;
 
-class DynastyEngine {
-public:
-    bool initEngine(); 
-    bool initEvent(GLFWwindow* window); 
-    bool run();
-    void drawFrame();
-    void setupConfigPanelActions();
-    void cleanup();
+    class DEngine {
+    public:
+        bool initEngine(); 
+        bool initEvent(GLFWwindow* window); 
+        bool run();
+        void drawFrame();
+        void setupConfigPanelActions();
+        void cleanup();
 
-    inline void waitRenderIdle() {
-        if (rendererType_ != RENDER_TYPE_NONE) {
-            viewer_->waitRenderIdle();
+        inline void waitRenderIdle() 
+        {
+            if (rendererType_ != RENDER_TYPE_NONE) 
+            {
+                viewer_->waitRenderIdle();
+            }
         }
-    }
-    inline void resetStates() {
-        waitRenderIdle();
-        modelLoader_->resetAllModelStates();
-        modelLoader_->getScene().resetStates();
-    }
-    inline void drawPanel() {
-        if (showConfigPanel_) {
-            configPanel_->onDraw();
+        inline void resetStates() 
+        {
+            waitRenderIdle();
+            modelLoader_->resetAllModelStates();
+            modelLoader_->getScene().resetStates();
         }
-    }
-    inline void togglePanelState() {
-        showConfigPanel_ = !showConfigPanel_;
-    }
-    inline bool wantCaptureKeyboard() {
-        return configPanel_->wantCaptureKeyboard();
-    }
-    inline bool wantCaptureMouse() {
-        return configPanel_->wantCaptureMouse();
-    }
-    inline void updateGestureZoom(float x, float y) {
-        orbitController_->zoomX = x;
-        orbitController_->zoomY = y;
-    }
-    inline void updateGestureRotate(float x, float y) {
-        orbitController_->rotateX = x;
-        orbitController_->rotateY = y;
-    }
-    inline void updateGesturePan(float x, float y) {
-        orbitController_->panX = x;
-        orbitController_->panY = y;
-    }
+        inline void drawPanel() 
+        {
+            if (showConfigPanel_) {
+                configPanel_->onDraw();
+            }
+        }
+        inline void togglePanelState() 
+        {
+            showConfigPanel_ = !showConfigPanel_;
+        }
+        inline bool wantCaptureKeyboard() 
+        {
+            return configPanel_->wantCaptureKeyboard();
+        }
+        inline bool wantCaptureMouse() 
+        {
+            return configPanel_->wantCaptureMouse();
+        }
+        inline void updateGestureZoom(float x, float y) 
+        {
+            orbitController_->zoomX = x;
+            orbitController_->zoomY = y;
+        }
+        inline void updateGestureRotate(float x, float y) 
+        {
+            orbitController_->rotateX = x;
+            orbitController_->rotateY = y;
+        }
+        inline void updateGesturePan(float x, float y) 
+        {
+            orbitController_->panX = x;
+            orbitController_->panY = y;
+        }
 
-public:
-    std::shared_ptr<Config> config_;
-    std::shared_ptr<ConfigPanel> configPanel_;
-    std::shared_ptr<Camera> camera_;
-    std::shared_ptr<SmoothOrbitController> orbitController_;
-    
-    std::shared_ptr<DynastyEditorUI> editorUI_;
-    std::shared_ptr<DynastyViewer> viewer_;
+    public:
+        std::shared_ptr<Config> config_;
+        std::shared_ptr<ConfigPanel> configPanel_;
+        std::shared_ptr<Camera> camera_;
+        std::shared_ptr<SmoothOrbitController> orbitController_;
+        
+        std::shared_ptr<DynastyEditorUI> editorUI_;
+        std::shared_ptr<DynastyViewer> viewer_;
 
-    std::shared_ptr<ModelLoader> modelLoader_;
-    
-    bool showConfigPanel_ = true;
-    int rendererType_ = RENDER_TYPE_NONE;
-    bool dumpFrame_ = false;
-};  
+        std::shared_ptr<ModelLoader> modelLoader_;
+        
+        bool showConfigPanel_ = true;
+        int rendererType_ = RENDER_TYPE_NONE;
+        bool dumpFrame_ = false;
+    };  
+}

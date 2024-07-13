@@ -10,80 +10,84 @@
 #include "./Animation.h"
 #include "../code/base/GLMInc.h"
 
-class Animator {
-public:
-		Animator() = default;
-		Animator(const Animator&) = default;
+namespace DynastyEngine
+{
+	class Animator 
+	{
+	public:
+			Animator() = default;
+			Animator(const Animator&) = default;
+			Animator(Animation* animation) 
+			{
+				mCurrentTime = 0.0;
+				mCurrentAnimation = animation;
 
-		Animator(Animation* animation) {
-			mCurrentTime = 0.0;
-			mCurrentAnimation = animation;
+				mFinalBoneMatrices.reserve(100);
 
-			mFinalBoneMatrices.reserve(100);
-
-			for (int i = 0; i < 100; i++)
-				mFinalBoneMatrices.push_back(glm::mat4(1.0f));
-		}
-
-		void UpdateAnimation(float dt) {
-			mDeltaTime = dt;
-			if (mCurrentAnimation) {
-				mCurrentTime += mCurrentAnimation->GetTicksPerSecond() * dt;
-				mCurrentTime = fmod(mCurrentTime, mCurrentAnimation->GetDuration());
-				CalculateBoneTransform(&mCurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+				for (int i = 0; i < 100; i++)
+					mFinalBoneMatrices.push_back(glm::mat4(1.0f));
 			}
-		}
 
-		void PlayAnimation(Animation* pAnimation) {
-			mCurrentAnimation = pAnimation;
-			mCurrentTime = 0.0f;
-		}
+			void UpdateAnimation(float dt) {
+				mDeltaTime = dt;
+				if (mCurrentAnimation) {
+					mCurrentTime += mCurrentAnimation->GetTicksPerSecond() * dt;
+					mCurrentTime = fmod(mCurrentTime, mCurrentAnimation->GetDuration());
+					CalculateBoneTransform(&mCurrentAnimation->GetRootNode(), glm::mat4(1.0f));
+				}
+			}
 
-		void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform) {
-			std::string nodeName = node->name;
-			glm::mat4 nodeTransform = node->transformation;
+			void PlayAnimation(Animation* pAnimation) {
+				mCurrentAnimation = pAnimation;
+				mCurrentTime = 0.0f;
+			}
 
-			Bone* bone = mCurrentAnimation->FindBone(nodeName);
-			bone->logMat4(nodeTransform);
+			void CalculateBoneTransform(const AssimpNodeData* node, glm::mat4 parentTransform) {
+				std::string nodeName = node->name;
+				glm::mat4 nodeTransform = node->transformation;
 
-			if (bone) {
-				bone->Update(mCurrentTime);
-				nodeTransform = bone->GetLocalTransform();
+				Bone* bone = mCurrentAnimation->FindBone(nodeName);
 				bone->logMat4(nodeTransform);
+
+				if (bone) {
+					bone->Update(mCurrentTime);
+					nodeTransform = bone->GetLocalTransform();
+					bone->logMat4(nodeTransform);
+				}
+
+				glm::mat4 globalTransformation = parentTransform * nodeTransform;
+
+				auto boneInfoMap = mCurrentAnimation->GetBoneIDMap();
+				if (boneInfoMap.find(nodeName) != boneInfoMap.end()) {
+					int index = boneInfoMap[nodeName].id;
+					glm::mat4 offset = boneInfoMap[nodeName].offset;
+					mFinalBoneMatrices[index] = globalTransformation * offset;
+				}
+
+				for (int i = 0; i < node->childrenCount; i++)
+					CalculateBoneTransform(&node->children[i], globalTransformation);
 			}
 
-			glm::mat4 globalTransformation = parentTransform * nodeTransform;
-
-			auto boneInfoMap = mCurrentAnimation->GetBoneIDMap();
-			if (boneInfoMap.find(nodeName) != boneInfoMap.end()) {
-				int index = boneInfoMap[nodeName].id;
-				glm::mat4 offset = boneInfoMap[nodeName].offset;
-				mFinalBoneMatrices[index] = globalTransformation * offset;
+			std::vector<glm::mat4> GetFinalBoneMatrices()
+			{
+				return mFinalBoneMatrices;
 			}
 
-			for (int i = 0; i < node->childrenCount; i++)
-				CalculateBoneTransform(&node->children[i], globalTransformation);
-		}
+			float GetProgress()
+			{
+				return mCurrentTime / mCurrentAnimation->GetDuration();
+			}
 
-		std::vector<glm::mat4> GetFinalBoneMatrices()
-		{
-			return mFinalBoneMatrices;
-		}
+			void Reset()
+			{
+				mCurrentTime = 0.0f;
+			}
 
-		float GetProgress()
-		{
-			return mCurrentTime / mCurrentAnimation->GetDuration();
-		}
+	private:
+			std::vector<glm::mat4> mFinalBoneMatrices;
+			Animation* mCurrentAnimation;
+			float mCurrentTime;
+			float mDeltaTime;
+	};
 
-		void Reset()
-		{
-			mCurrentTime = 0.0f;
-		}
-
-private:
-		std::vector<glm::mat4> mFinalBoneMatrices;
-		Animation* mCurrentAnimation;
-		float mCurrentTime;
-		float mDeltaTime;
-
-};
+}

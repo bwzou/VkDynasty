@@ -7,12 +7,13 @@
 #define DYNASTY_STR(s) #s 
 
 
-std::shared_ptr<DynastyEngine> app = nullptr;
-std::shared_ptr<LogSystem> mLoggerSystem = std::make_shared<LogSystem>();
+std::shared_ptr<DynastyEngine::DEngine> app = nullptr;
+std::shared_ptr<DynastyEngine::LogSystem> mLoggerSystem = std::make_shared<DynastyEngine::LogSystem>();
 
 
-int main(int argc, char** argv) {
-    app = std::make_shared<DynastyEngine>();
+int main(int argc, char** argv) 
+{
+    app = std::make_shared<DynastyEngine::DEngine>();
 
 #if defined(__GNUC__)
     // https://gcc.gnu.org/onlinedocs/cpp/Common-Predefined-Macros.html
@@ -48,4 +49,3 @@ int main(int argc, char** argv) {
 
     return EXIT_SUCCESS;
 }
-

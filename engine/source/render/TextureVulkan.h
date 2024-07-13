@@ -6,137 +6,154 @@
 #include "EnumsVulkan.h"
 
 
-class TextureVulkan : public Texture {
-public:
-    TextureVulkan(VulkanContext &ctx, const TextureDesc &desc);
-    ~TextureVulkan();
+namespace DynastyEngine
+{
+    class TextureVulkan : public Texture 
+    {
+    public:
+        TextureVulkan(VulkanContext &ctx, const TextureDesc &desc);
+        ~TextureVulkan();
 
-    inline int getId() const {
-        return uuid_.get();
-    }
-
-    inline void setSamplerDesc(SamplerDesc &sampler) {
-        samplerDesc_ = sampler;
-    }
-
-    void initImageData();    
-    void dumpImage(const char *path, uint32_t w, uint32_t h);
-    void setImageData(const std::vector<std::shared_ptr<Buffer<RGBA>>> &buffers);
-    void setImageData(const std::vector<std::shared_ptr<Buffer<float>>> &buffers);
-    void readPixels(uint32_t layer, uint32_t level, const std::function<void(uint8_t *buffer, uint32_t width, uint32_t height, uint32_t rowStride)> &func);
-
-    VkSampler &getSampler();
-
-    inline VkSampleCountFlagBits getSampleCount() {
-        return multiSample ? VK_SAMPLE_COUNT_4_BIT : VK_SAMPLE_COUNT_1_BIT;
-    }
-
-    inline VkImage getVkImage() {
-        return image_.image;
-    }
-
-    inline uint32_t getLevelCount() {
-        return levelCount_;
-    }
-
-    inline uint32_t getLayerCount() {
-        switch (type) {
-        case TextureType_2D:
-            return 1;
-        case TextureType_CUBE:
-            return 6;
+        inline int getId() const 
+        {
+            return uuid_.get();
         }
-        return 0;
-    }
 
-    inline uint32_t getPixelByteSize() {
-        switch (format) {
-            case TextureFormat_RGBA8:
-                return sizeof(RGBA);
-            case TextureFormat_FLOAT32:
-                return sizeof(float);
+        inline void setSamplerDesc(SamplerDesc &sampler) 
+        {
+            samplerDesc_ = sampler;
         }
-        return 0;
-    }
 
-    inline uint32_t getImageAspect() {
-        if (usage & TextureUsage_AttachmentDepth) {
-            return VK_IMAGE_ASPECT_DEPTH_BIT;
+        void initImageData();    
+        void dumpImage(const char *path, uint32_t w, uint32_t h);
+        void setImageData(const std::vector<std::shared_ptr<Buffer<RGBA>>> &buffers);
+        void setImageData(const std::vector<std::shared_ptr<Buffer<float>>> &buffers);
+        void readPixels(uint32_t layer, uint32_t level, const std::function<void(uint8_t *buffer, uint32_t width, uint32_t height, uint32_t rowStride)> &func);
+
+        VkSampler &getSampler();
+
+        inline VkSampleCountFlagBits getSampleCount() 
+        {
+            return multiSample ? VK_SAMPLE_COUNT_4_BIT : VK_SAMPLE_COUNT_1_BIT;
         }
-        return VK_IMAGE_ASPECT_COLOR_BIT;
-    }
 
-    inline VkImageView &getSampleImageView() {
-        if (sampleView_ == VK_NULL_HANDLE) {
-            createImageView(sampleView_, image_.image);
+        inline VkImage getVkImage() 
+        {
+            return image_.image;
         }
-        return sampleView_;
-    }
 
-    // inline VKGLInterop &getGLInterop() {
-    //     return glInterop_;
-    // }
+        inline uint32_t getLevelCount() 
+        {
+            return levelCount_;
+        }
 
-    // VkSemaphore getSemaphoreWait() {
-    //     if (needGLInterop_) {
-    //         return glInterop_.getSemaphoreGLComplete();
-    //     }
-    //     return VK_NULL_HANDLE;
-    // }
+        inline uint32_t getLayerCount() 
+        {
+            switch (type) 
+            {
+                case TextureType_2D:
+                    return 1;
+                case TextureType_CUBE:
+                    return 6;
+            }
+            return 0;
+        }
 
-    // VkSemaphore getSemaphoreSignal() {
-    //     if (needGLInterop_) {
-    //         return glInterop_.getSemaphoreGLReady();
-    //     }
-    //     return VK_NULL_HANDLE;
-    // }
+        inline uint32_t getPixelByteSize() 
+        {
+            switch (format) 
+            {
+                case TextureFormat_RGBA8:
+                    return sizeof(RGBA);
+                case TextureFormat_FLOAT32:
+                    return sizeof(float);
+            }
+            return 0;
+        }
 
-    VkImageView createResolveView();
+        inline uint32_t getImageAspect() 
+        {
+            if (usage & TextureUsage_AttachmentDepth) 
+            {
+                return VK_IMAGE_ASPECT_DEPTH_BIT;
+            }
+            return VK_IMAGE_ASPECT_COLOR_BIT;
+        }
 
-    VkImageView createAttachmentView(VkImageAspectFlags aspect, uint32_t layer, uint32_t level);
+        inline VkImageView &getSampleImageView() 
+        {
+            if (sampleView_ == VK_NULL_HANDLE) 
+            {
+                createImageView(sampleView_, image_.image);
+            }
+            return sampleView_;
+        }
 
-    static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
-                                    VkImageSubresourceRange subresourceRange,
-                                    VkAccessFlags srcMask,
-                                    VkAccessFlags dstMask,
-                                    VkImageLayout oldLayout,
-                                    VkImageLayout newLayout,
-                                    VkPipelineStageFlags srcStage,
-                                    VkPipelineStageFlags dstStage);
+        // inline VKGLInterop &getGLInterop() {
+        //     return glInterop_;
+        // }
 
-    void createImage(const void *pNext = nullptr);
-    void createImageResolve(const void *pNext = nullptr);
-    bool createImageHost(uint32_t level);
-    void createImageView(VkImageView &view, VkImage &image);
-    void generateMipmaps();
-    void setImageDataInternal(const std::vector<const void *> &buffers, VkDeviceSize imageSize);
+        // VkSemaphore getSemaphoreWait() {
+        //     if (needGLInterop_) {
+        //         return glInterop_.getSemaphoreGLComplete();
+        //     }
+        //     return VK_NULL_HANDLE;
+        // }
 
-protected:
-    UUID<TextureVulkan> uuid_;
-    VulkanContext &vkCtx_;
-    VkDevice device_ = VK_NULL_HANDLE;
+        // VkSemaphore getSemaphoreSignal() {
+        //     if (needGLInterop_) {
+        //         return glInterop_.getSemaphoreGLReady();
+        //     }
+        //     return VK_NULL_HANDLE;
+        // }
 
-    SamplerDesc samplerDesc_;
-    bool needResolve_ = false;
-    bool needMipmaps_  = false;
+        VkImageView createResolveView();
 
-    uint32_t layerCount_ = 1;
-    uint32_t levelCount_ = 1;
-    uint32_t imageAspect_ = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
-    VkFormat vkFormat_ = VK_FORMAT_MAX_ENUM;
+        VkImageView createAttachmentView(VkImageAspectFlags aspect, uint32_t layer, uint32_t level);
 
-    AllocatedImage image_{};
-    AllocatedImage imageResolve_{};
+        static void transitionImageLayout(VkCommandBuffer commandBuffer, VkImage image,
+                                        VkImageSubresourceRange subresourceRange,
+                                        VkAccessFlags srcMask,
+                                        VkAccessFlags dstMask,
+                                        VkImageLayout oldLayout,
+                                        VkImageLayout newLayout,
+                                        VkPipelineStageFlags srcStage,
+                                        VkPipelineStageFlags dstStage);
 
-    VkSampler sampler_ = VK_NULL_HANDLE;
-    VkImageView sampleView_ = VK_NULL_HANDLE;
+        void createImage(const void *pNext = nullptr);
+        void createImageResolve(const void *pNext = nullptr);
+        bool createImageHost(uint32_t level);
+        void createImageView(VkImageView &view, VkImage &image);
+        void generateMipmaps();
+        void setImageDataInternal(const std::vector<const void *> &buffers, VkDeviceSize imageSize);
 
-    // for image data upload
-    AllocatedBuffer uploadStagingBuffer_{};
+    protected:
+        UUID<TextureVulkan> uuid_;
+        VulkanContext &vkCtx_;
+        VkDevice device_ = VK_NULL_HANDLE;
 
-    // for memory dump
-    AllocatedImage hostImage_{};
-    VkSubresourceLayout hostSubResLayout_{};
-    uint8_t *hostImageMappedPtr_ = nullptr;
-    uint32_t hostImageLevel_ = 0;
-};
+        SamplerDesc samplerDesc_;
+        bool needResolve_ = false;
+        bool needMipmaps_  = false;
+
+        uint32_t layerCount_ = 1;
+        uint32_t levelCount_ = 1;
+        uint32_t imageAspect_ = VK_IMAGE_ASPECT_FLAG_BITS_MAX_ENUM;
+        VkFormat vkFormat_ = VK_FORMAT_MAX_ENUM;
+
+        AllocatedImage image_{};
+        AllocatedImage imageResolve_{};
+
+        VkSampler sampler_ = VK_NULL_HANDLE;
+        VkImageView sampleView_ = VK_NULL_HANDLE;
+
+        // for image data upload
+        AllocatedBuffer uploadStagingBuffer_{};
+
+        // for memory dump
+        AllocatedImage hostImage_{};
+        VkSubresourceLayout hostSubResLayout_{};
+        uint8_t *hostImageMappedPtr_ = nullptr;
+        uint32_t hostImageLevel_ = 0;
+    };
+}

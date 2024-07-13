@@ -3,6 +3,9 @@
 namespace DynastyEngine 
 {
     class EngineSettingsPanel {
-        
+    public:
+        EngineSettingsPanel() {
+
+        }
     };
 }

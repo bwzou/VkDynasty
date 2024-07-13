@@ -2,91 +2,105 @@
 
 #include "../code/base/GLMInc.h"
 
-enum DepthFunction {
-    DepthFunc_NEVER,
-    DepthFunc_LESS,
-    DepthFunc_EQUAL,
-    DepthFunc_LEQUAL,
-    DepthFunc_GREATER,
-    DepthFunc_NOTEQUAL,
-    DepthFunc_GEQUAL,
-    DepthFunc_ALWAYS,
-};
 
-enum BlendFactor {
-    BlendFactor_ZERO,
-    BlendFactor_ONE,
-    BlendFactor_SRC_COLOR,
-    BlendFactor_SRC_ALPHA,
-    BlendFactor_DST_COLOR,
-    BlendFactor_DST_ALPHA,
-    BlendFactor_ONE_MINUS_SRC_COLOR,
-    BlendFactor_ONE_MINUS_SRC_ALPHA,
-    BlendFactor_ONE_MINUS_DST_COLOR,
-    BlendFactor_ONE_MINUS_DST_ALPHA,
-};
+namespace DynastyEngine
+{
+    enum DepthFunction 
+    {
+        DepthFunc_NEVER,
+        DepthFunc_LESS,
+        DepthFunc_EQUAL,
+        DepthFunc_LEQUAL,
+        DepthFunc_GREATER,
+        DepthFunc_NOTEQUAL,
+        DepthFunc_GEQUAL,
+        DepthFunc_ALWAYS,
+    };
 
-enum BlendFunction {
-    BlendFunc_ADD,
-    BlendFunc_SUBTRACT,
-    BlendFunc_REVERSE_SUBTRACT,
-    BlendFunc_MIN,
-    BlendFunc_MAX,
-};
+    enum BlendFactor 
+    {
+        BlendFactor_ZERO,
+        BlendFactor_ONE,
+        BlendFactor_SRC_COLOR,
+        BlendFactor_SRC_ALPHA,
+        BlendFactor_DST_COLOR,
+        BlendFactor_DST_ALPHA,
+        BlendFactor_ONE_MINUS_SRC_COLOR,
+        BlendFactor_ONE_MINUS_SRC_ALPHA,
+        BlendFactor_ONE_MINUS_DST_COLOR,
+        BlendFactor_ONE_MINUS_DST_ALPHA,
+    };
 
-enum PolygonMode {
-    PolygonMode_POINT,
-    PolygonMode_LINE,
-    PolygonMode_FILL,
-};
+    enum BlendFunction 
+    {
+        BlendFunc_ADD,
+        BlendFunc_SUBTRACT,
+        BlendFunc_REVERSE_SUBTRACT,
+        BlendFunc_MIN,
+        BlendFunc_MAX,
+    };
 
-struct BlendParameters {
-    BlendFunction blendFuncRgb = BlendFunc_ADD;
-    BlendFactor blendSrcRgb = BlendFactor_ONE;
-    BlendFactor blendDstRgb = BlendFactor_ZERO;
+    enum PolygonMode 
+    {
+        PolygonMode_POINT,
+        PolygonMode_LINE,
+        PolygonMode_FILL,
+    };
 
-    BlendFunction blendFuncAlpha = BlendFunc_ADD;
-    BlendFactor blendSrcAlpha = BlendFactor_ONE;
-    BlendFactor blendDstAlpha = BlendFactor_ZERO;
+    struct BlendParameters 
+    {
+        BlendFunction blendFuncRgb = BlendFunc_ADD;
+        BlendFactor blendSrcRgb = BlendFactor_ONE;
+        BlendFactor blendDstRgb = BlendFactor_ZERO;
 
-    void SetBlendFactor(BlendFactor src, BlendFactor dst) {
-        blendSrcRgb = src;
-        blendSrcAlpha = src;
-        blendDstRgb = dst;
-        blendDstAlpha = dst;
-    }
+        BlendFunction blendFuncAlpha = BlendFunc_ADD;
+        BlendFactor blendSrcAlpha = BlendFactor_ONE;
+        BlendFactor blendDstAlpha = BlendFactor_ZERO;
 
-    void SetBlendFunc(BlendFunction func) {
-        blendFuncRgb = func;
-        blendFuncAlpha = func;
-    }
-};
+        void SetBlendFactor(BlendFactor src, BlendFactor dst) 
+        {
+            blendSrcRgb = src;
+            blendSrcAlpha = src;
+            blendDstRgb = dst;
+            blendDstAlpha = dst;
+        }
 
-enum PrimitiveType {
-    Primitive_POINT,
-    Primitive_LINE,
-    Primitive_TRIANGLE,
-};
+        void SetBlendFunc(BlendFunction func) 
+        {
+            blendFuncRgb = func;
+            blendFuncAlpha = func;
+        }
+    };
 
-struct RenderStates {
-    bool blend = false;
-    BlendParameters blendParams;
+    enum PrimitiveType 
+    {
+        Primitive_POINT,
+        Primitive_LINE,
+        Primitive_TRIANGLE,
+    };
 
-    bool depthTest = false;
-    bool depthMask = true;
-    DepthFunction depthFunc = DepthFunc_LESS;
+    struct RenderStates 
+    {
+        bool blend = false;
+        BlendParameters blendParams;
 
-    bool cullFace = false;
-    PrimitiveType primitiveType = Primitive_TRIANGLE;
-    PolygonMode polygonMode = PolygonMode_FILL;
+        bool depthTest = false;
+        bool depthMask = true;
+        DepthFunction depthFunc = DepthFunc_LESS;
 
-    float lineWidth = 1.f;
-};
+        bool cullFace = false;
+        PrimitiveType primitiveType = Primitive_TRIANGLE;
+        PolygonMode polygonMode = PolygonMode_FILL;
 
-struct ClearStates {
-    bool depthFlag = false;
-    bool colorFlag = false;
-    glm::vec4 clearColor = glm::vec4(0.f);
-    float clearDepth = 1.f;
-};
+        float lineWidth = 1.f;
+    };
+
+    struct ClearStates 
+    {
+        bool depthFlag = false;
+        bool colorFlag = false;
+        glm::vec4 clearColor = glm::vec4(0.f);
+        float clearDepth = 1.f;
+    };
+}
 
