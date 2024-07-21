@@ -9,4 +9,7 @@ cmake-build-*/
 CMakeSettings.json
 engine/shader/generated
 
+notes/
+imgui.ini
+
 test.cpp

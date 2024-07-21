@@ -5,9 +5,9 @@
 #include <iostream>
 #include <functional>
 #include <unordered_map>
-#include "../../function/Config.h"
-#include "../../render/Renderer.h"
-#include "../../code/util/FileUtils.h"
+#include "runtime/function/Config.h"
+#include "runtime/render/Renderer.h"
+#include "runtime/code/util/FileUtils.h"
 
 
 namespace DynastyEngine

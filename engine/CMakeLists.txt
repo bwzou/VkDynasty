@@ -53,5 +53,6 @@ set(SHADER_COMPILE_TARGET DynastyShaderCompile)
 
 add_subdirectory(shader)
 add_subdirectory(3rdparty)
-add_subdirectory(source)
+add_subdirectory(source/runtime)
+add_subdirectory(source/editor)
 
