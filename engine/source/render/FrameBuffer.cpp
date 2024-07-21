@@ -6,41 +6,41 @@ namespace DynastyEngine
 {
     bool FrameBuffer::createRenderPass() 
     {
-        // attachment参数通过附件描述数组中的索引指定要引用的附件
-        VkAttachmentReference colorAttachmentRef{};
-        colorAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
-        colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // // attachment参数通过附件描述数组中的索引指定要引用的附件
+        // VkAttachmentReference colorAttachmentRef{};
+        // colorAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
+        // colorAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        VkAttachmentReference depthAttachmentRef{};
-        depthAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
-        depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        // VkAttachmentReference depthAttachmentRef{};
+        // depthAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
+        // depthAttachmentRef.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-        VkAttachmentReference resolveAttachmentRef{};
-        resolveAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
-        resolveAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        // VkAttachmentReference resolveAttachmentRef{};
+        // resolveAttachmentRef.attachment = VK_ATTACHMENT_UNUSED;
+        // resolveAttachmentRef.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 
-        std::vector<VkAttachmentDescription> attachments;
-        // if (!isOffscreen()) {
-            // auto *colorTex = getAttachmentColor();
+        // std::vector<VkAttachmentDescription> attachments;
+        // // if (!isOffscreen()) {
+        //     // auto *colorTex = getAttachmentColor();
 
-            // 只有一个单一的颜色缓冲区附件，由交换链中的一个图像代表
-            VkAttachmentDescription colorAttachment{};
-            // 颜色附件的format应该与交换链图像的格式相匹配
-            colorAttachment.format = vkCtx_.swapChainImageFormat();
-            colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
-            colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-            colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+        //     // 只有一个单一的颜色缓冲区附件，由交换链中的一个图像代表
+        //     VkAttachmentDescription colorAttachment{};
+        //     // 颜色附件的format应该与交换链图像的格式相匹配
+        //     colorAttachment.format = vkCtx_.swapChainImageFormat();
+        //     colorAttachment.samples = VK_SAMPLE_COUNT_1_BIT;
+        //     colorAttachment.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        //     colorAttachment.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
             
-            // 这里采用存储操作。
-            // stencilLoadOp / stencilStoreOp 适用于模板数据
-            colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        //     // 这里采用存储操作。
+        //     // stencilLoadOp / stencilStoreOp 适用于模板数据
+        //     colorAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        //     colorAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        //     colorAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        //     colorAttachment.finalLayout = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
 
-            colorAttachmentRef.attachment = attachments.size();
-            attachments.push_back(colorAttachment);
-        // }
+        //     colorAttachmentRef.attachment = attachments.size();
+        //     attachments.push_back(colorAttachment);
+        // // }
 
         // if (colorReady_) {
         //     auto *colorTex = getAttachmentColor();
@@ -64,23 +64,23 @@ namespace DynastyEngine
         //     attachments.push_back(colorAttachment);
         // }
 
-        if (depthReady_) 
-        {
-            auto *depthTex = getAttachmentDepth();
+        // if (depthReady_) 
+        // {
+        //     auto *depthTex = getAttachmentDepth();
 
-            VkAttachmentDescription depthAttachment{};
-            depthAttachment.format = cvtImageFormat(depthTex->format, depthTex->usage);
-            depthAttachment.samples = getAttachmentDepth()->getSampleCount();
-            depthAttachment.loadOp = clearStates_.depthFlag ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
-            depthAttachment.storeOp = colorReady_ ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
-            depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-            depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-            depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
-            depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+        //     VkAttachmentDescription depthAttachment{};
+        //     depthAttachment.format = cvtImageFormat(depthTex->format, depthTex->usage);
+        //     depthAttachment.samples = getAttachmentDepth()->getSampleCount();
+        //     depthAttachment.loadOp = clearStates_.depthFlag ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;
+        //     depthAttachment.storeOp = colorReady_ ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;
+        //     depthAttachment.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        //     depthAttachment.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        //     depthAttachment.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED;
+        //     depthAttachment.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 
-            depthAttachmentRef.attachment = attachments.size();
-            attachments.push_back(depthAttachment);
-        }
+        //     depthAttachmentRef.attachment = attachments.size();
+        //     attachments.push_back(depthAttachment);
+        // }
 
         // if (colorReady_) {
         //     auto *colorTex = getAttachmentColor();
@@ -102,23 +102,176 @@ namespace DynastyEngine
         // }
 
         // 子通道
+        // VkSubpassDescription subpass{};
+        // subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        // // 明确指出这是一个图形子通道
+        // subpass.colorAttachmentCount = 1;
+        // subpass.pColorAttachments = &colorAttachmentRef;
+        // subpass.pDepthStencilAttachment = &depthAttachmentRef;
+        // subpass.pResolveAttachments = &resolveAttachmentRef;
+
+        // VkRenderPassCreateInfo renderPassInfo{};
+        // renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        // renderPassInfo.attachmentCount = attachments.size();
+        // renderPassInfo.pAttachments = attachments.data();
+        // renderPassInfo.subpassCount = 1;
+        // renderPassInfo.pSubpasses = &subpass;
+        // renderPassInfo.dependencyCount = 0;
+        
+        // renderPassInfo.dependencyCount = 1;
+        // renderPassInfo.pDependencies = &dependency;
+
+        VkAttachmentDescription attachments[MainCameraPassAttachmentCount] = {};
+
+        VkAttachmentDescription& swapchainImageAttachmentDescription = attachments[MainCameraPassSwapchainImage];
+        swapchainImageAttachmentDescription.format         = vkCtx_.swapChainImageFormat();
+        swapchainImageAttachmentDescription.samples        = VK_SAMPLE_COUNT_1_BIT;
+        swapchainImageAttachmentDescription.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        swapchainImageAttachmentDescription.storeOp        = VK_ATTACHMENT_STORE_OP_STORE;
+        swapchainImageAttachmentDescription.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        swapchainImageAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        swapchainImageAttachmentDescription.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        swapchainImageAttachmentDescription.finalLayout    = VK_IMAGE_LAYOUT_PRESENT_SRC_KHR;
+        
+        auto *depthTex = getAttachmentDepth();
+        VkAttachmentDescription& depthAttachmentDescription = attachments[MainCameraPassDepth];
+        depthAttachmentDescription.format                   = cvtImageFormat(depthTex->format, depthTex->usage);
+        depthAttachmentDescription.samples                  = getAttachmentDepth()->getSampleCount();
+        depthAttachmentDescription.loadOp                   = clearStates_.depthFlag ? VK_ATTACHMENT_LOAD_OP_CLEAR : VK_ATTACHMENT_LOAD_OP_LOAD;;
+        depthAttachmentDescription.storeOp                  = colorReady_ ? VK_ATTACHMENT_STORE_OP_DONT_CARE : VK_ATTACHMENT_STORE_OP_STORE;;
+        depthAttachmentDescription.stencilLoadOp            = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        depthAttachmentDescription.stencilStoreOp           = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        depthAttachmentDescription.initialLayout            = VK_IMAGE_LAYOUT_UNDEFINED;
+        depthAttachmentDescription.finalLayout              = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+
+        VkAttachmentReference basePassColorAttachmentReference{};
+        basePassColorAttachmentReference.attachment = 0;
+        basePassColorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference basePassDepthAttachmentReference{};
+        basePassDepthAttachmentReference.attachment = 1;
+        basePassDepthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        VkAttachmentReference basePassResolveAttachmentReference{};
+        basePassResolveAttachmentReference.attachment = VK_ATTACHMENT_UNUSED;
+        basePassResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // 子通道
         VkSubpassDescription subpass{};
         subpass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
         // 明确指出这是一个图形子通道
         subpass.colorAttachmentCount = 1;
-        subpass.pColorAttachments = &colorAttachmentRef;
-        subpass.pDepthStencilAttachment = &depthAttachmentRef;
-        subpass.pResolveAttachments = &resolveAttachmentRef;
+        subpass.pColorAttachments = &basePassColorAttachmentReference;
+        subpass.pDepthStencilAttachment = &basePassDepthAttachmentReference;
+        subpass.pResolveAttachments = &basePassResolveAttachmentReference;
 
         VkRenderPassCreateInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
-        renderPassInfo.attachmentCount = attachments.size();
-        renderPassInfo.pAttachments = attachments.data();
+        renderPassInfo.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        renderPassInfo.pAttachments = attachments;
         renderPassInfo.subpassCount = 1;
         renderPassInfo.pSubpasses = &subpass;
         renderPassInfo.dependencyCount = 0;
-        // renderPassInfo.dependencyCount = 1;
-        // renderPassInfo.pDependencies = &dependency;
+
+
+        // VkAttachmentDescription& backupEvenColorAttachmentDescription = attachments[MainCameraPassBackupBufferEven];
+        // backupEvenColorAttachmentDescription.format         =  VK_FORMAT_R16G16B16A16_SFLOAT;
+        // backupEvenColorAttachmentDescription.samples        =  VK_SAMPLE_COUNT_1_BIT;
+        // backupEvenColorAttachmentDescription.loadOp         =  VK_ATTACHMENT_LOAD_OP_CLEAR;
+        // backupEvenColorAttachmentDescription.storeOp        =  VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        // backupEvenColorAttachmentDescription.stencilLoadOp  =  VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        // backupEvenColorAttachmentDescription.stencilStoreOp =  VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        // backupEvenColorAttachmentDescription.initialLayout  =  VK_IMAGE_LAYOUT_UNDEFINED;
+        // backupEvenColorAttachmentDescription.finalLayout    =  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        // VkAttachmentDescription& backupOddColorAttachmentDescription = attachments[MainCameraPassBackupBufferOdd];
+        // backupOddColorAttachmentDescription.format         = VK_FORMAT_R16G16B16A16_SFLOAT;
+        // backupOddColorAttachmentDescription.samples        = VK_SAMPLE_COUNT_1_BIT;
+        // backupOddColorAttachmentDescription.loadOp         = VK_ATTACHMENT_LOAD_OP_CLEAR;
+        // backupOddColorAttachmentDescription.storeOp        = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        // backupOddColorAttachmentDescription.stencilLoadOp  = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+        // backupOddColorAttachmentDescription.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+        // backupOddColorAttachmentDescription.initialLayout  = VK_IMAGE_LAYOUT_UNDEFINED;
+        // backupOddColorAttachmentDescription.finalLayout    = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        
+        // 子通道
+        // VkSubpassDescription subpasses[MainCameraSubpassCount] = {};
+
+        // // attachment参数通过附件描述数组中的索引指定要引用的附件
+        // VkAttachmentReference basePassColorAttachmentReference{};
+        // basePassColorAttachmentReference.attachment = 0;
+        // basePassColorAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // VkAttachmentReference basePassDepthAttachmentReference{};
+        // basePassDepthAttachmentReference.attachment = 1;
+        // basePassDepthAttachmentReference.layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+
+        // VkAttachmentReference basePassResolveAttachmentReference{};
+        // basePassResolveAttachmentReference.attachment = VK_ATTACHMENT_UNUSED;
+        // basePassResolveAttachmentReference.layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        
+        // VkSubpassDescription basePass = subpasses[MainCameraSubpassBasePass];
+        // basePass.pipelineBindPoint = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        // // 明确指出这是一个图形子通道
+        // basePass.colorAttachmentCount = 1;
+        // basePass.pColorAttachments = &basePassColorAttachmentReference;
+        // basePass.pDepthStencilAttachment = &basePassDepthAttachmentReference;
+        // basePass.pResolveAttachments = &basePassResolveAttachmentReference;
+
+        // VkAttachmentReference uiPassColorAttachmentReference {};
+        // uiPassColorAttachmentReference.attachment = &backupEvenColorAttachmentDescription - attachments;
+        // uiPassColorAttachmentReference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+
+        // uint32_t uiPassPreserveAttachment = &backupOddColorAttachmentDescription - attachments;
+
+        // VkAttachmentReference uiPassColorAttachmentReference {};
+        // uiPassColorAttachmentReference.attachment = &swapchainImageAttachmentDescription - attachments;
+        // uiPassColorAttachmentReference.layout     = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+        
+        // VkSubpassDescription uiPass     = subpasses[MainCameraSubpassUi];
+        // uiPass.pipelineBindPoint        = VK_PIPELINE_BIND_POINT_GRAPHICS;
+        // uiPass.inputAttachmentCount     = 0;
+        // uiPass.pInputAttachments        = NULL;
+        // uiPass.colorAttachmentCount     = 1;
+        // uiPass.pColorAttachments        = &uiPassColorAttachmentReference;
+        // uiPass.pDepthStencilAttachment  = NULL;
+
+        // uiPass.preserveAttachmentCount  = 1;
+        // uiPass.pPreserveAttachments     = NULL;
+
+
+        // VkSubpassDependency dependencies[MainCameraSubpassCount] = {};
+        // VkSubpassDependency& basePassMainCameraSubpass = dependencies[0];
+        // basePassMainCameraSubpass.srcSubpass           = VK_SUBPASS_EXTERNAL;
+        // basePassMainCameraSubpass.dstSubpass           = MainCameraSubpassBasePass;
+        // basePassMainCameraSubpass.srcStageMask         = VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        // basePassMainCameraSubpass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT;
+        // basePassMainCameraSubpass.srcAccessMask        = VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        // basePassMainCameraSubpass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT;
+        // basePassMainCameraSubpass.dependencyFlags      = 0;
+
+        // VkSubpassDependency& uiPassDependOnBasePass = dependencies[1];
+        // uiPassDependOnBasePass.srcSubpass           = MainCameraSubpassBasePass;
+        // uiPassDependOnBasePass.dstSubpass           = MainCameraSubpassUi;
+        // uiPassDependOnBasePass.srcStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        // uiPassDependOnBasePass.dstStageMask         = VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT;
+        // uiPassDependOnBasePass.srcAccessMask        = VK_ACCESS_SHADER_WRITE_BIT | VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT;
+        // uiPassDependOnBasePass.dstAccessMask        = VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_COLOR_ATTACHMENT_READ_BIT;
+        // uiPassDependOnBasePass.dependencyFlags      = VK_DEPENDENCY_BY_REGION_BIT;
+
+
+        // VkRenderPassCreateInfo renderPassInfo{};
+        // renderPassInfo.sType           = VK_STRUCTURE_TYPE_RENDER_PASS_CREATE_INFO;
+        // renderPassInfo.attachmentCount = (sizeof(attachments) / sizeof(attachments[0]));
+        // renderPassInfo.pAttachments    = attachments;
+        // renderPassInfo.subpassCount    = (sizeof(subpasses) / sizeof(subpasses[0]));;
+        // renderPassInfo.pSubpasses      = subpasses;
+        // renderPassInfo.dependencyCount = 0;
+        // renderPassInfo.dependencyCount = (sizeof(dependencies) / sizeof(dependencies[0]));;
+        // renderPassInfo.pDependencies   = dependencies;
+
 
         if (vkCreateRenderPass(device_, &renderPassInfo, nullptr, currRenderPass_) != VK_SUCCESS) 
         {
@@ -145,7 +298,28 @@ namespace DynastyEngine
         if (depthReady_) {
             auto *texDepth = getAttachmentDepth();
             currFbo_->attachments.push_back(texDepth->createAttachmentView(VK_IMAGE_ASPECT_DEPTH_BIT, depthAttachment_.layer, depthAttachment_.level));
+
+            // currFbo_->attachments.push_back(texDepth->createAttachmentView(VK_IMAGE_ASPECT_DEPTH_BIT, depthAttachment_.layer, depthAttachment_.level));
+            // currFbo_->attachments.push_back(texDepth->createAttachmentView(VK_IMAGE_ASPECT_DEPTH_BIT, depthAttachment_.layer, depthAttachment_.level));
         }
+
+        // for (int i = 0; i < 2; i++) {
+        //     TextureDesc desc = {};
+        //     desc.width = vkCtx_.swapChainExtent().width;
+        //     desc.height = vkCtx_.swapChainExtent().height;
+        //     desc.type = TextureType_2D;
+        //     desc.format = TextureFormat_RGBA_FLOAT16;
+        //     desc.usage = TextureUsage_AttachmentColor;
+        //     desc.useMipmaps = false;
+        //     desc.multiSample = false;
+        //     auto image = new TextureVulkan(vkCtx_, desc);
+
+        //     auto attachment = image->createAttachmentView(VK_IMAGE_ASPECT_COLOR_BIT, 0, 0);
+
+        //     currFbo_->attachments.push_back(attachment);
+        // }
+
+
         // if (colorReady_ && isMultiSample()) {
         //     auto *texColor = getAttachmentColor();
         //     currFbo_->attachments.push_back(texColor->createResolveView());

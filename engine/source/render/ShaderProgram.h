@@ -221,6 +221,7 @@ namespace DynastyEngine
         {
             return currCmdBuffer_;
         }
+        
         inline VkDescriptorPool getDescriptorPool() 
         {
             return descriptorPool_;

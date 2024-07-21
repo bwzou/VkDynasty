@@ -39,6 +39,8 @@
 #include "./editor/DynastyEditorUI.h"
 #include "DynastyViewer.h"
 #include "./render/FrameBuffer.h"
+#include "./imgui/ImGuiLayer.h"
+// #include "./platform/vulkan/VulkanImGuiLayer.h"
 
 
 #define RENDER_TYPE_NONE (-1)
@@ -74,7 +76,8 @@ namespace DynastyEngine
         inline void drawPanel() 
         {
             if (showConfigPanel_) {
-                configPanel_->onDraw();
+                // configPanel_->onDraw();
+                editorUI_->onDraw();
             }
         }
         inline void togglePanelState() 
@@ -83,11 +86,13 @@ namespace DynastyEngine
         }
         inline bool wantCaptureKeyboard() 
         {
-            return configPanel_->wantCaptureKeyboard();
+            // return configPanel_->wantCaptureKeyboard();
+            return false;
         }
         inline bool wantCaptureMouse() 
         {
-            return configPanel_->wantCaptureMouse();
+            // return configPanel_->wantCaptureMouse();
+            return false;
         }
         inline void updateGestureZoom(float x, float y) 
         {
@@ -105,6 +110,8 @@ namespace DynastyEngine
             orbitController_->panY = y;
         }
 
+        [[nodiscard]] GLFWwindow* GetWindow() { return mWindow; }
+
     public:
         std::shared_ptr<Config> config_;
         std::shared_ptr<ConfigPanel> configPanel_;
@@ -115,6 +122,9 @@ namespace DynastyEngine
         std::shared_ptr<DynastyViewer> viewer_;
 
         std::shared_ptr<ModelLoader> modelLoader_;
+
+        GLFWwindow* mWindow;
+        ImGuiLayer* mImGuiLayer;
         
         bool showConfigPanel_ = true;
         int rendererType_ = RENDER_TYPE_NONE;

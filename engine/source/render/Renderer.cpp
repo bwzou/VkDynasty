@@ -123,12 +123,25 @@ namespace DynastyEngine
             depthClear.depthStencil = {states.clearDepth, 0};
             clearValues_.push_back(depthClear);
         }
+        if (fbo_->isColorReady()) 
+        {
+            VkClearValue colorClear;
+            colorClear.color = {states.clearColor.r, states.clearColor.g, states.clearColor.b, states.clearColor.a};
+            clearValues_.push_back(colorClear);
+        }
+        if (fbo_->isColorReady()) 
+        {
+            VkClearValue colorClear;
+            colorClear.color = {states.clearColor.r, states.clearColor.g, states.clearColor.b, states.clearColor.a};
+            clearValues_.push_back(colorClear);
+        }
 
         // transition attachments layout
         fbo_->transitionLayoutBeginPass(drawCmd_);
 
         VkRenderPassBeginInfo renderPassInfo{};
         renderPassInfo.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
+
         renderPassInfo.renderPass = fbo_->getRenderPass();
         // 我们为每个交换链图像创建了一个帧缓冲区，它被指定为颜色附件。
         renderPassInfo.framebuffer = fbo_->getFrameBuffer();
@@ -146,6 +159,8 @@ namespace DynastyEngine
         std::array<VkClearValue, 2> clearValues{};
         clearValues[0].color = {{0.0f, 0.0f, 0.0f, 1.0f}};
         clearValues[1].depthStencil = {1.0f, 0};
+        // clearValues[2].color        = {{0.0f, 0.0f, 0.0f, 1.0f}};
+        // clearValues[3].color       = {{0.0f, 0.0f, 0.0f, 1.0f}};
         renderPassInfo.clearValueCount = static_cast<uint32_t>(clearValues.size());
         renderPassInfo.pClearValues = clearValues.data();
 
@@ -229,6 +244,11 @@ namespace DynastyEngine
         }
         pipelineStates_ = dynamic_cast<PipelineStates *>(states.get());
         pipelineStates_->create(vao_->getVertexInputInfo(), shaderProgram_, fbo_->getRenderPass(), fbo_->getSampleCount());
+    }
+
+
+    void Renderer::setCmdNextSubpass(VkCommandBuffer commandBuffer, VkSubpassContents contents) {
+        return vkCmdNextSubpass(commandBuffer, ((VkSubpassContents)contents));
     }
 
 

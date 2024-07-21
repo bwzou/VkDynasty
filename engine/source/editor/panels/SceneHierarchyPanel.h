@@ -4,8 +4,20 @@ namespace DynastyEngine
 {
     class SceneHierarchyPanel {
     public:
-        SceneHierarchyPanel() {
+        SceneHierarchyPanel() = default;
+        SceneHierarchyPanel(const int temp);
+        
+        void setContent();
 
-        }
+        void onImGuiDraw(bool* pOpen, bool* pOpenProperties);
+
+        void getSelectedEntity() const;
+
+        void setSelectedEntity();
+
+        // void drawComponents(Entity entity);
+
+    private:
+        int mTemp;
     };
 }

@@ -35,6 +35,7 @@
 #include "./render/FrameBuffer.h"
 #include "./render/Renderer.h"
 #include "./render/VulkanContext.h"
+#include "./editor/DynastyEditorUI.h"
 
 #define SHADOW_MAP_WIDTH 512
 #define SHADOW_MAP_HEIGHT 512
@@ -49,7 +50,7 @@ namespace DynastyEngine
     class DynastyViewer 
     {
     public:
-        DynastyViewer(Config &config, Camera &camera) : config_(config), cameraMain_(camera) {}
+        DynastyViewer(Config &config, Camera &camera, DynastyEditorUI &editorUI) : config_(config), cameraMain_(camera), editorUI_(editorUI) {}
 
         bool create(GLFWwindow* window, int width, int height, int outTexId);
         void destroy();
@@ -153,6 +154,7 @@ namespace DynastyEngine
         std::shared_ptr<Camera> cameraDepth_ = nullptr;
         Camera *camera_ = nullptr;
         
+        DynastyEditorUI &editorUI_;
         // std::shared_ptr<DynastyEditorUI> editorUI_;
         // std::shared_ptr<VulkanContext> vulkanContext;
         // std::shared_ptr<ModelLoader> modelLoader;

@@ -71,6 +71,7 @@ namespace DynastyEngine
     {
         TextureFormat_RGBA8 = 0,      // RGBA8888
         TextureFormat_FLOAT32 = 1,    // Float32
+        TextureFormat_RGBA_FLOAT16
     };
 
 

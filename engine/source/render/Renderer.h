@@ -55,6 +55,7 @@ namespace DynastyEngine
         void setShaderResources(std::shared_ptr<ShaderResources> &resources);
         void setPipelineStates(std::shared_ptr<PipelineStates> &states);
         void draw();
+        void setCmdNextSubpass(VkCommandBuffer commandBuffer, VkSubpassContents contents);
         void endRenderPass(); 
         void waitIdle();
 

@@ -4,8 +4,9 @@ namespace DynastyEngine
 {
     class EngineSettingsPanel {
     public:
-        EngineSettingsPanel() {
+        EngineSettingsPanel() = default;
+        EngineSettingsPanel(const int temp);
 
-        }
+        void onImGuiDraw(bool* pOpen);
     };
 }

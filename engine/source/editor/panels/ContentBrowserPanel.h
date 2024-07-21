@@ -4,8 +4,8 @@ namespace DynastyEngine
 {
     class ContentBrowserPanel {
     public:
-        ContentBrowserPanel() {
+        ContentBrowserPanel();
 
-        }
+        void onImGuiDraw(bool* pOpen);
     };
 }

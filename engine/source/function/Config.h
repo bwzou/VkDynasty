@@ -6,9 +6,9 @@
 
 namespace DynastyEngine
 {
-    const std::string ASSETS_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/asset/";
-    const std::string SHADER_GLSL_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/generated/spv/";
-    const std::string SHADER_JSON_DIR = "/Users/bowenzou/Workspace/Documents/games-vulkan/dynasty/engine/shader/json/";
+    const std::string ASSETS_DIR = "/Users/bowenzou/Workspace/Projects/dynasty/engine/asset/";
+    const std::string SHADER_GLSL_DIR = "/Users/bowenzou/Workspace/Projects/dynasty/engine/shader/generated/spv/";
+    const std::string SHADER_JSON_DIR = "/Users/bowenzou/Workspace/Projects/dynasty/engine/shader/json/";
 
     enum AAType 
     {

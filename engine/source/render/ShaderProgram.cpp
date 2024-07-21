@@ -20,10 +20,13 @@ namespace DynastyEngine
                                         const std::vector<char> &fsSource, 
                                         std::unordered_map<std::string, ShaderUniformDesc> uniformsDescFragment) 
     {
+        LOG_INFO("compileAndLinkGLSL");
         createShaderModule(vertexShader_, vsSource);
         createShaderModule(fragmentShader_, fsSource);
+        LOG_INFO("createShaderStages");
         createShaderStages();
 
+        LOG_INFO("createDescriptorSetLayouts");
         createDescriptorSetLayouts(uniformsDescVertex, uniformsDescFragment);
         createDescriptorPool();
         

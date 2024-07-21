@@ -12,6 +12,38 @@
 
 namespace DynastyEngine
 {
+
+    enum
+    {
+        // _main_camera_pass_gbuffer_a                     = 0,
+        // _main_camera_pass_gbuffer_b                     = 1,
+        // _main_camera_pass_gbuffer_c                     = 2,
+        // _main_camera_pass_backup_buffer_odd             = 3,
+        // _main_camera_pass_backup_buffer_even            = 4,
+        // _main_camera_pass_post_process_buffer_odd       = 5,
+        // _main_camera_pass_post_process_buffer_even      = 6,
+        MainCameraPassSwapchainImage = 0,
+        MainCameraPassDepth,
+        // MainCameraPassBackupBufferEven,
+        // MainCameraPassBackupBufferOdd,
+        // _main_camera_pass_custom_attachment_count       = 5,
+        // _main_camera_pass_post_process_attachment_count = 2,
+        MainCameraPassAttachmentCount
+    };
+
+    enum
+    {
+        MainCameraSubpassBasePass = 0,
+        // _main_camera_subpass_deferred_lighting,
+        // _main_camera_subpass_forward_lighting,
+        // _main_camera_subpass_tone_mapping,
+        // _main_camera_subpass_color_grading,
+        // _main_camera_subpass_fxaa,
+        // MainCameraSubpassUi,
+        // _main_camera_subpass_combine_ui,
+        MainCameraSubpassCount
+    };
+
     struct FrameBufferAttachment 
     {
         std::shared_ptr<Texture> tex = nullptr;
@@ -277,5 +309,6 @@ namespace DynastyEngine
         {
             offscreen_ = offscreen;
         }
+
     };
 }

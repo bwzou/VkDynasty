@@ -41,6 +41,18 @@ namespace DynastyEngine
         {
             return mWindow;
         }
+        inline void setReloadModelFunc(const std::function<bool(const std::string &)> &func) 
+        {
+            mReloadModelFunc = func;
+        }
+        inline void setUpdateLightFunc(const std::function<void(glm::vec3 &, glm::vec3 &)> &func) 
+        {
+            mUpdateLightFunc = func;
+        }
+        bool isInitialize() 
+        {
+            return pInitializeImgui;
+        }
 
         std::shared_ptr<ConfigPanel> propertiesPanel() 
         {
@@ -48,16 +60,48 @@ namespace DynastyEngine
         }
 
         int initWindow();
+        void init();
+        void initImgui(void *window, std::shared_ptr<Renderer> renderer);
+        
         void onDraw();
+
+        void newScene();
+        void openScene();
+        void openScene(const std::filesystem::path& path);
+        void saveScene();
+        void saveSceneAs();
+
+        void uiToolbar();
+        void loadDefaultEditorConfig();
+
+        bool loadConfig();
+        bool reloadModel(const std::string &name); 
+
         void cleanup();
 
     private:
         /* data */
         GLFWwindow* mWindow;
         Config &mConfig;
+        Renderer* mRenderer;
+        VkRenderPass mImguiRenderPass;
+
+        std::unordered_map<std::string, std::string> mModelPaths;
+        std::unordered_map<std::string, std::string> mSkyboxPaths;
+        
+        std::vector<const char *> mModelNames;
+        std::vector<const char *> mSkyboxNames;
+
+        std::function<bool(const std::string &path)> mReloadModelFunc;
+        std::function<void(glm::vec3 &position, glm::vec3 &color)> mUpdateLightFunc;
+
+
+        bool pInitializeImgui = false;
+
         SceneHierarchyPanel mSceneHierarchyPanel;
         ContentBrowserPanel mContentBrowserPanel;
         SceneSettingsPanel mSceneSettingsPanel;
+
         std::shared_ptr<ConfigPanel> mConfigPanel;
     };
 

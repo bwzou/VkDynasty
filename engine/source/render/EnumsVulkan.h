@@ -43,6 +43,7 @@ namespace DynastyEngine
       {
         case TextureFormat_RGBA8:   return VK_FORMAT_R8G8B8A8_UNORM;
         case TextureFormat_FLOAT32: return VK_FORMAT_R32_SFLOAT;
+        case TextureFormat_RGBA_FLOAT16: return VK_FORMAT_R16G16B16A16_SFLOAT;
         default:
           break;
       }

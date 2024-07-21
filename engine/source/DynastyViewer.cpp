@@ -121,10 +121,18 @@ namespace DynastyEngine
         // setup model materials
         setupScene();
 
-        if (scene_->model->bPlayAnim) 
+        if (scene_->model == nullptr) 
         {
-            if (!scene_->model->bStopAnim)
-                scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
+            LOG_INFO("模型不存在");
+            // return;
+        }
+        else 
+        {
+            if (scene_->model->bPlayAnim) 
+            {
+                if (!scene_->model->bStopAnim)
+                    scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
+            }
         }
 
         // draw shadow map
@@ -146,6 +154,18 @@ namespace DynastyEngine
         
         // draw scene
         drawScene(false);
+
+        // // renderer_->setCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
+        // vkCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
+        
+        if (!editorUI_.isInitialize()) 
+        {
+            LOG_INFO("endRenderPass");
+            editorUI_.initImgui(editorUI_.getWindow(), renderer_);
+        }
+        editorUI_.onDraw();
+
+        LOG_INFO("endRenderPass");
 
         // end main pass
         renderer_->endRenderPass();
@@ -185,6 +205,12 @@ namespace DynastyEngine
             {
                 setupMeshTextured(scene_->floor);
             }
+        }
+        
+        if (scene_->model == nullptr) 
+        {
+            LOG_INFO("模型不存在");
+            return;
         }
 
         // model nodes
@@ -272,6 +298,16 @@ namespace DynastyEngine
         // draw scene
         drawScene(true);
 
+        // // renderer_->setCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
+        // vkCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
+        
+        // if (!editorUI_.isInitialize()) 
+        // {
+        //     LOG_INFO("22");
+        //     editorUI_.initImgui(editorUI_.getWindow(), renderer_);
+        // }
+        // editorUI_.onDraw();
+
         renderer_->endRenderPass();
     
         // set back to main camera
@@ -308,6 +344,11 @@ namespace DynastyEngine
             drawModelMesh(scene_->floor, shadowPass, 0.f);
         }
 
+        if (scene_->model == nullptr) 
+        {
+            LOG_INFO("模型不存在");
+            return;
+        }
         LOG_INFO("draw model");
         // draw model nodes opaque
         ModelNode &modelNode = scene_->model->rootNode;
@@ -739,17 +780,20 @@ namespace DynastyEngine
         }
 
         uniformsModel.u_Animated = 0u;
-        if (scene_->model->bPlayAnim) 
+        if (scene_->model != nullptr) 
         {
-            uniformsModel.u_Animated = 1u;
-            // if (!scene_->model->bStopAnim)
-            // 	scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
-
-            // 更新骨骼矩阵数据 
-            auto transforms = scene_->model->mAnimator.GetFinalBoneMatrices();
-            for (int i = 0; i < transforms.size(); ++i) 
+            if (scene_->model->bPlayAnim) 
             {
-                uniformsModel.u_bones[i] = transforms[i];
+                uniformsModel.u_Animated = 1u;
+                // if (!scene_->model->bStopAnim)
+                // 	scene_->model->mAnimator.UpdateAnimation(0.01f * scene_->model->mAnimPlaySpeed);
+
+                // 更新骨骼矩阵数据 
+                auto transforms = scene_->model->mAnimator.GetFinalBoneMatrices();
+                for (int i = 0; i < transforms.size(); ++i) 
+                {
+                    uniformsModel.u_bones[i] = transforms[i];
+                }
             }
         }
 

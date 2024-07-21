@@ -100,7 +100,7 @@ namespace DynastyEngine
     {
         orbitController_->update();
         camera_->update();
-        configPanel_->update();
+        // configPanel_->update();
 
         // update triangle count
         config_->triangleCount_ = modelLoader_->getModelPrimitiveCnt();
@@ -125,21 +125,28 @@ namespace DynastyEngine
         orbitController_ = std::make_shared<SmoothOrbitController>(std::make_shared<OrbitController>(*camera_));
 
         config_ = std::make_shared<Config>();
-        configPanel_ = std::make_shared<ConfigPanel>(*config_);
+        // configPanel_ = std::make_shared<ConfigPanel>(*config_);
 
         editorUI_ = std::make_shared<DynastyEditorUI>(*config_);
         editorUI_->initWindow();
+        mWindow = editorUI_->getWindow();
         initEvent(editorUI_->getWindow());
         
-        viewer_ = std::make_shared<DynastyViewer>(*config_, *camera_);
+        viewer_ = std::make_shared<DynastyViewer>(*config_, *camera_, *editorUI_);
         viewer_->create(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT, NULL);
             
         modelLoader_ = std::make_shared<ModelLoader>(*config_);
         // setup config panel actions callback
         setupConfigPanelActions();
 
+        // mImGuiLayer = ImGuiLayer::create();
+        // mImGuiLayer->onAttach();
+
+        // loading model
+        editorUI_->init();
+        
         // init config
-        configPanel_->init(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT);
+        // configPanel_->init(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT);
         return true;
     }
 
@@ -158,23 +165,29 @@ namespace DynastyEngine
     {
         initEngine();
 
-        while (!glfwWindowShouldClose(editorUI_->getWindow())) 
+        while (!glfwWindowShouldClose(mWindow)) 
         {
             glfwPollEvents();
+
             drawFrame();
-            if (!configPanel_->initialize()) 
-            {
-                configPanel_->initImgui(editorUI_->getWindow(), viewer_->getRenderer());
-            }
+
+            // if (!configPanel_->initialize()) 
+            // {
+            //     configPanel_->initImgui(editorUI_->getWindow(), viewer_->getRenderer());
+            // }
+            
             // FIXME: 需要后面修复 
-            drawPanel();
+            // mImGuiLayer->begin();
+            // drawPanel();
+            // mImGuiLayer->end();
         }
     }
 
 
     void DEngine::setupConfigPanelActions() 
     {
-        configPanel_->setReloadModelFunc([&](const std::string &path) -> bool 
+        // configPanel_->setReloadModelFunc([&](const std::string &path) -> bool 
+        editorUI_->setReloadModelFunc([&](const std::string &path) -> bool 
         {
             waitRenderIdle();
             return modelLoader_->loadModel(path);
@@ -186,7 +199,8 @@ namespace DynastyEngine
         // configPanel_->setFrameDumpFunc([&]() -> void {
         //   dumpFrame_ = true;
         // });
-        configPanel_->setUpdateLightFunc([&](glm::vec3 &position, glm::vec3 &color) -> void 
+        // configPanel_->setUpdateLightFunc([&](glm::vec3 &position, glm::vec3 &color) -> void 
+        editorUI_->setUpdateLightFunc([&](glm::vec3 &position, glm::vec3 &color) -> void 
         {
             auto &scene = modelLoader_->getScene();
             scene.pointLight.vertexes[0].a_position = position;

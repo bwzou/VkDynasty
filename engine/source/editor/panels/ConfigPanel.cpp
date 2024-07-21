@@ -32,7 +32,7 @@ namespace DynastyEngine
         float z_near;
     };
 
-    void checkVkResult(VkResult err) 
+    void checkVkResult2(VkResult err) 
     {
         if (err == 0) 
         {
@@ -143,7 +143,7 @@ namespace DynastyEngine
             iniInfo.ImageCount    = 3;
             iniInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
             iniInfo.Allocator = VK_NULL_HANDLE;
-            iniInfo.CheckVkResultFn = checkVkResult;
+            iniInfo.CheckVkResultFn = checkVkResult2;
             ImGui_ImplVulkan_Init(&iniInfo, imguiRenderPass_);
 
             // 将字体上传到 GPU Uploading fonts to the GPU
