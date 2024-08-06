@@ -3,7 +3,7 @@
 Open Asset Import Library (assimp)
 ---------------------------------------------------------------------------
 
-Copyright (c) 2006-2022, assimp team
+Copyright (c) 2006-2024, assimp team
 
 
 
@@ -120,7 +120,7 @@ TEST_F(AssimpAPITest_aiQuaternion, aiQuaternionMultiplyTest) {
     result_c = result_cpp = random_quat();
     result_cpp = result_cpp * temp;
     aiQuaternionMultiply(&result_c, &temp);
-    
+
     EXPECT_FLOAT_EQ(result_cpp.x, result_c.x);
     EXPECT_FLOAT_EQ(result_cpp.y, result_c.y);
     EXPECT_FLOAT_EQ(result_cpp.z, result_c.z);
