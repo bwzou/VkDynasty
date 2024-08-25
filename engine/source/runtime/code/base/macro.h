@@ -1,12 +1,13 @@
 #pragma once
 
 #include "runtime/code/log/LogSystem.h"
+#include "runtime/global/GlobalContext.h"
 
 #include <chrono>
 #include <thread>
 
 #define LOG_HELPER(LOG_LEVEL, ...) \
-    mLoggerSystem->log(LOG_LEVEL, "[" + std::string(__FUNCTION__) + "] " + __VA_ARGS__);
+   gRuntimeGlobalContext.mLoggerSystem->log(LOG_LEVEL, "[" + std::string(__FUNCTION__) + "] " + __VA_ARGS__);
 
 #define LOG_DEBUG(...) LOG_HELPER(LogSystem::LogLevel::debug, __VA_ARGS__);
 

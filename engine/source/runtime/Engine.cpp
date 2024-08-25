@@ -1,4 +1,8 @@
-#include "Engine.h"
+#include "runtime/Engine.h"
+#include "runtime/global/GlobalContext.h"
+#include "runtime/platform/WindowSystem.h"
+#include "runtime/render/RenderSystem.h"
+
 
 
 extern std::shared_ptr<DynastyEngine::Engine> app;
@@ -8,92 +12,183 @@ namespace DynastyEngine
     double lastY = SCR_HEIGHT;
     bool firstMouse = true;
 
-    void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+    // void framebufferSizeCallback(GLFWwindow *window, int width, int height)
+    // {
+    //     LOG_INFO("=== Do nothing! framebufferSizeCallback ===");
+    // }
+
+
+    // void mouseCallback(GLFWwindow *window, double xPos, double yPos) 
+    // {
+    //     LOG_INFO("=== Do nothing! mouseCallback ===");
+
+    //     if (!app || app->wantCaptureMouse()) 
+    //     {
+    //         return;
+    //     }
+    //     if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) 
+    //     {
+    //         if (firstMouse) 
+    //         {
+    //             lastX = xPos;
+    //             lastY = yPos;
+    //             firstMouse = false;
+    //         }
+    //         double xOffset = xPos - lastX;
+    //         double yOffset = yPos - lastY;
+
+    //         if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) 
+    //         {
+    //             app->updateGesturePan((float) xOffset, (float)yOffset);
+    //         } 
+    //         else 
+    //         {
+    //             app->updateGestureRotate((float) xOffset, (float) yOffset);
+    //         }
+    //         lastX = xPos;
+    //         lastY = yPos;
+
+    //     } 
+    //     else 
+    //     {
+    //         firstMouse = true;
+    //     }
+    // }
+
+
+    // void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) 
+    // {
+    //     LOG_INFO("=== Do nothing! scrollCallback ===");
+
+    //     if (!app || app->wantCaptureMouse()) 
+    //     {
+    //         return;
+    //     }
+    //     app->updateGestureZoom((float) xOffset, (float) yOffset);
+    // }
+
+
+    // void processInput(GLFWwindow *window) 
+    // {
+    //     LOG_INFO("=== Do nothing! processInput ===");
+
+    //     if (!app || app->wantCaptureKeyboard()) 
+    //     {
+    //         return;
+    //     }
+
+    //     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
+    //     {
+    //         glfwSetWindowShouldClose(window, true);
+    //         return;
+    //     }
+
+    //     static bool keyPressed_H = false;
+    //     int state = glfwGetKey(window, GLFW_KEY_H);
+    //     if (state == GLFW_PRESS) 
+    //     {
+    //         if (!keyPressed_H) 
+    //         {
+    //             keyPressed_H = true;
+    //             app -> togglePanelState();
+    //         }
+    //     } 
+    //     else if (state == GLFW_RELEASE) 
+    //     {
+    //         keyPressed_H = false;
+    //     }
+    // }
+
+
+    void Engine::startEngine() 
     {
-        LOG_INFO("=== Do nothing! framebufferSizeCallback ===");
+        const std::string& configFilePath = "";
+        gRuntimeGlobalContext.startSystems(configFilePath);
+        
+        LOG_INFO("engine start");
     }
 
 
-    void mouseCallback(GLFWwindow *window, double xPos, double yPos) 
+    void Engine::shutdownEngine() 
     {
-        LOG_INFO("=== Do nothing! mouseCallback ===");
+        gRuntimeGlobalContext.shutdownSystems();
 
-        if (!app || app->wantCaptureMouse()) 
-        {
-            return;
-        }
-        if (glfwGetMouseButton(window, GLFW_MOUSE_BUTTON_LEFT) == GLFW_PRESS) 
-        {
-            if (firstMouse) 
-            {
-                lastX = xPos;
-                lastY = yPos;
-                firstMouse = false;
-            }
-            double xOffset = xPos - lastX;
-            double yOffset = yPos - lastY;
+        LOG_INFO("engine shutdown");
+    }
 
-            if (glfwGetKey(window, GLFW_KEY_LEFT_SHIFT) == GLFW_PRESS) 
-            {
-                app->updateGesturePan((float) xOffset, (float)yOffset);
-            } 
-            else 
-            {
-                app->updateGestureRotate((float) xOffset, (float) yOffset);
-            }
-            lastX = xPos;
-            lastY = yPos;
 
-        } 
-        else 
+    void Engine::initialize() 
+    {
+
+    }
+
+
+    void Engine::clear() 
+    {
+
+    }
+    
+
+    void Engine::run() 
+    {
+        std::shared_ptr<WindowSystem> windowSystem = gRuntimeGlobalContext.mWindowSystem;
+
+        while (!windowSystem->shouldClose())
         {
-            firstMouse = true;
+            const float deltaTime = calculateDeltaTime();
+            tickOneFrame(deltaTime);
         }
     }
 
 
-    void scrollCallback(GLFWwindow *window, double xOffset, double yOffset) 
+    float Engine::calculateDeltaTime()
     {
-        LOG_INFO("=== Do nothing! scrollCallback ===");
-
-        if (!app || app->wantCaptureMouse()) 
+        float deltaTime;
         {
-            return;
+            using namespace std::chrono;
+
+            steady_clock::time_point tickTimePoint = steady_clock::now();
+            duration<float> time_span              = duration_cast<duration<float>>(tickTimePoint - mLastTickTimePoint);
+            deltaTime                              = time_span.count();
+            mLastTickTimePoint                     = tickTimePoint;
         }
-        app->updateGestureZoom((float) xOffset, (float) yOffset);
+        return deltaTime;
     }
 
 
-    void processInput(GLFWwindow *window) 
+    bool Engine::tickOneFrame(float deltaTime)
     {
-        LOG_INFO("=== Do nothing! processInput ===");
+        logicalTick(deltaTime);
+        calculateFPF(deltaTime);
 
-        if (!app || app->wantCaptureKeyboard()) 
-        {
-            return;
-        }
+        rendererTick(deltaTime);
 
-        if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) 
-        {
-            glfwSetWindowShouldClose(window, true);
-            return;
-        }
-
-        static bool keyPressed_H = false;
-        int state = glfwGetKey(window, GLFW_KEY_H);
-        if (state == GLFW_PRESS) 
-        {
-            if (!keyPressed_H) 
-            {
-                keyPressed_H = true;
-                app -> togglePanelState();
-            }
-        } 
-        else if (state == GLFW_RELEASE) 
-        {
-            keyPressed_H = false;
-        }
+        gRuntimeGlobalContext.mWindowSystem->pollEvents();
+        const bool shouldWindowClose = gRuntimeGlobalContext.mWindowSystem->shouldClose();
+        return !shouldWindowClose;
     }
+
+
+    void Engine::logicalTick(float deltaTime)
+    {
+        // gRuntimeGlobalContext.mWindowSystem
+
+    }
+
+
+    void Engine::rendererTick(float deltaTime) 
+    {
+        gRuntimeGlobalContext.mRenderSystem->tick(deltaTime);
+    }
+
+
+    void Engine::calculateFPF(float deltaTime)
+    {
+        
+    }
+
+
+
 
 
     void Engine::drawFrame() 
@@ -117,33 +212,33 @@ namespace DynastyEngine
 
     bool Engine::initEngine() 
     {
-        // camera
-        camera_ = std::make_shared<Camera>();
-        camera_->setPerspective(glm::radians(CAMERA_FOV), (float) SCR_WIDTH / (float) SCR_HEIGHT, CAMERA_NEAR, CAMERA_FAR);
+        // // camera
+        // camera_ = std::make_shared<Camera>();
+        // camera_->setPerspective(glm::radians(CAMERA_FOV), (float) SCR_WIDTH / (float) SCR_HEIGHT, CAMERA_NEAR, CAMERA_FAR);
 
-        // orbit controller
-        orbitController_ = std::make_shared<SmoothOrbitController>(std::make_shared<OrbitController>(*camera_));
+        // // orbit controller
+        // orbitController_ = std::make_shared<SmoothOrbitController>(std::make_shared<OrbitController>(*camera_));
 
-        config_ = std::make_shared<Config>();
-        // configPanel_ = std::make_shared<ConfigPanel>(*config_);
+        // config_ = std::make_shared<Config>();
+        // // configPanel_ = std::make_shared<ConfigPanel>(*config_);
 
-        editorUI_ = std::make_shared<EditorUI>(*config_);
-        editorUI_->initWindow();
-        mWindow = editorUI_->getWindow();
-        initEvent(editorUI_->getWindow());
+        // editorUI_ = std::make_shared<EditorUI>(*config_);
+        // // editorUI_->initWindow();
+        // mWindow = editorUI_->getWindow();
+        // initEvent(editorUI_->getWindow());
         
-        viewer_ = std::make_shared<Viewer>(*config_, *camera_, *editorUI_);
-        viewer_->create(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT, NULL);
+        // viewer_ = std::make_shared<Viewer>(*config_, *camera_, *editorUI_);
+        // viewer_->create(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT, NULL);
             
-        modelLoader_ = std::make_shared<ModelLoader>(*config_);
-        // setup config panel actions callback
-        setupConfigPanelActions();
+        // modelLoader_ = std::make_shared<ModelLoader>(*config_);
+        // // setup config panel actions callback
+        // setupConfigPanelActions();
 
-        // mImGuiLayer = ImGuiLayer::create();
-        // mImGuiLayer->onAttach();
+        // // mImGuiLayer = ImGuiLayer::create();
+        // // mImGuiLayer->onAttach();
 
-        // loading model
-        editorUI_->init();
+        // // loading model
+        // editorUI_->init();
         
         // init config
         // configPanel_->init(editorUI_->getWindow(), SCR_WIDTH, SCR_HEIGHT);
@@ -151,37 +246,27 @@ namespace DynastyEngine
     }
 
 
-    bool Engine::initEvent(GLFWwindow* window_) 
-    {
-        /* Make the window's context current */
-        glfwMakeContextCurrent(window_);
-        glfwSetFramebufferSizeCallback(window_, framebufferSizeCallback);
-        glfwSetCursorPosCallback(window_, mouseCallback);
-        glfwSetScrollCallback(window_, scrollCallback);
-    }
+    // bool Engine::run() 
+    // {
+    //     initEngine();
 
+    //     while (!glfwWindowShouldClose(mWindow)) 
+    //     {
+    //         glfwPollEvents();
 
-    bool Engine::run() 
-    {
-        initEngine();
+    //         drawFrame();
 
-        while (!glfwWindowShouldClose(mWindow)) 
-        {
-            glfwPollEvents();
-
-            drawFrame();
-
-            // if (!configPanel_->initialize()) 
-            // {
-            //     configPanel_->initImgui(editorUI_->getWindow(), viewer_->getRenderer());
-            // }
+    //         // if (!configPanel_->initialize()) 
+    //         // {
+    //         //     configPanel_->initImgui(editorUI_->getWindow(), viewer_->getRenderer());
+    //         // }
             
-            // FIXME: 需要后面修复 
-            // mImGuiLayer->begin();
-            // drawPanel();
-            // mImGuiLayer->end();
-        }
-    }
+    //         // FIXME: 需要后面修复 
+    //         // mImGuiLayer->begin();
+    //         // drawPanel();
+    //         // mImGuiLayer->end();
+    //     }
+    // }
 
 
     void Engine::setupConfigPanelActions() 

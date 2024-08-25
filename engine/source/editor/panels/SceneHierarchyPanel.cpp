@@ -6,8 +6,8 @@ namespace DynastyEngine
 
     }
         
-    void SceneHierarchyPanel::setContent() {
-
+    void SceneHierarchyPanel::setContent(const std::shared_ptr<Level>& context) {
+        
     }
 
     void SceneHierarchyPanel::onImGuiDraw(bool* pOpen, bool* pOpenProperties) {

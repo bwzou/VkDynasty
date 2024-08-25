@@ -2,6 +2,7 @@
 
 #include <fstream>
 #include <vector>
+#include "runtime/code/base/macro.h"
 
 namespace DynastyEngine
 {

@@ -50,7 +50,13 @@ namespace DynastyEngine
 
         bool isComplete() 
         {
-            return graphicsFamily.has_value();
+            try {
+                return graphicsFamily.has_value();
+            } catch (const std::bad_optional_access& e) {
+                std::cout << "==> error: " << e.what() << std::endl;
+            } catch (std::exception& e) {
+                std::cout << "==> exception: " << e.what() << std::endl;
+            }
         }
     };
 

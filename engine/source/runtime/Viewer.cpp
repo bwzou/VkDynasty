@@ -158,12 +158,12 @@ namespace DynastyEngine
         // // renderer_->setCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
         // vkCmdNextSubpass(renderer_->getDrawCmd(), VK_SUBPASS_CONTENTS_INLINE);
         
-        if (!editorUI_.isInitialize()) 
-        {
-            LOG_INFO("endRenderPass");
-            editorUI_.initImgui(editorUI_.getWindow(), renderer_);
-        }
-        editorUI_.onDraw();
+        // if (!editorUI_.isInitialize()) 
+        // {
+        //     LOG_INFO("endRenderPass");
+        //     editorUI_.initImgui(renderer_);
+        // }
+        // editorUI_.onDraw();
 
         LOG_INFO("endRenderPass");
 

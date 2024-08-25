@@ -1,10 +1,18 @@
-#include "EditorUI.h"
 #include <imgui.h>
 #include <imgui_internal.h>
 #include <backends/imgui_impl_vulkan.h>
 #include <backends/imgui_impl_glfw.h>
 #include "json11.hpp"
 
+#include "editor/EditorUI.h"
+#include "runtime/global/GlobalContext.h"
+#include "runtime/platform/WindowSystem.h"
+#include "runtime/code/base/macro.h"
+#include "runtime/framework/level/Level.h"
+#include "runtime/framework/serializer/HeSerializer.h"
+
+#include "runtime/render/RenderSystem.h"
+#include "runtime/platform/WindowSystem.h"
 
 namespace DynastyEngine
 {
@@ -19,7 +27,8 @@ namespace DynastyEngine
     // Help
 	static bool bShowTutorial = false;
 	static bool bShowAboutMe = false;
-	static bool bShowDemoImGui = false;
+	static bool bShowDemoImGui = true;
+
 
     void checkVkResult(VkResult err) 
     {
@@ -34,58 +43,57 @@ namespace DynastyEngine
         }
     }
 
-
-    int EditorUI::initWindow() 
+    
+    void EditorUI::initialize(WindowUIInitInfo initInfo) 
     {
-        /* Initialize the library */
-        glfwSetErrorCallback(glfwErrorCallback);
-        if (!glfwInit()) {
-            throw std::runtime_error("Failed to initialize GLFW");
-            return -1;
-        }
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-        glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
-    #ifdef __APPLE__
-        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-    #endif
+        IMGUI_CHECKVERSION();
+        ImGui::CreateContext();
 
-        glfwWindowHint(GLFW_CLIENT_API, GLFW_NO_API);
-        /* create a windowed mode window and its OpenGL context */
-        mWindow = glfwCreateWindow(WIDTH, HEIGHT, "MiniRenderer", nullptr, nullptr);
-        if (!mWindow) {
-            throw std::runtime_error("Failed to create GLFW window");
-            glfwTerminate();
-            return -1;
-        }
+        ImGuiIO& io = ImGui::GetIO();
+        // io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
+        // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
+        io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;         // Enable Docking
+        // io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
+        io.DisplayFramebufferScale = ImVec2(1.0, 1.0);
+        io.FontGlobalScale = 1.0;
+        io.ConfigViewportsNoAutoMerge = true;
+        io.ConfigDockingAlwaysTabBar         = true;
+        io.ConfigWindowsMoveFromTitleBarOnly = true;
+        
+        float fontSize = 18.0f;
+        io.Fonts->AddFontFromFileTTF("/Users/bowenzou/Workspace/Documents/dynasty/engine/asset/fonts/opensans/OpenSans-Bold.ttf", fontSize);
+        io.FontDefault = io.Fonts->AddFontFromFileTTF("/Users/bowenzou/Workspace/Documents/dynasty/engine/asset/fonts/opensans/OpenSans-Regular.ttf", fontSize);
+        io.Fonts->Build();
 
-        return 1;
+        ImGuiStyle& style     = ImGui::GetStyle();
+        style.WindowPadding   = ImVec2(1.0, 0);
+        style.FramePadding    = ImVec2(14.0, 2.0f);
+        style.ChildBorderSize = 0.0f;
+        style.FrameRounding   = 5.0f;
+        style.FrameBorderSize = 1.5f;
+
+        // Setup Dear ImGui style
+        ImGui::StyleColorsDark();
+
+        initInfo.renderSystem->initializeUIRenderBackend(this);
+    }
+
+    void EditorUI::showEditorUI()
+    {
+
     }
 
 
     void EditorUI::init() {
-        // Setup ImGui context
-        // IMGUI_CHECKVERSION();
-        // ImGui::CreateContext();
-        // ImGuiIO &io = ImGui::GetIO();
-        // io.IniFilename = nullptr;
-        // io.Fonts->AddFontDefault();
-        // io.Fonts->Build();
-
-        // // Setup Dear ImGui style
-        // ImGui::StyleColorsDark();
-        // ImGuiStyle* style = &ImGui::GetStyle();
-        // style->Alpha = 0.8f;
-
+        // TODO 应该放到别处
         // load config
-        loadConfig();
+        // loadConfig();
     }   
 
 
-    void EditorUI::initImgui(void *window, std::shared_ptr<Renderer> renderer) 
+    void EditorUI::initializeImgui(std::shared_ptr<Renderer> renderer) 
     {   
-        LOG_INFO("----- initImgui -----");
+        LOG_INFO("initImgui");
         if (renderer) 
         {   
             pInitializeImgui = true;
@@ -94,7 +102,6 @@ namespace DynastyEngine
             IMGUI_CHECKVERSION();
             ImGui::CreateContext();
             ImGuiIO& io = ImGui::GetIO();
-            (void)io;
             io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
             // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
             io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
@@ -119,7 +126,8 @@ namespace DynastyEngine
                 style.Colors[ImGuiCol_WindowBg].w = 1.0f;
             }
 
-            LOG_INFO("----- 3 -----");
+            std::shared_ptr<WindowSystem> windowSystem = gRuntimeGlobalContext.mWindowSystem;
+            GLFWwindow* window = windowSystem->getWindow();
             ImGui_ImplGlfw_InitForVulkan((GLFWwindow *) window, true);
             ImGui_ImplVulkan_InitInfo iniInfo = {};
             iniInfo.Instance                  = mRenderer->getVkCtx().instance();
@@ -136,10 +144,8 @@ namespace DynastyEngine
             // iniInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
             // iniInfo.Allocator = VK_NULL_HANDLE;
             // iniInfo.CheckVkResultFn = checkVkResult;
-            LOG_INFO("----- 4 -----");
             ImGui_ImplVulkan_Init(&iniInfo, mRenderer->getFbo()->getRenderPass());
 
-            LOG_INFO("----- 5 -----");
             // 将字体上传到 GPU Uploading fonts to the GPU
             auto commandBuffer = mRenderer->getVkCtx().beginCommands();
             VkCommandBuffer cmdBuffer = commandBuffer -> cmdBuffer;
@@ -148,21 +154,24 @@ namespace DynastyEngine
             
             vkDeviceWaitIdle(mRenderer->getVkCtx().device());
             ImGui_ImplVulkan_DestroyFontUploadObjects();
-
-            LOG_INFO("----- renderer end-----");
         }
     }
 
 
-
-    void EditorUI::onDraw() 
+    void EditorUI::uploadFonts() 
     {
-        LOG_INFO("----- onDraw -----");
+
+    }
+
+
+    void EditorUI::renderUI() 
+    {
+        LOG_INFO("----- renderUI -----");
         static bool bChangeDim = false;
 
-        ImGui_ImplVulkan_NewFrame();
-        ImGui_ImplGlfw_NewFrame();
-        ImGui::NewFrame();
+        // ImGui_ImplVulkan_NewFrame();
+        // ImGui_ImplGlfw_NewFrame();
+        // ImGui::NewFrame();
         
         // ----DockSpace Begin----
         static bool dockspaceOpen = true;
@@ -170,9 +179,20 @@ namespace DynastyEngine
         static bool opt_padding = false;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        // ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
+        // if (bShowDemoImGui)
+		// {
+		// 	ImGui::ShowDemoWindow(&bShowDemoImGui);
+		// }
+        // LOG_INFO("----- onDraw 7 -----");
+
+        // ImGui::End(); 
+        // return;
+
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
         // because it would be confusing to have two docking targets within each others.
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
         if (opt_fullscreen)
         {
             LOG_INFO("----- onDraw 1 -----");
@@ -213,7 +233,7 @@ namespace DynastyEngine
         ImGuiIO& io = ImGui::GetIO();
         ImGuiStyle& style = ImGui::GetStyle();
         float minWinSizeX = style.WindowMinSize.x;
-        LOG_INFO("----- WindowMinSize {} {} -----", style.WindowMinSize.x, style.WindowMinSize.y);
+        // LOG_INFO("----- WindowMinSize {} {} -----", style.WindowMinSize.x, style.WindowMinSize.y);
         style.WindowMinSize.x = 10.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
@@ -222,7 +242,6 @@ namespace DynastyEngine
         } 
         else 
         {
-            LOG_INFO("----- onDraw 11 -----");
             ImGuiIO& io = ImGui::GetIO();
             ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
             ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
@@ -326,15 +345,20 @@ namespace DynastyEngine
 
         ImGui::End(); 
 
-        ImGui::Render();
-        ImDrawData* main_draw_data = ImGui::GetDrawData();
-        ImGui_ImplVulkan_RenderDrawData(main_draw_data, mRenderer->getDrawCmd());
 
-        if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        {
-            ImGui::UpdatePlatformWindows();
-            ImGui::RenderPlatformWindowsDefault();
-        }
+
+
+
+
+        // ImGui::Render();
+        // ImDrawData* main_draw_data = ImGui::GetDrawData();
+        // ImGui_ImplVulkan_RenderDrawData(main_draw_data, mRenderer->getDrawCmd());
+
+        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
+        // {
+        //     ImGui::UpdatePlatformWindows();
+        //     ImGui::RenderPlatformWindowsDefault();
+        // }
 
         // ImGui::Begin("Another Window");  // Pass a pointer to our bool variable (the window will have a closing
         //                                         // button that will clear the bool when clicked)
@@ -534,6 +558,7 @@ namespace DynastyEngine
         // }
     }
 
+
     void EditorUI::uiToolbar()
 	{
 		ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0, 2));
@@ -564,27 +589,56 @@ namespace DynastyEngine
 		ImGui::End();
 	}
 
-    void EditorUI::newScene() {
 
+    void EditorUI::newScene() 
+    {
+        mEditorScene = std::make_shared<Level>();
+
+        mSceneHierarchyPanel.setContent(mEditorScene);
+        mEditorScenePath = std::filesystem::path();
     }
     
+    void EditorUI::openScene()
+    {
 
-    void EditorUI::openScene() {
+    }
+
+    void EditorUI::openScene(const std::filesystem::path& path) 
+    {
+        if (path.extension().string() != ".he" || path.extension().string() != ".json") 
+        {
+            LOG_WARN("Could not load {} - not a scene file. A scene file format must be .he or .json", path.filename().string());
+            return;
+        }
+
+        std::shared_ptr<Level> newScene = std::make_shared<Level>();
+        if (path.extension().string() == ".he") 
+        {
+            HeSerializer serializer(newScene);
+            mEditorScene = newScene;
+
+            
+        }
+        // TODO 加载方式可能会不一样
+        else if (path.extension().string() == ".json") 
+        {
+
+        }
+
+        // 设置显示内容
+        mSceneHierarchyPanel.setContent(mEditorScene);
+
+        mEditorScenePath = path;
+    }
+
+    void EditorUI::saveScene(const std::filesystem::path& format) 
+    {
 
     }
         
 
-    void EditorUI::openScene(const std::filesystem::path& path) {
-
-    }
-        
-
-    void EditorUI::saveScene() {
-
-    }
-        
-
-    void EditorUI::saveSceneAs() {
+    void EditorUI::saveSceneAs() 
+    {   
 
     }
 
@@ -594,69 +648,72 @@ namespace DynastyEngine
     }
 
 
-    bool EditorUI::loadConfig() 
-    {
-        auto configPath = ASSETS_DIR + "assets.json";
-        auto configStr = FileUtils::readText(configPath);
+    
 
-        LOG_INFO("loadConfig: {}", configStr);
+
+    // TODO 应该放到别处
+    // bool EditorUI::loadConfig() 
+    // {
+    //     auto configPath = ASSETS_DIR + "assets.json";
+    //     auto configStr = FileUtils::readText(configPath);
+
+    //     LOG_INFO("loadConfig: {}", configStr);
         
-        if (configStr.empty()) 
-        {
-            throw std::runtime_error("configPath is error!");
-            return false;
-        }
+    //     if (configStr.empty()) 
+    //     {
+    //         throw std::runtime_error("configPath is error!");
+    //         return false;
+    //     }
 
-        std::string err;
-        const auto json = json11::Json::parse(configStr, err);
-        for (auto &kv : json["model"].object_items()) 
-        {
-            mModelPaths[kv.first] = ASSETS_DIR + kv.second["path"].string_value();
-        }
-        for (auto &kv :  json["skybox"].object_items()) 
-        {
-            mSkyboxPaths[kv.first] = ASSETS_DIR + kv.second["path"].string_value();
-        }
+    //     std::string err;
+    //     const auto json = json11::Json::parse(configStr, err);
+    //     for (auto &kv : json["model"].object_items()) 
+    //     {
+    //         mModelPaths[kv.first] = ASSETS_DIR + kv.second["path"].string_value();
+    //     }
+    //     for (auto &kv :  json["skybox"].object_items()) 
+    //     {
+    //         mSkyboxPaths[kv.first] = ASSETS_DIR + kv.second["path"].string_value();
+    //     }
         
-        if (mModelPaths.empty()) 
-        { 
-            std::cout << "load models failed: %s" << err.c_str() << std::endl;
-            return false;
-        }
+    //     if (mModelPaths.empty()) 
+    //     { 
+    //         std::cout << "load models failed: %s" << err.c_str() << std::endl;
+    //         return false;
+    //     }
 
-        for (const auto &kv : mModelPaths)
-        {
-            mModelNames.emplace_back(kv.first.c_str());
-        }
-        for (const auto &kv : mSkyboxPaths) 
-        {
-            mSkyboxNames.emplace_back(kv.first.c_str());
-        }
-        return reloadModel(mModelPaths.begin()->first);
-    }
+    //     for (const auto &kv : mModelPaths)
+    //     {
+    //         mModelNames.emplace_back(kv.first.c_str());
+    //     }
+    //     for (const auto &kv : mSkyboxPaths) 
+    //     {
+    //         mSkyboxNames.emplace_back(kv.first.c_str());
+    //     }
+    //     return reloadModel(mModelPaths.begin()->first);
+    // }
 
 
-    bool EditorUI::reloadModel(const std::string &name) 
-    {
-        if (name != mConfig.modelName) 
-        {
-            mConfig.modelName = name;
-            mConfig.modelPath = mModelPaths[mConfig.modelName];
+    // TODO 应该放到别处
+    // bool EditorUI::reloadModel(const std::string &name) 
+    // {
+    //     if (name != mConfig.modelName) 
+    //     {
+    //         mConfig.modelName = name;
+    //         mConfig.modelPath = mModelPaths[mConfig.modelName];
 
-            if (mReloadModelFunc) 
-            {
-                return mReloadModelFunc(mConfig.modelPath);
-            }
-        }
-        return true;
-    }
+    //         if (mReloadModelFunc) 
+    //         {
+    //             return mReloadModelFunc(mConfig.modelPath);
+    //         }
+    //     }
+    //     return true;
+    // }
 
 
     void EditorUI::cleanup() 
     {
-        glfwDestroyWindow(mWindow);
 
-        glfwTerminate();
     }
 }
 

@@ -13,18 +13,6 @@
 
 #include <stdlib.h>
 #include <iostream>
-// #include <stdexcept>
-// #include <algorithm>
-// #include <vector>
-// #include <fstream>
-// #include <chrono>
-// #include <cstdint>
-// #include <cstdlib>
-// #include <cstring>
-// #include <array>
-// #include <limits>
-// #include <optional>
-// #include <set>
 #include <unordered_map>
 #include "runtime/function/Model.h"
 #include "runtime/function/Material.h"
@@ -39,7 +27,7 @@
 #include "editor/panels/ConfigPanel.h"
 #include "runtime/Viewer.h"
 #include "runtime/render/FrameBuffer.h"
-#include "runtime/imgui/ImGuiLayer.h"
+// #include "runtime/imgui/ImGuiLayer.h"
 // #include "./platform/vulkan/VulkanImGuiLayer.h"
 
 
@@ -54,8 +42,21 @@ namespace DynastyEngine
     class Engine {
     public:
         bool initEngine(); 
-        bool initEvent(GLFWwindow* window); 
-        bool run();
+
+        void startEngine(); 
+        void shutdownEngine();
+        
+        void initialize();
+        void clear();
+
+        void run();
+        bool tickOneFrame(float deltaTime);
+        void logicalTick(float deltaTime);
+        void rendererTick(float deltaTime);
+        void calculateFPF(float deltaTime);
+        float calculateDeltaTime();
+        
+        // void run();
         void drawFrame();
         void setupConfigPanelActions();
         void cleanup();
@@ -77,7 +78,7 @@ namespace DynastyEngine
         {
             if (showConfigPanel_) {
                 // configPanel_->onDraw();
-                editorUI_->onDraw();
+                // editorUI_->onDraw();
             }
         }
         inline void togglePanelState() 
@@ -110,9 +111,10 @@ namespace DynastyEngine
             orbitController_->panY = y;
         }
 
-        [[nodiscard]] GLFWwindow* GetWindow() { return mWindow; }
-
     public:
+
+        std::chrono::steady_clock::time_point mLastTickTimePoint {std::chrono::steady_clock::now()};
+
         std::shared_ptr<Config> config_;
         std::shared_ptr<ConfigPanel> configPanel_;
         std::shared_ptr<Camera> camera_;
@@ -123,8 +125,7 @@ namespace DynastyEngine
 
         std::shared_ptr<ModelLoader> modelLoader_;
 
-        GLFWwindow* mWindow;
-        ImGuiLayer* mImGuiLayer;
+        // ImGuiLayer* mImGuiLayer;
         
         bool showConfigPanel_ = true;
         int rendererType_ = RENDER_TYPE_NONE;

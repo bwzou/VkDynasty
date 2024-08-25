@@ -13,34 +13,40 @@
 #include "editor/panels/ContentBrowserPanel.h"
 #include "editor/panels/ConfigPanel.h"
 
+#include "runtime/ui/WindowUI.h"
+
 
 namespace DynastyEngine
 {
+    class Level;
 
-    const uint32_t WIDTH = 1000;
-    const uint32_t HEIGHT = 800;
+
+    // const uint32_t WIDTH = 1000;
+    // const uint32_t HEIGHT = 800;
 
     static void glfwErrorCallback(int error, const char *description) {
         fprintf(stderr, "Glfw Error %d: %s\n", error, description);
     }
 
-    class EditorUI
+    class EditorUI : public WindowUI
     {
     public:
-        EditorUI(Config &config) : mConfig(config)
-        {
+        EditorUI() {}
 
-        }
+        // EditorUI(Config &config) : mConfig(config)
+        // {
+        // 
+        // }
 
         ~EditorUI()
         {
             
         }
 
-        GLFWwindow* getWindow() 
-        {
-            return mWindow;
-        }
+        void initialize(WindowUIInitInfo initInfo);
+        void showEditorUI();
+        void uploadFonts();
+
         inline void setReloadModelFunc(const std::function<bool(const std::string &)> &func) 
         {
             mReloadModelFunc = func;
@@ -59,30 +65,29 @@ namespace DynastyEngine
             return mConfigPanel;
         }
 
-        int initWindow();
         void init();
-        void initImgui(void *window, std::shared_ptr<Renderer> renderer);
+        void initializeImgui(std::shared_ptr<Renderer> renderer);
         
-        void onDraw();
+        void renderUI();
 
         void newScene();
         void openScene();
         void openScene(const std::filesystem::path& path);
-        void saveScene();
+        void saveScene(const std::filesystem::path& format);
         void saveSceneAs();
 
         void uiToolbar();
         void loadDefaultEditorConfig();
 
-        bool loadConfig();
-        bool reloadModel(const std::string &name); 
+        // bool loadConfig();
+        // bool reloadModel(const std::string &name); 
 
         void cleanup();
 
     private:
         /* data */
         GLFWwindow* mWindow;
-        Config &mConfig;
+        // Config &mConfig;
         Renderer* mRenderer;
         VkRenderPass mImguiRenderPass;
 
@@ -95,7 +100,6 @@ namespace DynastyEngine
         std::function<bool(const std::string &path)> mReloadModelFunc;
         std::function<void(glm::vec3 &position, glm::vec3 &color)> mUpdateLightFunc;
 
-
         bool pInitializeImgui = false;
 
         SceneHierarchyPanel mSceneHierarchyPanel;
@@ -103,6 +107,9 @@ namespace DynastyEngine
         SceneSettingsPanel mSceneSettingsPanel;
 
         std::shared_ptr<ConfigPanel> mConfigPanel;
+
+        std::shared_ptr<Level> mEditorScene;
+        std::filesystem::path mEditorScenePath;
     };
 
 }
