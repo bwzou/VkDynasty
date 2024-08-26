@@ -27,7 +27,7 @@ namespace DynastyEngine {
     
     void Editor::clear() 
     {
-
+        
     }
 
     void Editor::run() 

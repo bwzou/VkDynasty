@@ -46,6 +46,7 @@ namespace DynastyEngine
         void setupDescriptorSet();
         void setupPipelines(); 
         void setupSwapchainFramebuffers();
+        void updateAfterFramebufferRecreate();
         
         void drawMeshGbuffer();
 

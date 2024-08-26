@@ -194,8 +194,8 @@ namespace DynastyEngine
         void queueWaitIdle(VkQueue queue);
 
         void prepareContext();
-        bool prepareBeforePass();
-        void submitAfterPass();
+        bool prepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain);
+        void submitAfterPass(std::function<void()> passUpdateAfterRecreateSwapchain);
 
         // query
         VkCommandPool   getCommandPoor() const;
@@ -228,6 +228,8 @@ namespace DynastyEngine
         void destroyCommandPool(VkCommandPool commandPool);
         void destroyBuffer(VkBuffer &buffer);
         void freeCommandBuffers(VkCommandPool commandPool, uint32_t commandBufferCount, VkCommandBuffer pCommandBuffers);
+
+        void clear();
 
         // memory
         void freeMemory(VkDeviceMemory &memory);

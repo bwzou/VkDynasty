@@ -18,6 +18,9 @@ namespace DynastyEngine
         void forwardRender();
         void deferredRender();
 
+        void passUpdateAfterRecreateSwapchain();
+        void clear();
+
     public:
         std::shared_ptr<VulkanAPI>          mVulkanAPI;
         std::shared_ptr<RenderPass>         mUIPass;

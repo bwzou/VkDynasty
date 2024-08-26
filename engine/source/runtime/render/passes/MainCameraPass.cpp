@@ -639,5 +639,24 @@ namespace DynastyEngine
             VkResult result = vkCreateFramebuffer(mVulkanAPI->mDevice, &createInfo, nullptr, &mSwapchainFramebuffers[i]);
         }
     }
-        
+
+    void MainCameraPass::updateAfterFramebufferRecreate()
+    {
+        LOG_INFO("MainCameraPass::updateAfterFramebufferRecreate");
+        for (size_t i = 0; i < mFramebuffer.attachments.size(); i++)
+        {
+            mVulkanAPI->destroyImage(mFramebuffer.attachments[i].image);
+            mVulkanAPI->destroyImageView(mFramebuffer.attachments[i].view);
+            mVulkanAPI->freeMemory(mFramebuffer.attachments[i].mem);
+        }
+
+        for (auto framebuffer : mSwapchainFramebuffers)
+        {
+            mVulkanAPI->destroyFramebuffer(framebuffer);
+        }
+
+        setupAttachments();
+        setupDescriptorSet();
+        setupSwapchainFramebuffers();
+    }       
 }

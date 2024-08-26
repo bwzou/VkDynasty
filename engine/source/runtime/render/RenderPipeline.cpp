@@ -37,7 +37,12 @@ namespace DynastyEngine
         // combineUIInitInfo.sceneInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferOdd];
         // combineUIInitInfo.uiInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferEven];
         // mCombineUIPass->initialize(&combineUIInitInfo);
-    }   
+    }  
+
+    void RenderPipeline::initializeUIRenderBackend(WindowUI* windowUI)
+    {
+        mUIPass->initializeUIRenderBackend(windowUI);
+    } 
         
     void RenderPipeline::forwardRender()
     {
@@ -51,17 +56,28 @@ namespace DynastyEngine
         LOG_INFO("resetCommandPool");
         mVulkanAPI->resetCommandPool();
         LOG_INFO("prepareBeforePass");
-        mVulkanAPI->prepareBeforePass();
+        bool recreateSwapchain = mVulkanAPI->prepareBeforePass(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
+        if (!recreateSwapchain)
+        {
+            return;
+        }
 
         UIPass& uiPass                = *(static_cast<UIPass*>(mUIPass.get()));
         CombineUIPass& combineUIPass  = *(static_cast<CombineUIPass*>(mCombineUIPass.get()));
         static_cast<MainCameraPass*>(mMainCameraPass.get())->draw(uiPass, combineUIPass, mVulkanAPI->mCurrentSwapchainImageIndex);
 
-        mVulkanAPI->submitAfterPass();
+        mVulkanAPI->submitAfterPass(std::bind(&RenderPipeline::passUpdateAfterRecreateSwapchain, this));
     }
 
-    void RenderPipeline::initializeUIRenderBackend(WindowUI* windowUI)
+    void RenderPipeline::passUpdateAfterRecreateSwapchain()
     {
-        mUIPass->initializeUIRenderBackend(windowUI);
-    }
+        MainCameraPass&   mainCameraPass   = *(static_cast<MainCameraPass*>(mMainCameraPass.get()));
+
+        mainCameraPass.updateAfterFramebufferRecreate();
+    }  
+
+    void RenderPipeline::clear() 
+    {
+        
+    } 
 }

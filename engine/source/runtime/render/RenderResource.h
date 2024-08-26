@@ -31,7 +31,7 @@ namespace DynastyEngine
                             void*                           indexBufferData);
         void updateVertexBuffer(std::shared_ptr<VulkanAPI>  mVulkanAPI,
                             uint32_t                        vertexBufferSize,
-                            void*                           vertexBufferData);
+                            void*                           vertexBufferData);                            
 
     public:
         VkBuffer                    vertexBuffer;

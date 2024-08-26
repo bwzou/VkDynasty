@@ -1298,19 +1298,23 @@ namespace DynastyEngine {
         mCurrentCommandBuffer = mCommandBuffers[mCurrentFrameIndex];
     }
 
-    bool VulkanAPI::prepareBeforePass()
+    bool VulkanAPI::prepareBeforePass(std::function<void()> passUpdateAfterRecreateSwapchain)
     {   
         VkResult acquireImageResult = vkAcquireNextImageKHR(mDevice, mSwapchain, UINT64_MAX, mImageAvailableForRenderSemaphores[mCurrentFrameIndex], VK_NULL_HANDLE, &mCurrentSwapchainImageIndex);
         
         if (VK_ERROR_OUT_OF_DATE_KHR == acquireImageResult)
         {
             recreateSwapchain();
-            return VK_SUCCESS;
+            LOG_INFO("MainCameraPass::updateAfterFramebufferRecreate 1");
+            passUpdateAfterRecreateSwapchain();
+            return true;
         }
         else if (VK_SUBOPTIMAL_KHR == acquireImageResult)
         {
             LOG_INFO("VK_SUBOPTIMAL_KHR");
             recreateSwapchain();
+            LOG_INFO("MainCameraPass::updateAfterFramebufferRecreate 2");
+            passUpdateAfterRecreateSwapchain();
 
             // NULL submit to wait semaphore
             VkPipelineStageFlags  waitStages[] = { VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT };
@@ -1335,10 +1339,11 @@ namespace DynastyEngine {
             if(VK_SUCCESS != resQueueSubmit)
             {
                 LOG_ERROR("vkQueueSubmit failed!");
+                return false;
             }
 
             mCurrentFrameIndex = (mCurrentFrameIndex + 1) % kMaxFramesInFlight;
-            return VK_SUCCESS;
+            return false;
         }
         else 
         {
@@ -1364,7 +1369,7 @@ namespace DynastyEngine {
         return true;
     }
 
-    void VulkanAPI::submitAfterPass() 
+    void VulkanAPI::submitAfterPass(std::function<void()> passUpdateAfterRecreateSwapchain) 
     {
         // end command buffer
         VkResult resEndCommandBuffer = vkEndCommandBuffer(mCommandBuffers[mCurrentFrameIndex]);
@@ -1415,7 +1420,7 @@ namespace DynastyEngine {
         if (VK_ERROR_OUT_OF_DATE_KHR == resPresent || VK_SUBOPTIMAL_KHR == resPresent)
         {
             recreateSwapchain();
-            // passUpdateAfterRecreateSwapchain();
+            passUpdateAfterRecreateSwapchain();
         }
         else
         {
@@ -1494,6 +1499,14 @@ namespace DynastyEngine {
     void VulkanAPI::freeCommandBuffers(VkCommandPool commandPool, uint32_t commandBufferCount, VkCommandBuffer pCommandBuffers)
     {
         vkFreeCommandBuffers(mDevice, commandPool, commandBufferCount, &pCommandBuffers);
+    }
+
+    void VulkanAPI::clear() 
+    {
+        if (pEnableValidationLayers)
+        {
+            destroyDebugUtilsMessengerEXT(mInstance, mDebugMessenger, nullptr);
+        }
     }
 
     /* ---------------------------------------- memory ------------------------------------------ */ 

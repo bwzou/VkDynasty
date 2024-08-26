@@ -74,6 +74,23 @@ namespace DynastyEngine
     
     void RenderSystem::clear()
     {
-        
+        if (mVulkanAPI) 
+        {
+            mVulkanAPI->clear();
+        }
+        mVulkanAPI.reset();
+
+        if (mRenderResource) 
+        {
+            mRenderResource->clear();
+        }
+        mRenderResource.reset();
+
+        if (mRenderPipeline)
+        {
+            mRenderPipeline->clear();
+        }
+        mRenderPipeline.reset();
+
     }
 }

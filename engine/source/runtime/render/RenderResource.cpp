@@ -7,6 +7,7 @@ namespace DynastyEngine
 {
     void RenderResource::clear()
     {
+        
     }
 
     void RenderResource::createVertexBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI) {
