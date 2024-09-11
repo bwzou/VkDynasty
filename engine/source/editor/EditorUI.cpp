@@ -6,29 +6,30 @@
 
 #include "editor/EditorUI.h"
 #include "runtime/global/GlobalContext.h"
-#include "runtime/platform/WindowSystem.h"
 #include "runtime/code/base/macro.h"
 #include "runtime/framework/level/Level.h"
 #include "runtime/framework/serializer/HeSerializer.h"
 
 #include "runtime/render/RenderSystem.h"
 #include "runtime/platform/WindowSystem.h"
+#include "runtime/platform/PlatformUtils.h"
+#include "runtime/resource/asset/AssetManager.h"
 
 namespace DynastyEngine
 {
+    static bool pEditorMenu = true;
     static bool bShowViewport = true;
     static bool bShowEngineSettings = true;
 	static bool bShowSceneSettings = true;
     static bool bShowContentBrowser = true;
 	static bool bShowSceneHierachy = true;
     static bool bShowProperties = true;
-    static bool bShowStats = true;
+    static bool bShowStats = false;
 
     // Help
 	static bool bShowTutorial = false;
 	static bool bShowAboutMe = false;
 	static bool bShowDemoImGui = true;
-
 
     void checkVkResult(VkResult err) 
     {
@@ -43,7 +44,6 @@ namespace DynastyEngine
         }
     }
 
-    
     void EditorUI::initialize(WindowUIInitInfo initInfo) 
     {
         IMGUI_CHECKVERSION();
@@ -73,15 +73,319 @@ namespace DynastyEngine
         style.FrameBorderSize = 1.5f;
 
         // Setup Dear ImGui style
-        ImGui::StyleColorsDark();
+        // ImGui::StyleColorsDark();
+
+        // set imgui color style
+        setUIColorStyle();
 
         initInfo.renderSystem->initializeUIRenderBackend(this);
     }
 
     void EditorUI::showEditorUI()
     {
-
+        showEditorMenu(&pEditorMenu);
+        showEngineSettingsWindow(&bShowEngineSettings);
+        showSceneSettingsWindow(&bShowSceneSettings);
+        showEditorViewportWindow(&bShowViewport);
+        showSceneHierarchyWindow(&bShowSceneHierachy, &bShowProperties);
+        showContentBrowserWindow(&bShowContentBrowser);
     }
+
+    void EditorUI::showEditorMenu(bool* pEditorMenu)
+    {
+        ImGuiDockNodeFlags dock_flags   = ImGuiDockNodeFlags_DockSpace;
+        ImGuiWindowFlags   window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoTitleBar |
+                                        ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize |
+                                        ImGuiWindowFlags_NoMove | ImGuiWindowFlags_NoBackground |
+                                        ImGuiConfigFlags_NoMouseCursorChange | ImGuiWindowFlags_NoBringToFrontOnFocus;
+
+        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+        ImGui::SetNextWindowPos(main_viewport->WorkPos, ImGuiCond_Always);
+        std::array<int, 2> window_size = gRuntimeGlobalContext.mWindowSystem->getWindowSize();
+        ImGui::SetNextWindowSize(ImVec2((float)window_size[0], (float)window_size[1]), ImGuiCond_Always);
+
+        ImGui::SetNextWindowViewport(main_viewport->ID);
+
+        ImGui::Begin("Editor menu", pEditorMenu, window_flags);
+
+        ImGuiID main_docking_id = ImGui::GetID("Main Docking");
+        if (ImGui::DockBuilderGetNode(main_docking_id) == nullptr)
+        {
+            ImGui::DockBuilderRemoveNode(main_docking_id);
+
+            ImGui::DockBuilderAddNode(main_docking_id, dock_flags);
+            ImGui::DockBuilderSetNodePos(main_docking_id,
+                                         ImVec2(main_viewport->WorkPos.x, main_viewport->WorkPos.y + 18.0f));
+            ImGui::DockBuilderSetNodeSize(main_docking_id,
+                                          ImVec2((float)window_size[0], (float)window_size[1] - 18.0f));
+
+            ImGuiID center = main_docking_id;
+            ImGuiID left;
+            ImGuiID right = ImGui::DockBuilderSplitNode(center, ImGuiDir_Right, 0.25f, nullptr, &left);
+
+            ImGuiID left_other;
+            ImGuiID left_file_content = ImGui::DockBuilderSplitNode(left, ImGuiDir_Down, 0.30f, nullptr, &left_other);
+
+            ImGuiID left_game_engine;
+            ImGuiID left_asset =
+                ImGui::DockBuilderSplitNode(left_other, ImGuiDir_Left, 0.30f, nullptr, &left_game_engine);
+
+            ImGui::DockBuilderDockWindow("World Objects", left_asset);
+            ImGui::DockBuilderDockWindow("Components Details", right);
+            ImGui::DockBuilderDockWindow("File Content", left_file_content);
+            ImGui::DockBuilderDockWindow("Game Engine", left_game_engine);
+
+            ImGui::DockBuilderFinish(main_docking_id);
+        }
+
+        ImGui::DockSpace(main_docking_id);
+
+        // if (ImGui::BeginMenuBar())
+        // {
+        //     if (ImGui::BeginMenu("Menu"))
+        //     {
+        //         if (ImGui::MenuItem("Reload Current Level"))
+        //         {
+        //             // g_runtime_global_context.m_world_manager->reloadCurrentLevel();
+        //             // g_runtime_global_context.m_render_system->clearForLevelReloading();
+        //             // g_editor_global_context.m_scene_manager->onGObjectSelected(k_invalid_gobject_id);
+        //         }
+        //         if (ImGui::MenuItem("Save Current Level"))
+        //         {
+        //             // g_runtime_global_context.m_world_manager->saveCurrentLevel();
+        //         }
+        //         if (ImGui::BeginMenu("Debug"))
+        //         {
+        //             if (ImGui::BeginMenu("Animation"))
+        //             {
+        //                 // if (ImGui::MenuItem(g_runtime_global_context.m_render_debug_config->animation.show_skeleton ? "off skeleton" : "show skeleton"))
+        //                 // {
+        //                 //     g_runtime_global_context.m_render_debug_config->animation.show_skeleton = !g_runtime_global_context.m_render_debug_config->animation.show_skeleton;
+        //                 // }
+        //                 // if (ImGui::MenuItem(g_runtime_global_context.m_render_debug_config->animation.show_bone_name ? "off bone name" : "show bone name"))
+        //                 // {
+        //                 //     g_runtime_global_context.m_render_debug_config->animation.show_bone_name = !g_runtime_global_context.m_render_debug_config->animation.show_bone_name;
+        //                 // }
+        //                 ImGui::EndMenu();
+        //             }
+        //             if (ImGui::BeginMenu("Camera"))
+        //             {
+        //                 // if (ImGui::MenuItem(g_runtime_global_context.m_render_debug_config->camera.show_runtime_info ? "off runtime info" : "show runtime info"))
+        //                 // {
+        //                 //     g_runtime_global_context.m_render_debug_config->camera.show_runtime_info = !g_runtime_global_context.m_render_debug_config->camera.show_runtime_info;
+        //                 // }
+        //                 ImGui::EndMenu();
+        //             }
+        //             if (ImGui::BeginMenu("Game Object"))
+        //             {
+        //                 // if (ImGui::MenuItem(g_runtime_global_context.m_render_debug_config->gameObject.show_bounding_box ? "off bounding box" : "show bounding box"))
+        //                 // {
+        //                 //     g_runtime_global_context.m_render_debug_config->gameObject.show_bounding_box = !g_runtime_global_context.m_render_debug_config->gameObject.show_bounding_box;
+        //                 // }
+        //                 ImGui::EndMenu();
+        //             }
+        //             ImGui::EndMenu();
+        //         }
+        //         if (ImGui::MenuItem("Exit"))
+        //         {
+        //             // g_editor_global_context.m_engine_runtime->shutdownEngine();
+        //             exit(0);
+        //         }
+        //         ImGui::EndMenu();
+        //     }
+        //     if (ImGui::BeginMenu("Window"))
+        //     {
+        //         // ImGui::MenuItem("World Objects", nullptr, &m_asset_window_open);
+        //         // ImGui::MenuItem("Game", nullptr, &m_game_engine_window_open);
+        //         // ImGui::MenuItem("File Content", nullptr, &m_file_content_window_open);
+        //         // ImGui::MenuItem("Detail", nullptr, &m_detail_window_open);
+        //         ImGui::EndMenu();
+        //     }
+        //     ImGui::EndMenuBar();
+        // }
+
+        if (ImGui::BeginMenuBar()) 
+        {
+            if (ImGui::BeginMenu("File"))
+            {
+                if (ImGui::MenuItem("New", "Ctrl+N"))
+                    newScene();
+
+                if (ImGui::MenuItem("Open...", "Ctrl+O"))
+                    openScene();
+
+                if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
+                    saveSceneAs();
+
+                if (ImGui::MenuItem("Exit", NULL, false)) 
+					cleanup();
+
+                ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Window")) 
+            {
+                ImGui::MenuItem("Viewport", NULL, &bShowViewport);
+                ImGui::MenuItem("Content Browser", NULL, &bShowContentBrowser);
+                ImGui::MenuItem("Level Hierachy", NULL, &bShowSceneHierachy);
+                ImGui::MenuItem("Properties", NULL, &bShowProperties);
+                ImGui::MenuItem("Stats", NULL, &bShowStats);
+				ImGui::MenuItem("Engine Settings", NULL, &bShowEngineSettings);
+				ImGui::MenuItem("Environment Settings", NULL, &bShowSceneSettings);
+
+                if (ImGui::MenuItem("Load Default Layout"))
+					loadDefaultEditorConfig();
+
+				ImGui::EndMenu();
+            }
+            if (ImGui::BeginMenu("Help"))
+			{
+				ImGui::MenuItem("Tutorial", NULL, &bShowTutorial);
+				ImGui::MenuItem("About Me", NULL, &bShowAboutMe);
+				ImGui::MenuItem("Demo ImGui", NULL, &bShowDemoImGui);
+
+				ImGui::EndMenu();
+			}
+
+            ImGui::EndMenuBar();
+        }
+
+        ImGui::End();
+    }
+
+    void EditorUI::showContentBrowserWindow(bool* bShowContentBrowser) 
+    {
+        mContentBrowserPanel.onImGuiDraw(bShowContentBrowser);
+    }
+
+    void EditorUI::showEngineSettingsWindow(bool* bShowEngineSettings) 
+    {
+        ImGui::Begin("Engine Settings", bShowEngineSettings);
+
+        ImGui::End();
+    }
+
+    void EditorUI::showSceneSettingsWindow(bool* bShowSceneSettings) 
+    {
+        mSceneSettingsPanel.onImGuiDraw(bShowSceneSettings);
+    }
+
+    void EditorUI::showSceneHierarchyWindow(bool* bShowSceneHierachy, bool* bShowProperties)
+    {
+        mSceneHierarchyPanel.onImGuiDraw(bShowSceneHierachy, bShowProperties);
+    }
+
+    void EditorUI::showEditorViewportWindow(bool* bShowViewport)
+    {
+        ImGuiIO&         io           = ImGui::GetIO();
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_NoBackground | ImGuiWindowFlags_MenuBar;
+
+        const ImGuiViewport* main_viewport = ImGui::GetMainViewport();
+
+        if (!*bShowViewport)
+            return;
+
+        if (!ImGui::Begin("Game Engine", bShowViewport, window_flags))
+        {
+            ImGui::End();
+            return;
+        }
+
+        glm::vec2 render_target_window_pos = { 0.0f, 0.0f };
+        glm::vec2  render_target_window_size = { 0.0f, 0.0f };
+
+        auto menu_bar_rect = ImGui::GetCurrentWindow()->MenuBarRect();
+
+        render_target_window_pos.x = ImGui::GetWindowPos().x;
+        render_target_window_pos.y = menu_bar_rect.Max.y;
+        render_target_window_size.x = ImGui::GetWindowSize().x;
+        render_target_window_size.y = (ImGui::GetWindowSize().y + ImGui::GetWindowPos().y) - menu_bar_rect.Max.y; // coord of right bottom point of full window minus coord of right bottom point of menu bar window.
+
+        // if (new_window_pos != m_engine_window_pos || new_window_size != m_engine_window_size)
+        {
+#if defined(__MACH__)
+            // The dpi_scale is not reactive to DPI changes or monitor switching, it might be a bug from ImGui.
+            // Return value from ImGui::GetMainViewport()->DpiScal is always the same as first frame.
+            // glfwGetMonitorContentScale and glfwSetWindowContentScaleCallback are more adaptive.
+            float dpi_scale = main_viewport->DpiScale;
+            gRuntimeGlobalContext.mRenderSystem->updateEngineContentViewport(render_target_window_pos.x * dpi_scale,
+                render_target_window_pos.y * dpi_scale,
+                render_target_window_size.x * dpi_scale,
+                render_target_window_size.y * dpi_scale);
+#else
+            gRuntimeGlobalContext.m_render_system->updateEngineContentViewport(
+                render_target_window_pos.x, render_target_window_pos.y, render_target_window_size.x, render_target_window_size.y);
+#endif
+            // gRuntimeGlobalContext.m_input_manager->setEngineWindowPos(render_target_window_pos);
+            // gRuntimeGlobalContext.m_input_manager->setEngineWindowSize(render_target_window_size);
+        }
+
+        ImGui::End();
+    }
+
+    void EditorUI::setUIColorStyle() 
+    {
+        ImGuiStyle* style  = &ImGui::GetStyle();
+        ImVec4*     colors = style->Colors;
+
+        colors[ImGuiCol_Text]                  = ImVec4(0.4745f, 0.4745f, 0.4745f, 1.00f);
+        colors[ImGuiCol_TextDisabled]          = ImVec4(0.50f, 0.50f, 0.50f, 1.00f);
+        colors[ImGuiCol_WindowBg]              = ImVec4(0.0078f, 0.0078f, 0.0078f, 1.00f);
+        colors[ImGuiCol_ChildBg]               = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_PopupBg]               = ImVec4(0.08f, 0.08f, 0.08f, 0.94f);
+        colors[ImGuiCol_Border]                = ImVec4(0.0f, 0.0f, 0.0f, 1.0f);
+        colors[ImGuiCol_BorderShadow]          = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_FrameBg]               = ImVec4(0.047f, 0.047f, 0.047f, 0.5411f);
+        colors[ImGuiCol_FrameBgHovered]        = ImVec4(0.196f, 0.196f, 0.196f, 0.40f);
+        colors[ImGuiCol_FrameBgActive]         = ImVec4(0.294f, 0.294f, 0.294f, 0.67f);
+        colors[ImGuiCol_TitleBg]               = ImVec4(0.0039f, 0.0039f, 0.0039f, 1.00f);
+        colors[ImGuiCol_TitleBgActive]         = ImVec4(0.0039f, 0.0039f, 0.0039f, 1.00f);
+        colors[ImGuiCol_TitleBgCollapsed]      = ImVec4(0.00f, 0.00f, 0.00f, 0.50f);
+        colors[ImGuiCol_MenuBarBg]             = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_ScrollbarBg]           = ImVec4(0.02f, 0.02f, 0.02f, 0.53f);
+        colors[ImGuiCol_ScrollbarGrab]         = ImVec4(0.31f, 0.31f, 0.31f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabHovered]  = ImVec4(0.41f, 0.41f, 0.41f, 1.00f);
+        colors[ImGuiCol_ScrollbarGrabActive]   = ImVec4(0.51f, 0.51f, 0.51f, 1.00f);
+        colors[ImGuiCol_CheckMark]             = ImVec4(93.0f / 255.0f, 10.0f / 255.0f, 66.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_SliderGrab]            = colors[ImGuiCol_CheckMark];
+        colors[ImGuiCol_SliderGrabActive]      = ImVec4(0.3647f, 0.0392f, 0.2588f, 0.50f);
+        colors[ImGuiCol_Button]                = ImVec4(0.0117f, 0.0117f, 0.0117f, 1.00f);
+        colors[ImGuiCol_ButtonHovered]         = ImVec4(0.0235f, 0.0235f, 0.0235f, 1.00f);
+        colors[ImGuiCol_ButtonActive]          = ImVec4(0.0353f, 0.0196f, 0.0235f, 1.00f);
+        colors[ImGuiCol_Header]                = ImVec4(0.1137f, 0.0235f, 0.0745f, 0.588f);
+        colors[ImGuiCol_HeaderHovered]         = ImVec4(5.0f / 255.0f, 5.0f / 255.0f, 5.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_HeaderActive]          = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_Separator]             = ImVec4(0.0f, 0.0f, 0.0f, 0.50f);
+        colors[ImGuiCol_SeparatorHovered]      = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_SeparatorActive]       = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_ResizeGrip]            = ImVec4(0.26f, 0.59f, 0.98f, 0.20f);
+        colors[ImGuiCol_ResizeGripHovered]     = ImVec4(0.26f, 0.59f, 0.98f, 0.67f);
+        colors[ImGuiCol_ResizeGripActive]      = ImVec4(0.26f, 0.59f, 0.98f, 0.95f);
+        colors[ImGuiCol_Tab]                   = ImVec4(6.0f / 255.0f, 6.0f / 255.0f, 8.0f / 255.0f, 1.00f);
+        colors[ImGuiCol_TabHovered]            = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 150.0f / 255.0f);
+        colors[ImGuiCol_TabActive]             = ImVec4(47.0f / 255.0f, 6.0f / 255.0f, 29.0f / 255.0f, 1.0f);
+        colors[ImGuiCol_TabUnfocused]          = ImVec4(45.0f / 255.0f, 7.0f / 255.0f, 26.0f / 255.0f, 25.0f / 255.0f);
+        colors[ImGuiCol_TabUnfocusedActive]    = ImVec4(6.0f / 255.0f, 6.0f / 255.0f, 8.0f / 255.0f, 200.0f / 255.0f);
+        colors[ImGuiCol_DockingPreview]        = ImVec4(47.0f / 255.0f, 6.0f / 255.0f, 29.0f / 255.0f, 0.7f);
+        colors[ImGuiCol_DockingEmptyBg]        = ImVec4(0.20f, 0.20f, 0.20f, 0.00f);
+        colors[ImGuiCol_PlotLines]             = ImVec4(0.61f, 0.61f, 0.61f, 1.00f);
+        colors[ImGuiCol_PlotLinesHovered]      = ImVec4(1.00f, 0.43f, 0.35f, 1.00f);
+        colors[ImGuiCol_PlotHistogram]         = ImVec4(0.90f, 0.70f, 0.00f, 1.00f);
+        colors[ImGuiCol_PlotHistogramHovered]  = ImVec4(1.00f, 0.60f, 0.00f, 1.00f);
+        colors[ImGuiCol_TableHeaderBg]         = ImVec4(0.0f, 0.0f, 0.0f, 1.00f);
+        colors[ImGuiCol_TableBorderStrong]     = ImVec4(2.0f / 255.0f, 2.0f / 255.0f, 2.0f / 255.0f, 1.0f);
+        colors[ImGuiCol_TableBorderLight]      = ImVec4(0.23f, 0.23f, 0.25f, 1.00f);
+        colors[ImGuiCol_TableRowBg]            = ImVec4(0.00f, 0.00f, 0.00f, 0.00f);
+        colors[ImGuiCol_TableRowBgAlt]         = ImVec4(1.00f, 1.00f, 1.00f, 0.06f);
+        colors[ImGuiCol_TextSelectedBg]        = ImVec4(0.26f, 0.59f, 0.98f, 0.35f);
+        colors[ImGuiCol_DragDropTarget]        = ImVec4(1.00f, 1.00f, 0.00f, 0.90f);
+        colors[ImGuiCol_NavHighlight]          = ImVec4(0.26f, 0.59f, 0.98f, 1.00f);
+        colors[ImGuiCol_NavWindowingHighlight] = ImVec4(1.00f, 1.00f, 1.00f, 0.70f);
+        colors[ImGuiCol_NavWindowingDimBg]     = ImVec4(0.80f, 0.80f, 0.80f, 0.20f);
+        colors[ImGuiCol_ModalWindowDimBg]      = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
+    }
+
+
+
 
 
     void EditorUI::init() {
@@ -90,88 +394,13 @@ namespace DynastyEngine
         // loadConfig();
     }   
 
-
-    void EditorUI::initializeImgui(std::shared_ptr<Renderer> renderer) 
-    {   
-        LOG_INFO("initImgui");
-        if (renderer) 
-        {   
-            pInitializeImgui = true;
-            mRenderer = renderer.get();
-            
-            IMGUI_CHECKVERSION();
-            ImGui::CreateContext();
-            ImGuiIO& io = ImGui::GetIO();
-            io.ConfigFlags |= ImGuiConfigFlags_NavEnableKeyboard;  // Enable Keyboard Controls
-            // io.ConfigFlags |= ImGuiConfigFlags_NavEnableGamepad;   // Enable Gamepad Controls
-            io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;      // Enable Docking
-            io.ConfigFlags |= ImGuiConfigFlags_ViewportsEnable;    // Enable Multi-Viewport / Platfor
-            io.DisplayFramebufferScale = ImVec2(1.0, 1.0);
-            io.FontGlobalScale = 1.0;
-            io.ConfigViewportsNoAutoMerge = true;
-
-            float fontSize = 18.0f;
-            io.Fonts->AddFontFromFileTTF("/Users/bowenzou/Workspace/Projects/dynasty/engine/asset/fonts/opensans/OpenSans-Bold.ttf", fontSize);
-            io.FontDefault = io.Fonts->AddFontFromFileTTF("/Users/bowenzou/Workspace/Projects/dynasty/engine/asset/fonts/opensans/OpenSans-Regular.ttf", fontSize);
-
-            // Setup Dear ImGui style
-            ImGui::StyleColorsDark();
-            //ImGui::StyleColorsClassic();
-
-            // When viewports are enabled we tweak WindowRounding/WindowBg so platform windows can look identical to regular ones.
-            ImGuiStyle& style = ImGui::GetStyle();
-            if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-            {
-                style.WindowRounding = 0.0f;
-                style.Colors[ImGuiCol_WindowBg].w = 1.0f;
-            }
-
-            std::shared_ptr<WindowSystem> windowSystem = gRuntimeGlobalContext.mWindowSystem;
-            GLFWwindow* window = windowSystem->getWindow();
-            ImGui_ImplGlfw_InitForVulkan((GLFWwindow *) window, true);
-            ImGui_ImplVulkan_InitInfo iniInfo = {};
-            iniInfo.Instance                  = mRenderer->getVkCtx().instance();
-            iniInfo.PhysicalDevice            = mRenderer->getVkCtx().physicalDevice();
-            iniInfo.Device                    = mRenderer->getVkCtx().device();
-            iniInfo.QueueFamily               = mRenderer->getVkCtx().findQueueFamilies(mRenderer->getVkCtx().physicalDevice()).graphicsFamily.value();
-            iniInfo.Queue                     = mRenderer->getVkCtx().graphicsQueue();
-            iniInfo.DescriptorPool            = mRenderer->getShaderProgram()->getDescriptorPool();
-            iniInfo.Subpass                   = 0;
-            // may be different from the real swapchain image count
-            // see ImGui_ImplVulkanH_GetMinImageCountFromPresentMode
-            iniInfo.MinImageCount = 3;
-            iniInfo.ImageCount    = 3;
-            // iniInfo.MSAASamples = VK_SAMPLE_COUNT_1_BIT;
-            // iniInfo.Allocator = VK_NULL_HANDLE;
-            // iniInfo.CheckVkResultFn = checkVkResult;
-            ImGui_ImplVulkan_Init(&iniInfo, mRenderer->getFbo()->getRenderPass());
-
-            // 将字体上传到 GPU Uploading fonts to the GPU
-            auto commandBuffer = mRenderer->getVkCtx().beginCommands();
-            VkCommandBuffer cmdBuffer = commandBuffer -> cmdBuffer;
-            ImGui_ImplVulkan_CreateFontsTexture(cmdBuffer);
-            mRenderer->getVkCtx().endCommands(commandBuffer);
-            
-            vkDeviceWaitIdle(mRenderer->getVkCtx().device());
-            ImGui_ImplVulkan_DestroyFontUploadObjects();
-        }
-    }
-
-
-    void EditorUI::uploadFonts() 
-    {
-
-    }
-
-
     void EditorUI::renderUI() 
     {
+        showEditorUI();
+        return;
+
         LOG_INFO("----- renderUI -----");
         static bool bChangeDim = false;
-
-        // ImGui_ImplVulkan_NewFrame();
-        // ImGui_ImplGlfw_NewFrame();
-        // ImGui::NewFrame();
         
         // ----DockSpace Begin----
         static bool dockspaceOpen = true;
@@ -179,28 +408,20 @@ namespace DynastyEngine
         static bool opt_padding = false;
         static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
 
-        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        // ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-        // if (bShowDemoImGui)
-		// {
-		// 	ImGui::ShowDemoWindow(&bShowDemoImGui);
-		// }
-        // LOG_INFO("----- onDraw 7 -----");
-
-        // ImGui::End(); 
-        // return;
-
         // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
         // because it would be confusing to have two docking targets within each others.
-        window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
+        ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
         if (opt_fullscreen)
         {
             LOG_INFO("----- onDraw 1 -----");
             const ImGuiViewport* viewport = ImGui::GetMainViewport();
+            LOG_INFO("View Size: {} {}", viewport->Size.x, viewport->Size.y);
             ImGui::SetNextWindowPos(viewport->WorkPos);
-            ImGui::SetNextWindowSize(ImVec2(1000, 20));
+            ImGui::SetNextWindowSize(viewport->WorkSize);
             ImGui::SetNextWindowViewport(viewport->ID);
+            // 设置圆角 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
+            // 设置圆角 
             ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
             window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
             window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
@@ -233,29 +454,17 @@ namespace DynastyEngine
         ImGuiIO& io = ImGui::GetIO();
         ImGuiStyle& style = ImGui::GetStyle();
         float minWinSizeX = style.WindowMinSize.x;
-        // LOG_INFO("----- WindowMinSize {} {} -----", style.WindowMinSize.x, style.WindowMinSize.y);
-        style.WindowMinSize.x = 10.0f;
+        style.WindowMinSize.x = 110.0f;
         if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
         {
             ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
             ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
         } 
-        else 
-        {
-            ImGuiIO& io = ImGui::GetIO();
-            ImGui::Text("ERROR: Docking is not enabled! See Demo > Configuration.");
-            ImGui::Text("Set io.ConfigFlags |= ImGuiConfigFlags_DockingEnable in your code, or ");
-            ImGui::SameLine(0.0f, 0.0f);
-            if (ImGui::SmallButton("click here"))
-                io.ConfigFlags |= ImGuiConfigFlags_DockingEnable;
-        }
         style.WindowMinSize.x = minWinSizeX;
 
-        LOG_INFO("----- onDraw 2 -----");
         // ----MenuBar Begin----
         if (ImGui::BeginMenuBar()) 
         {
-            LOG_INFO("----- onDraw 3 -----");
             if (ImGui::BeginMenu("File"))
             {
                 if (ImGui::MenuItem("New", "Ctrl+N"))
@@ -267,14 +476,13 @@ namespace DynastyEngine
                 if (ImGui::MenuItem("Save As...", "Ctrl+Shift+S"))
                     saveSceneAs();
 
-                // if (ImGui::MenuItem("Exit", NULL, false)) 
-				// 	Application::GetInstance().Close();
+                if (ImGui::MenuItem("Exit", NULL, false)) 
+					cleanup();
 
                 ImGui::EndMenu();
             }
             if (ImGui::BeginMenu("Window")) 
             {
-                LOG_INFO("----- onDraw 5 -----");
                 ImGui::MenuItem("Viewport", NULL, &bShowViewport);
                 ImGui::MenuItem("Content Browser", NULL, &bShowContentBrowser);
                 ImGui::MenuItem("Level Hierachy", NULL, &bShowSceneHierachy);
@@ -290,7 +498,6 @@ namespace DynastyEngine
             }
             if (ImGui::BeginMenu("Help"))
 			{
-                LOG_INFO("----- onDraw 6 -----");
 				ImGui::MenuItem("Tutorial", NULL, &bShowTutorial);
 				ImGui::MenuItem("About Me", NULL, &bShowAboutMe);
 				ImGui::MenuItem("Demo ImGui", NULL, &bShowDemoImGui);
@@ -298,7 +505,6 @@ namespace DynastyEngine
 				ImGui::EndMenu();
 			}
 
-            LOG_INFO("----- onDraw 7 -----");
             ImGui::EndMenuBar();
         }
         // ----MenuBar End----
@@ -312,7 +518,6 @@ namespace DynastyEngine
 		{
 			mSceneHierarchyPanel.onImGuiDraw(&bShowSceneHierachy, &bShowProperties);
 		}
-        LOG_INFO("----- onDraw 7 -----");
         if (bShowStats)
 		{
 			// ImGui::Begin("Stats", &bShowStats);
@@ -331,233 +536,52 @@ namespace DynastyEngine
 
 			// ImGui::End();
 		}
+        if (bShowEngineSettings)
+        {
+            ImGui::Begin("Engine Settings", &bShowEngineSettings);
+
+            ImGui::End();
+        }
+        if (bShowViewport) {
+            ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2{ 0, 0 });
+			ImGui::Begin("Viewport");
+
+            auto viewportMinRegion = ImGui::GetWindowContentRegionMin();
+			auto viewportMaxRegion = ImGui::GetWindowContentRegionMax();
+			auto viewportOffset = ImGui::GetWindowPos();
+			mViewportBounds[0] = { viewportMinRegion.x + viewportOffset.x, viewportMinRegion.y + viewportOffset.y };
+			mViewportBounds[1] = { viewportMaxRegion.x + viewportOffset.x, viewportMaxRegion.y + viewportOffset.y };
+
+            mViewportFocused = ImGui::IsWindowFocused();
+			mViewportHovered = ImGui::IsWindowHovered();
+
+            if (ImGui::BeginDragDropTarget())
+			{
+				if (const ImGuiPayload* payload = ImGui::AcceptDragDropPayload("CONTENT_BROWSER_ITEM"))
+				{
+					const wchar_t* path = (const wchar_t*)payload->Data;
+					openScene();
+				}
+				ImGui::EndDragDropTarget();
+			}
+
+            ImGui::End();
+			ImGui::PopStyleVar();
+        }
         if (bShowSceneSettings)
 		{
 			mSceneSettingsPanel.onImGuiDraw(&bShowSceneSettings);
 		}
-        LOG_INFO("----- onDraw 7 -----");
-        if (bShowDemoImGui)
-		{
-			ImGui::ShowDemoWindow(&bShowDemoImGui);
-		}
-        LOG_INFO("----- onDraw 7 -----");
+        // LOG_INFO("----- onDraw 7 -----");
+        // if (bShowDemoImGui)
+		// {
+		// 	ImGui::ShowDemoWindow(&bShowDemoImGui);
+		// }
+        // LOG_INFO("----- onDraw 7 -----");
         // uiToolbar();
 
         ImGui::End(); 
-
-
-
-
-
-
-        // ImGui::Render();
-        // ImDrawData* main_draw_data = ImGui::GetDrawData();
-        // ImGui_ImplVulkan_RenderDrawData(main_draw_data, mRenderer->getDrawCmd());
-
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        // {
-        //     ImGui::UpdatePlatformWindows();
-        //     ImGui::RenderPlatformWindowsDefault();
-        // }
-
-        // ImGui::Begin("Another Window");  // Pass a pointer to our bool variable (the window will have a closing
-        //                                         // button that will clear the bool when clicked)
-        // ImGui::Text("Hello from another window!");
-        // if (ImGui::Button("Close Me")) {
-        //     // show_another_window = false;
-        // }
-        // ImGui::End();
-        
-        // io.DisplaySize = ImVec2((float)1000, (float)800);
-
-        // ImGui::EndFrame();
-
-        // LOG_INFO("----- onDraw end -1-----");
-
-        // // ImGui::Render();
-
-        // LOG_INFO("----- onDraw end -1-----");
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        // {
-        //     LOG_INFO("----- onDraw end -2-----");
-        //     GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        //     ImGui::UpdatePlatformWindows();
-        //     LOG_INFO("----- onDraw end -3-----");
-        //     // ImGui::RenderPlatformWindowsDefault();
-        //     LOG_INFO("----- onDraw end -4-----");
-        //     glfwMakeContextCurrent(backup_current_context);
-        // }
-
-
-
-        // static bool dockspaceOpen = true;
-        // static bool opt_fullscreen = true;
-        // static bool opt_padding = false;
-        // static ImGuiDockNodeFlags dockspace_flags = ImGuiDockNodeFlags_None;
-
-        // // We are using the ImGuiWindowFlags_NoDocking flag to make the parent window not dockable into,
-        // // because it would be confusing to have two docking targets within each others.
-        // ImGuiWindowFlags window_flags = ImGuiWindowFlags_MenuBar | ImGuiWindowFlags_NoDocking;
-        // if (opt_fullscreen)
-        // {
-        //     const ImGuiViewport* viewport = ImGui::GetMainViewport();
-        //     ImGui::SetNextWindowPos(viewport->WorkPos);
-        //     ImGui::SetNextWindowSize(viewport->WorkSize);
-        //     ImGui::SetNextWindowViewport(viewport->ID);
-        //     ImGui::PushStyleVar(ImGuiStyleVar_WindowRounding, 0.0f);
-        //     ImGui::PushStyleVar(ImGuiStyleVar_WindowBorderSize, 0.0f);
-        //     window_flags |= ImGuiWindowFlags_NoTitleBar | ImGuiWindowFlags_NoCollapse | ImGuiWindowFlags_NoResize | ImGuiWindowFlags_NoMove;
-        //     window_flags |= ImGuiWindowFlags_NoBringToFrontOnFocus | ImGuiWindowFlags_NoNavFocus;
-        // }
-        // else
-        // {
-        //     dockspace_flags &= ~ImGuiDockNodeFlags_PassthruCentralNode;
-        // }
-
-        // // When using ImGuiDockNodeFlags_PassthruCentralNode, DockSpace() will render our background
-        // // and handle the pass-thru hole, so we ask Begin() to not render a background.
-        // if (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode)
-        //     window_flags |= ImGuiWindowFlags_NoBackground;
-
-        // // Important: note that we proceed even if Begin() returns false (aka window is collapsed).
-        // // This is because we want to keep our DockSpace() active. If a DockSpace() is inactive,
-        // // all active windows docked into it will lose their parent and become undocked.
-        // // We cannot preserve the docking relationship between an active window and an inactive docking, otherwise
-        // // any change of dockspace/settings would lead to windows being stuck in limbo and never being visible.
-        // if (!opt_padding)
-        //     ImGui::PushStyleVar(ImGuiStyleVar_WindowPadding, ImVec2(0.0f, 0.0f));
-        // ImGui::Begin("DockSpace Demo", &dockspaceOpen, window_flags);
-        // if (!opt_padding)
-        //     ImGui::PopStyleVar();
-
-        // if (opt_fullscreen)
-        //     ImGui::PopStyleVar(2);
-
-        // // Submit the DockSpace
-        // ImGuiIO& io = ImGui::GetIO();
-        // // ImGuiStyle& style = ImGui::GetStyle();
-        // // float minWinSizeX = style.WindowMinSize.x;
-        // // style.WindowMinSize.x = 110.0f;
-        // if (io.ConfigFlags & ImGuiConfigFlags_DockingEnable)
-        // {
-        //     LOG_INFO("----- onDraw end 2-----");
-        //     ImGuiID dockspace_id = ImGui::GetID("MyDockSpace");
-        //     ImGui::DockSpace(dockspace_id, ImVec2(0.0f, 0.0f), dockspace_flags);
-        // }
-        // else
-        // {
-        //     // ShowDockingDisabledMessage();
-        // }
-        // // style.WindowMinSize.x = minWinSizeX;
-
-        // if (ImGui::BeginMenuBar())
-        // {
-        //     LOG_INFO("----- onDraw end 3 -----");
-        //     if (ImGui::BeginMenu("Options"))
-        //     {
-        //         // Disabling fullscreen would allow the window to be moved to the front of other windows,
-        //         // which we can't undo at the moment without finer window depth/z control.
-        //         ImGui::MenuItem("Fullscreen", NULL, &opt_fullscreen);
-        //         ImGui::MenuItem("Padding", NULL, &opt_padding);
-        //         ImGui::Separator();
-
-        //         if (ImGui::MenuItem("Flag: NoSplit",                "", (dockspace_flags & ImGuiDockNodeFlags_NoSplit) != 0))                 { dockspace_flags ^= ImGuiDockNodeFlags_NoSplit; }
-        //         if (ImGui::MenuItem("Flag: NoResize",               "", (dockspace_flags & ImGuiDockNodeFlags_NoResize) != 0))                { dockspace_flags ^= ImGuiDockNodeFlags_NoResize; }
-        //         if (ImGui::MenuItem("Flag: NoDockingInCentralNode", "", (dockspace_flags & ImGuiDockNodeFlags_NoDockingInCentralNode) != 0))  { dockspace_flags ^= ImGuiDockNodeFlags_NoDockingInCentralNode; }
-        //         if (ImGui::MenuItem("Flag: AutoHideTabBar",         "", (dockspace_flags & ImGuiDockNodeFlags_AutoHideTabBar) != 0))          { dockspace_flags ^= ImGuiDockNodeFlags_AutoHideTabBar; }
-        //         if (ImGui::MenuItem("Flag: PassthruCentralNode",    "", (dockspace_flags & ImGuiDockNodeFlags_PassthruCentralNode) != 0, opt_fullscreen)) { dockspace_flags ^= ImGuiDockNodeFlags_PassthruCentralNode; }
-        //         ImGui::Separator();
-
-        //         // if (ImGui::MenuItem("Close", NULL, false, dockspaceOpen != NULL))
-        //         //     dockspaceOpen = false;
-        //         ImGui::EndMenu();
-        //     }
-        //     // HelpMarker(
-        //     //     "When docking is enabled, you can ALWAYS dock MOST window into another! Try it now!" "\n"
-        //     //     "- Drag from window title bar or their tab to dock/undock." "\n"
-        //     //     "- Drag from window menu button (upper-left button) to undock an entire node (all windows)." "\n"
-        //     //     "- Hold SHIFT to disable docking (if io.ConfigDockingWithShift == false, default)" "\n"
-        //     //     "- Hold SHIFT to enable docking (if io.ConfigDockingWithShift == true)" "\n"
-        //     //     "This demo app has nothing to do with enabling docking!" "\n\n"
-        //     //     "This demo app only demonstrate the use of ImGui::DockSpace() which allows you to manually create a docking node _within_ another window." "\n\n"
-        //     //     "Read comments in ShowExampleAppDockSpace() for more details.");
-
-        //     ImGui::EndMenuBar();
-        // }
-
-        // if (bShowEngineSettings)
-		// {
-		// 	ImGui::Begin("Engine Settings", &bShowEngineSettings);
-
-		// 	const char* modes[] = { "2D", "3D" };
-		// 	int lastMode = 1;
-		// 	ImGui::Columns(2, nullptr, false);
-		// 	ImGui::SetColumnWidth(0, 100.0f);
-		// 	ImGui::Text("Mode");
-		// 	ImGui::NextColumn();
-		// 	if (ImGui::Combo("##Mode", &lastMode, modes, IM_ARRAYSIZE(modes)))
-		// 	{
-		// 		if (lastMode != lastMode)
-		// 		{
-		// 			bChangeDim = true;
-		// 		}
-		// 	}
-		// 	ImGui::EndColumns();
-
-		// 	ImGui::Columns(2, nullptr, false);
-		// 	ImGui::SetColumnWidth(0, 100.0f);
-		// 	ImGui::Text("Camera Speed");
-		// 	ImGui::NextColumn();
-		// 	// ImGui::SliderFloat("##Camera Speed", &, 0.1f, 10.0f);
-		// 	ImGui::EndColumns();
-			
-		// 	ImGui::End();
-		// }
-
-        // ImGui::Begin("Another Window", &dockspaceOpen);  // Pass a pointer to our bool variable (the window will have a closing
-        //                                         // button that will clear the bool when clicked)
-        // ImGui::Text("Hello from another window!");
-        // if (ImGui::Button("Close Me")) {
-        //     // show_another_window = false;
-        // }
-        // ImGui::End();
-
-        // ImGui::End();
-
-        // ImGui::EndFrame();
-
-        // // ImGui::Render();
-        // // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), YOUR_COMMAND_BUFFER);
-
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        // {
-        // //     LOG_INFO("----- onDraw end -2-----");
-        //     GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        //     ImGui::UpdatePlatformWindows();
-        // //     LOG_INFO("----- onDraw end -3-----");
-        //     ImGui::RenderPlatformWindowsDefault();
-        // //     LOG_INFO("----- onDraw end -4-----");
-        //     glfwMakeContextCurrent(backup_current_context);
-        // }
-
-        // LOG_INFO("----- onDraw end-----");
-
-
-        // ImGui::ShowDemoWindow();
-        // ImGui::EndFrame();
-        // ImGui::Render();
-        // // ImGui_ImplVulkan_RenderDrawData(ImGui::GetDrawData(), YOUR_COMMAND_BUFFER);
-        
-        // ImGuiIO& io = ImGui::GetIO();
-        // if (io.ConfigFlags & ImGuiConfigFlags_ViewportsEnable)
-        // {
-        //     GLFWwindow* backup_current_context = glfwGetCurrentContext();
-        //     ImGui::UpdatePlatformWindows();
-        //     ImGui::RenderPlatformWindowsDefault();
-        //     glfwMakeContextCurrent(backup_current_context);
-        // }
     }
-
 
     void EditorUI::uiToolbar()
 	{
@@ -589,7 +613,6 @@ namespace DynastyEngine
 		ImGui::End();
 	}
 
-
     void EditorUI::newScene() 
     {
         mEditorScene = std::make_shared<Level>();
@@ -600,7 +623,9 @@ namespace DynastyEngine
     
     void EditorUI::openScene()
     {
-
+        std::string filepath = FileDialogs::openFile("HEngine Level (*.he)\0*.he\0");
+		if (!filepath.empty())
+			openScene(filepath);
     }
 
     void EditorUI::openScene(const std::filesystem::path& path) 
@@ -616,8 +641,6 @@ namespace DynastyEngine
         {
             HeSerializer serializer(newScene);
             mEditorScene = newScene;
-
-            
         }
         // TODO 加载方式可能会不一样
         else if (path.extension().string() == ".json") 
@@ -633,23 +656,48 @@ namespace DynastyEngine
 
     void EditorUI::saveScene(const std::filesystem::path& format) 
     {
-
+        if (!mEditorScenePath.empty())
+        {
+            // SerializeScene(mActiveScene, mEditorScenePath);
+        }
+        else
+        {
+            saveSceneAs();
+        }
     }
         
-
     void EditorUI::saveSceneAs() 
     {   
+        std::string filepath = FileDialogs::saveFile("HEngine Level (*.he)\0*.he\0");
 
     }
 
+    void EditorUI::loadDefaultEditorConfig() 
+    {
+        const std::filesystem::path currentEditorConfigPath{ gRuntimeGlobalContext.mAssetManager->getFullPath("imgui.ini") };
+		const std::filesystem::path defaultEditorConfigPath{ gRuntimeGlobalContext.mAssetManager->getFullPath("engine/config/imgui.ini") };
+		
+        // HE_CORE_ASSERT(std::filesystem::exists(DefaultEditorConfigPath));
 
-    void EditorUI::loadDefaultEditorConfig() {
+		if (std::filesystem::exists(currentEditorConfigPath))
+			std::filesystem::remove(currentEditorConfigPath);
+		std::filesystem::copy(defaultEditorConfigPath, std::filesystem::current_path());
 
+        // Window
+		bShowViewport = true;
+		bShowContentBrowser = true;
+		bShowSceneHierachy = true;
+		bShowProperties = true;
+		bShowStats = false;
+		bShowEngineSettings = true;
+		bShowSceneSettings = true;
+		// bShowSRT = true;
+
+		// Help
+		bShowTutorial = false;
+		bShowAboutMe = false;
+		bShowDemoImGui = false;
     }
-
-
-    
-
 
     // TODO 应该放到别处
     // bool EditorUI::loadConfig() 
@@ -693,7 +741,6 @@ namespace DynastyEngine
     //     return reloadModel(mModelPaths.begin()->first);
     // }
 
-
     // TODO 应该放到别处
     // bool EditorUI::reloadModel(const std::string &name) 
     // {
@@ -709,7 +756,6 @@ namespace DynastyEngine
     //     }
     //     return true;
     // }
-
 
     void EditorUI::cleanup() 
     {

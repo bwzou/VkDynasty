@@ -17,6 +17,7 @@
 #include <array>
 #include <unordered_map>
 #include <algorithm>
+#include <map>
 
 #include "runtime/platform/WindowSystem.h"
 
@@ -155,6 +156,7 @@ namespace DynastyEngine
 
         bool createSemaphore(const VkSemaphoreCreateInfo pCreateInfo, VkSemaphore &pSemaphore);
         bool createSampler(const VkSamplerCreateInfo pCreateInfo, VkSampler &pSampler);
+        VkSampler getOrCreateDefaultSampler(uint32_t type);
 
         bool beginCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo);
         bool endCommandBuffer(VkCommandBuffer commandBuffer);
@@ -171,6 +173,7 @@ namespace DynastyEngine
         bool cmdNextSubpass(VkCommandBuffer commandBuffer, VkSubpassContents contents);
         void cmdEndRenderPass(VkCommandBuffer commandBuffer);
         void cmdBindPipeline(VkCommandBuffer commandBuffer, VkPipelineBindPoint pipelineBindPoint, VkPipeline pipeline);
+        void cmdClearAttachments(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment* pAttachments,  uint32_t rectCount, const VkClearRect* pRects);
 
         void cmdSetViewport(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewport pViewports);
         void cmdSetScissor(VkCommandBuffer commandBuffer, uint32_t firstScissor, uint32_t scissorCount, const VkRect2D pScissors);
@@ -312,6 +315,11 @@ namespace DynastyEngine
 
         uint8_t                        mCurrentFrameIndex { 0 };
         uint32_t                       mCurrentSwapchainImageIndex{ 0 };
+
+        // default sampler cache
+        VkSampler                      mDefaultLinearSampler = nullptr;
+        VkSampler                      mDefaultNearestSampler = nullptr;
+        std::map<uint32_t, VkSampler>  mDefaultMipmapSamplerMap;
     };
 }
  

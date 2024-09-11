@@ -21,7 +21,7 @@ namespace DynastyEngine
         const std::filesystem::path& getShaderGlslDir() const;
 
     private:
-        std::filesystem::path mRootFolder = "/Users/bowenzou/Workspace/Documents";
+        std::filesystem::path mRootFolder = "/Users/bowenzou/Workspace/Documents/dynasty";
         std::filesystem::path mAssetFolder;
         std::filesystem::path mSchemaFolder;
         std::filesystem::path mEditorBigIconPath;

@@ -1,6 +1,8 @@
 #pragma once
 #include "runtime/framework/level/Level.h"
 
+#include <imgui.h>
+#include <imgui_internal.h>
 
 namespace DynastyEngine 
 {

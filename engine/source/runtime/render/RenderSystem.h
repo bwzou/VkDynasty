@@ -30,6 +30,7 @@ namespace DynastyEngine
 
         void initialize(RenderSystemInitInfo initInfo);
         void initializeUIRenderBackend(WindowUI* windowUI);
+        void updateEngineContentViewport(float offsetX, float offsetY, float width, float height);
         void tick(float deltaTime);
         void clear();
 

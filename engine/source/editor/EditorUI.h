@@ -45,6 +45,14 @@ namespace DynastyEngine
 
         void initialize(WindowUIInitInfo initInfo);
         void showEditorUI();
+        void showEditorMenu(bool* pEditorMenu);
+        void showContentBrowserWindow(bool* bShowContentBrowser);
+        void showEngineSettingsWindow(bool* bShowEngineSettings);
+        void showEditorViewportWindow(bool* bShowViewport);
+        void showSceneSettingsWindow(bool* bShowSceneSettings);
+        void showSceneHierarchyWindow(bool* bShowSceneHierachy, bool* bShowProperties);
+
+        void setUIColorStyle();
         void uploadFonts();
 
         inline void setReloadModelFunc(const std::function<bool(const std::string &)> &func) 
@@ -66,7 +74,6 @@ namespace DynastyEngine
         }
 
         void init();
-        void initializeImgui(std::shared_ptr<Renderer> renderer);
         
         void renderUI();
 
@@ -90,6 +97,14 @@ namespace DynastyEngine
         // Config &mConfig;
         Renderer* mRenderer;
         VkRenderPass mImguiRenderPass;
+
+        
+        glm::vec2 mViewportBounds[2];
+        bool mViewportFocused = false; 
+        bool mViewportHovered = false;
+
+
+
 
         std::unordered_map<std::string, std::string> mModelPaths;
         std::unordered_map<std::string, std::string> mSkyboxPaths;

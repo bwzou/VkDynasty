@@ -1,4 +1,5 @@
 #include "runtime/platform/vulkan/VulkanAPI.h"
+#include "runtime/platform/vulkan/VulkanUtil.h"
 #include "runtime/code/base/macro.h"
 #define GLFW_INCLUDE_VULKAN
 #include <GLFW/glfw3.h>
@@ -749,6 +750,7 @@ namespace DynastyEngine {
         if (vkCreatePipelineLayout(mDevice, pCreateInfo, nullptr, &pipelineLayout) != VK_SUCCESS) 
         {
             throw std::runtime_error("failed to create pipeline layout!");
+            return false;
         }
         return true;
     }
@@ -1040,6 +1042,31 @@ namespace DynastyEngine {
         }
     }
 
+    VkSampler VulkanAPI::getOrCreateDefaultSampler(uint32_t type) 
+    {
+        switch (type)
+        {
+            // TODO type 应该定义emun类型
+            case 0: 
+                if (mDefaultLinearSampler == nullptr)
+                {
+                    mDefaultLinearSampler = VulkanUtil::getOrCreateLinearSampler(mPhysicalDevice, mDevice);
+                }
+                return mDefaultLinearSampler;
+                break;
+            case 1:
+                if (mDefaultNearestSampler == nullptr)
+                {
+                    mDefaultNearestSampler = VulkanUtil::getOrCreateNearestSampler(mPhysicalDevice, mDevice);
+                }
+                return mDefaultNearestSampler;
+                break;
+            default:
+                return nullptr;
+                break;
+        }
+    }
+
     bool VulkanAPI::beginCommandBuffer(VkCommandBuffer commandBuffer, const VkCommandBufferBeginInfo* pBeginInfo)
     {
         // 立即开始记录命令缓冲区
@@ -1119,6 +1146,11 @@ namespace DynastyEngine {
         return vkCmdBindPipeline(commandBuffer, pipelineBindPoint, pipeline);
     }
 
+    void VulkanAPI::cmdClearAttachments(VkCommandBuffer commandBuffer, uint32_t attachmentCount, const VkClearAttachment* pAttachments,  uint32_t rectCount, const VkClearRect* pRects)
+    {
+        return vkCmdClearAttachments(commandBuffer, attachmentCount, pAttachments, rectCount, pRects);
+    }
+
     void VulkanAPI::cmdSetViewport(VkCommandBuffer commandBuffer, uint32_t firstViewport, uint32_t viewportCount, const VkViewport pViewports)
     {
         return vkCmdSetViewport(commandBuffer, firstViewport, viewportCount, &pViewports);
@@ -1167,13 +1199,19 @@ namespace DynastyEngine {
         vkCmdDraw(commandBuffer, vertexCount, instanceCount, firstVertex, firstInstance);
     }
 
+    void VulkanAPI::updateDescriptorSets(uint32_t descriptorWriteCount, const VkWriteDescriptorSet* pDescriptorWrites, uint32_t descriptorCopyCount, const VkCopyDescriptorSet* pDescriptorCopies)
+    {
+
+    }
+
     /* ---------------------------------- query ------------------------------------- */
     VkCommandPool VulkanAPI::getCommandPoor() const
     {
         return mCommandPool;
     }
 
-    VkCommandBuffer VulkanAPI::getCurrentCommandBuffer() const{
+    VkCommandBuffer VulkanAPI::getCurrentCommandBuffer() const
+    {
         return mCurrentCommandBuffer;
     }
 

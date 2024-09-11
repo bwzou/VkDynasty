@@ -55,6 +55,16 @@ namespace DynastyEngine
     {
         mRenderPipeline->initializeUIRenderBackend(windowUI);
     }
+
+    void RenderSystem::updateEngineContentViewport(float offsetX, float offsetY, float width, float height)
+    {
+        mVulkanAPI->mViewport.x        = offsetX;
+        mVulkanAPI->mViewport.y        = offsetY;
+        mVulkanAPI->mViewport.width    = width;
+        mVulkanAPI->mViewport.height   = height;
+        mVulkanAPI->mViewport.minDepth = 0.0f;
+        mVulkanAPI->mViewport.maxDepth = 1.0f;
+    }
     
     void RenderSystem::tick(float deltaTime)
     {

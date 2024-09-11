@@ -15,18 +15,18 @@ namespace DynastyEngine
         MainCameraPassGbufferA                     = 0,
         // MainCameraPassGbufferB                     = 1,
         // MainCameraPassGbufferC                     = 2,
-        // MainCameraPassBackupBufferOdd              = 3,
-        // MainCameraPassBackupBufferEven             = 4,
+        MainCameraPassBackupBufferOdd              = 1,
+        // MainCameraPassBackupBufferEven             = 2,
         // _main_camera_pass_backup_buffer_odd             = 3,
         // _main_camera_pass_backup_buffer_even            = 4,
         // _main_camera_pass_post_process_buffer_odd       = 5,
         // _main_camera_pass_post_process_buffer_even      = 6,
         MainCameraPassDepth,
         MainCameraPassSwapchainImage,
-        MainCameraPassCustomAttachmentCount        = 1,
+        MainCameraPassCustomAttachmentCount        = 2,
         // _main_camera_pass_post_process_attachment_count = 2,
         // MainCameraPassAttachmentCount              = 7
-        MainCameraPassAttachmentCount              = 3
+        MainCameraPassAttachmentCount              = 4
     };
 
     enum

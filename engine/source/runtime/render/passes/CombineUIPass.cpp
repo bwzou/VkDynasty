@@ -3,7 +3,7 @@
 
 namespace DynastyEngine
 {
-    void CombineUIPass::initialize(const CombineUIPassInitInfo* initInfo)
+    void CombineUIPass::initialize(const RenderPassInitInfo* initInfo)
     {
         const CombineUIPassInitInfo* _initInfo = static_cast<const CombineUIPassInitInfo*>(initInfo);
         mFramebuffer.renderPass = _initInfo->renderPass;
@@ -12,16 +12,73 @@ namespace DynastyEngine
         setupPipelines();
         setupDescriptorSet();
         updateAfterFramebufferRecreate(_initInfo->sceneInputAttachment, _initInfo->uiInputAttachment);
+        LOG_INFO("CombineUIPass initialize end");
     }
     
     void CombineUIPass::draw()
     {
+        LOG_INFO("CombineUIPass:: start draw");
+        // float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
+
+        mVulkanAPI->cmdBindPipeline(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[0].pipeline);
+        LOG_INFO("CombineUIPass:: start draw 1");
+
+        VkViewport viewport = {0.0,
+                               0.0,
+                               static_cast<float>(mVulkanAPI->getSwapchainInfo().extent.width),
+                               static_cast<float>(mVulkanAPI->getSwapchainInfo().extent.height),
+                               0.0,
+                               1.0};
+        VkRect2D   scissor  = {0, 0, mVulkanAPI->getSwapchainInfo().extent.width, mVulkanAPI->getSwapchainInfo().extent.height};
+        mVulkanAPI->cmdSetViewport(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, viewport);
+        LOG_INFO("CombineUIPass:: start draw 2");
+
+        mVulkanAPI->cmdSetScissor(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, scissor);
+        LOG_INFO("CombineUIPass:: start draw 3");
+
+        vkCmdBindDescriptorSets(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[0].layout, 0, 1, &mDescriptorInfos[0].descriptorSet, 0, nullptr);
         
+        LOG_INFO("CombineUIPass:: start draw 4");
+        mVulkanAPI->cmdDraw(mVulkanAPI->getCurrentCommandBuffer(), 3, 1, 0, 0);
+        
+        LOG_INFO("CombineUIPass::end draw");
     }
     
     void CombineUIPass::updateAfterFramebufferRecreate(VkImageView sceneInputAttachment, VkImageView uiInputAttachment)
     {
+        VkDescriptorImageInfo perFrameSceneInputAttachmentInfo = {};
+        perFrameSceneInputAttachmentInfo.sampler = mVulkanAPI->getOrCreateDefaultSampler(1);
+        perFrameSceneInputAttachmentInfo.imageView   = sceneInputAttachment;
+        perFrameSceneInputAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 
+        VkDescriptorImageInfo perFrameUiInputAttachmentInfo = {};
+        perFrameUiInputAttachmentInfo.sampler = mVulkanAPI->getOrCreateDefaultSampler(1);
+        perFrameUiInputAttachmentInfo.imageView   = uiInputAttachment;
+        perFrameUiInputAttachmentInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+
+        VkWriteDescriptorSet postProcessDescriptorWritesInfo[2];
+        
+        VkWriteDescriptorSet& perFrameSceneInputAttachmentWriteInfo = postProcessDescriptorWritesInfo[0];
+        perFrameSceneInputAttachmentWriteInfo.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        perFrameSceneInputAttachmentWriteInfo.pNext                 = NULL;
+        perFrameSceneInputAttachmentWriteInfo.dstSet                = mDescriptorInfos[0].descriptorSet;
+        perFrameSceneInputAttachmentWriteInfo.dstBinding            = 0;
+        perFrameSceneInputAttachmentWriteInfo.dstArrayElement       = 0;
+        perFrameSceneInputAttachmentWriteInfo.descriptorType        = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        perFrameSceneInputAttachmentWriteInfo.descriptorCount       = 1;
+        perFrameSceneInputAttachmentWriteInfo.pImageInfo            = &perFrameSceneInputAttachmentInfo;
+
+        VkWriteDescriptorSet& perFrameUiInputAttachmentWriteInfo = postProcessDescriptorWritesInfo[1];
+        perFrameUiInputAttachmentWriteInfo.sType                 = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
+        perFrameUiInputAttachmentWriteInfo.pNext                 = NULL;
+        perFrameUiInputAttachmentWriteInfo.dstSet                = mDescriptorInfos[0].descriptorSet;
+        perFrameUiInputAttachmentWriteInfo.dstBinding            = 1;
+        perFrameUiInputAttachmentWriteInfo.dstArrayElement       = 0;
+        perFrameUiInputAttachmentWriteInfo.descriptorType        = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+        perFrameUiInputAttachmentWriteInfo.descriptorCount       = 1;
+        perFrameUiInputAttachmentWriteInfo.pImageInfo            = &perFrameUiInputAttachmentInfo;
+
+        vkUpdateDescriptorSets(mVulkanAPI->mDevice, sizeof(postProcessDescriptorWritesInfo) / sizeof(postProcessDescriptorWritesInfo[0]), postProcessDescriptorWritesInfo, 0, NULL);
     }
 
     void CombineUIPass::setupDescriptorSetLayout()
@@ -56,6 +113,7 @@ namespace DynastyEngine
     
     void CombineUIPass::setupPipelines()
     {
+        LOG_INFO("CombineUIPass::setupPipelines")
         mRenderPipelines.resize(1);
 
         VkDescriptorSetLayout      descriptorsetLayouts[1] = {mDescriptorInfos[0].layout};
@@ -63,6 +121,10 @@ namespace DynastyEngine
         pipelineLayoutCreateInfo.sType          = VK_STRUCTURE_TYPE_PIPELINE_LAYOUT_CREATE_INFO;
         pipelineLayoutCreateInfo.setLayoutCount = 1;
         pipelineLayoutCreateInfo.pSetLayouts    = descriptorsetLayouts;
+        if (!mVulkanAPI->createPipelineLayout(&pipelineLayoutCreateInfo, mRenderPipelines[0].layout))
+        {
+            throw std::runtime_error("create combine ui pipeline layout");
+        }
 
         VkShaderModule vertexShader   = VK_NULL_HANDLE;
         VkShaderModule fragmentShader = VK_NULL_HANDLE;
@@ -161,20 +223,31 @@ namespace DynastyEngine
         pipelineInfo.layout              = mRenderPipelines[0].layout;
         pipelineInfo.renderPass          = mFramebuffer.renderPass;
         pipelineInfo.subpass             = MainCameraSubpassCombineUI;
+        //  pipelineInfo.subpass             = 0;
         pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
         pipelineInfo.pDynamicState       = &dynamicStateCreateInfo;
 
-        if (VK_SUCCESS != mVulkanAPI->createGraphicsPipelines(VK_NULL_HANDLE, 1, pipelineInfo, mRenderPipelines[0].pipeline))
+        if (!mVulkanAPI->createGraphicsPipelines(VK_NULL_HANDLE, 1, pipelineInfo, mRenderPipelines[0].pipeline))
         {
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        mVulkanAPI->destroyShaderModule(module[0]);
-        mVulkanAPI->destroyShaderModule(module[1]);
+        // mVulkanAPI->destroyShaderModule(module[0]);
+        // mVulkanAPI->destroyShaderModule(module[1]);
     }
     
     void CombineUIPass::setupDescriptorSet()
     {
+        VkDescriptorSetAllocateInfo postProcessGlobalDescriptorSetAllocInfo;
+        postProcessGlobalDescriptorSetAllocInfo.sType              = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_ALLOCATE_INFO;
+        postProcessGlobalDescriptorSetAllocInfo.pNext              = NULL;
+        postProcessGlobalDescriptorSetAllocInfo.descriptorPool     = mVulkanAPI->mDescriptorPool;
+        postProcessGlobalDescriptorSetAllocInfo.descriptorSetCount = 1;
+        postProcessGlobalDescriptorSetAllocInfo.pSetLayouts        = &mDescriptorInfos[0].layout;
 
+        if (!mVulkanAPI->allocateDescriptorSets(postProcessGlobalDescriptorSetAllocInfo, mDescriptorInfos[0].descriptorSet))
+        {
+            throw std::runtime_error("allocate post process global descriptor set");
+        }
     }
 }

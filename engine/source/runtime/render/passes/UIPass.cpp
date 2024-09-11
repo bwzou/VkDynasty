@@ -26,7 +26,8 @@ namespace DynastyEngine
         initInfo.QueueFamily               = mVulkanAPI->mQueueIndices.graphicsFamily.value();
         initInfo.Queue                     = mVulkanAPI->mGraphicsQueue;
         initInfo.DescriptorPool            = mVulkanAPI->mDescriptorPool;
-        initInfo.Subpass                   = 0;
+        // initInfo.Subpass                   = 0;
+        initInfo.Subpass                   = MainCameraSubpassUi;
         // may be different from the real swapchain image count
         // see ImGui_ImplVulkanH_GetMinImageCountFromPresentMode
         initInfo.MinImageCount = 3;

@@ -8,7 +8,8 @@
 #include <functional>
 #include <vector>
 
-namespace DynastyEngine {
+namespace DynastyEngine 
+{
     struct WindowCreateInfo
     {
         int         width {1280};

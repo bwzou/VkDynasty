@@ -17,7 +17,7 @@ namespace DynastyEngine
 
         static std::vector<char> readFile(const std::string& filename) 
         {
-            LOG_INFO("filename: {}", filename);
+            LOG_INFO("readFile filename: {}", filename);
 
             std::ifstream file(filename, std::ios::ate | std::ios::binary);
 

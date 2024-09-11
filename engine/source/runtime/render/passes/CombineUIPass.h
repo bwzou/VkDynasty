@@ -14,7 +14,7 @@ namespace DynastyEngine
     class CombineUIPass : public RenderPass
     {
     public:
-        void initialize(const CombineUIPassInitInfo* initInfo);
+        void initialize(const RenderPassInitInfo* initInfo) override final;
         void draw();
         void updateAfterFramebufferRecreate(VkImageView sceneInputAttachment, VkImageView uiInputAttachment);
 

@@ -32,11 +32,11 @@ namespace DynastyEngine
         uiInitInfo.renderPass = mMainCameraPass->getRenderPass();
         mUIPass->initialize(&uiInitInfo);
 
-        // CombineUIPassInitInfo combineUIInitInfo;
-        // combineUIInitInfo.renderPass = mMainCameraPass->getRenderPass();
-        // combineUIInitInfo.sceneInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferOdd];
-        // combineUIInitInfo.uiInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferEven];
-        // mCombineUIPass->initialize(&combineUIInitInfo);
+        CombineUIPassInitInfo combineUIInitInfo;
+        combineUIInitInfo.renderPass = mMainCameraPass->getRenderPass();
+        combineUIInitInfo.sceneInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassGbufferA];
+        combineUIInitInfo.uiInputAttachment = mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferOdd];
+        mCombineUIPass->initialize(&combineUIInitInfo);
     }  
 
     void RenderPipeline::initializeUIRenderBackend(WindowUI* windowUI)
@@ -72,8 +72,13 @@ namespace DynastyEngine
     void RenderPipeline::passUpdateAfterRecreateSwapchain()
     {
         MainCameraPass&   mainCameraPass   = *(static_cast<MainCameraPass*>(mMainCameraPass.get()));
+        CombineUIPass&      combineUIPass  = *(static_cast<CombineUIPass*>(mCombineUIPass.get()));
 
         mainCameraPass.updateAfterFramebufferRecreate();
+        combineUIPass.updateAfterFramebufferRecreate(
+            mainCameraPass.getFramebufferImageViews()[MainCameraPassGbufferA],
+            mMainCameraPass->getFramebufferImageViews()[MainCameraPassBackupBufferOdd]
+        );
     }  
 
     void RenderPipeline::clear() 
