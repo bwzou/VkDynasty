@@ -21,7 +21,6 @@ namespace DynastyEngine
         // float color[4] = { 1.0f, 1.0f, 1.0f, 1.0f };
 
         mVulkanAPI->cmdBindPipeline(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[0].pipeline);
-        LOG_INFO("CombineUIPass:: start draw 1");
 
         VkViewport viewport = {0.0,
                                0.0,
@@ -31,14 +30,8 @@ namespace DynastyEngine
                                1.0};
         VkRect2D   scissor  = {0, 0, mVulkanAPI->getSwapchainInfo().extent.width, mVulkanAPI->getSwapchainInfo().extent.height};
         mVulkanAPI->cmdSetViewport(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, viewport);
-        LOG_INFO("CombineUIPass:: start draw 2");
-
         mVulkanAPI->cmdSetScissor(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, scissor);
-        LOG_INFO("CombineUIPass:: start draw 3");
-
         vkCmdBindDescriptorSets(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[0].layout, 0, 1, &mDescriptorInfos[0].descriptorSet, 0, nullptr);
-        
-        LOG_INFO("CombineUIPass:: start draw 4");
         mVulkanAPI->cmdDraw(mVulkanAPI->getCurrentCommandBuffer(), 3, 1, 0, 0);
         
         LOG_INFO("CombineUIPass::end draw");
@@ -232,8 +225,8 @@ namespace DynastyEngine
             throw std::runtime_error("create post process graphics pipeline");
         }
 
-        // mVulkanAPI->destroyShaderModule(module[0]);
-        // mVulkanAPI->destroyShaderModule(module[1]);
+        mVulkanAPI->destroyShaderModule(module[0]);
+        mVulkanAPI->destroyShaderModule(module[1]);
     }
     
     void CombineUIPass::setupDescriptorSet()

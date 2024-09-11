@@ -48,7 +48,6 @@ namespace DynastyEngine
         mRenderPipeline             = std::make_shared<RenderPipeline>();
         mRenderPipeline->mVulkanAPI = mVulkanAPI;
         mRenderPipeline->initialize(mVulkanAPI, mRenderResource);
-
     }
 
     void RenderSystem::initializeUIRenderBackend(WindowUI* windowUI)

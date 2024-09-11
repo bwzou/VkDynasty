@@ -85,7 +85,7 @@ namespace DynastyEngine
         virtual void draw();
         virtual void setCommonInfo(RenderPassCommonInfo commonInfo);
         
-        void                                compileGLSLFile(std::vector<VkShaderModule> &modules, std::vector<VkPipelineShaderStageCreateInfo> &stages, const std::string source);
+        void                                compileGLSLFile(std::vector<VkShaderModule> modules, std::vector<VkPipelineShaderStageCreateInfo> &stages, const std::string source);
         VkRenderPass                        getRenderPass() const;
         std::vector<VkImageView>            getFramebufferImageViews() const;
         std::vector<VkDescriptorSetLayout>  getDesciptorSetLatyouts() const;

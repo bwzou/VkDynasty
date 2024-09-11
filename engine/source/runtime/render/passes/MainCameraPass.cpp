@@ -99,15 +99,8 @@ namespace DynastyEngine
         vkCmdBindVertexBuffers(mVulkanAPI->getCurrentCommandBuffer(), 0, 1,  vertexBuffers, offsets);
         vkCmdBindIndexBuffer(mVulkanAPI->getCurrentCommandBuffer(), mRenderResource->indexBuffer, 0, VK_INDEX_TYPE_UINT32);
 
-        VkViewport viewport = {0.0,
-                               0.0,
-                               static_cast<float>(mVulkanAPI->getSwapchainInfo().extent.width),
-                               static_cast<float>(mVulkanAPI->getSwapchainInfo().extent.height),
-                               0.0,
-                               1.0};
-        VkRect2D   scissor  = {0, 0, mVulkanAPI->getSwapchainInfo().extent.width, mVulkanAPI->getSwapchainInfo().extent.height};
-        mVulkanAPI->cmdSetViewport(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, viewport);
-        mVulkanAPI->cmdSetScissor(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, scissor);
+        mVulkanAPI->cmdSetViewport(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, mVulkanAPI->getSwapchainInfo().viewport);
+        mVulkanAPI->cmdSetScissor(mVulkanAPI->getCurrentCommandBuffer(), 0, 1, mVulkanAPI->getSwapchainInfo().scissor);
 
         vkCmdBindDescriptorSets(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[RenderPipelineTypeMeshGBuffer].layout, 0, 1, &mDescriptorInfos[PerMesh].descriptorSet, 0, nullptr);
 
@@ -612,7 +605,6 @@ namespace DynastyEngine
             depthStencilCreateInfo.depthBoundsTestEnable = VK_FALSE;
             depthStencilCreateInfo.stencilTestEnable     = VK_FALSE;
 
-            LOG_INFO("898");
             VkDynamicState                   dynamicStates[] = {VK_DYNAMIC_STATE_VIEWPORT, VK_DYNAMIC_STATE_SCISSOR};
 
             VkPipelineDynamicStateCreateInfo dynamicStateCreateInfo {};
@@ -636,15 +628,13 @@ namespace DynastyEngine
             pipelineInfo.subpass             = MainCameraSubpassBasePass;
             pipelineInfo.basePipelineHandle  = VK_NULL_HANDLE;
             pipelineInfo.pDynamicState       = &dynamicStateCreateInfo;
-            LOG_INFO("899");
             if (!mVulkanAPI->createGraphicsPipelines(VK_NULL_HANDLE, 1, pipelineInfo, mRenderPipelines[RenderPipelineTypeMeshGBuffer].pipeline))
             {
                 throw std::runtime_error("create mesh gbuffer graphics pipeline");
             }
 
-            // mVulkanAPI->destroyShaderModule(module[0]);
-            // mVulkanAPI->destroyShaderModule(module[1]);
-            LOG_INFO("900");
+            mVulkanAPI->destroyShaderModule(module[0]);
+            mVulkanAPI->destroyShaderModule(module[1]);
         }
 
         // mesh lighting

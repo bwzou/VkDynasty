@@ -28,7 +28,7 @@ namespace DynastyEngine
         mRenderResource        = commonInfo.renderResource;
     }
 
-    void RenderPass::compileGLSLFile(std::vector<VkShaderModule> &modules, std::vector<VkPipelineShaderStageCreateInfo> &stages, std::string source) 
+    void RenderPass::compileGLSLFile(std::vector<VkShaderModule> modules, std::vector<VkPipelineShaderStageCreateInfo> &stages, std::string source) 
     {
         std::string shaderGlslDir = gRuntimeGlobalContext.mConfigManager->getShaderGlslDir();
         std::string vsPath = shaderGlslDir + source + ".vert.spv";
