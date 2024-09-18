@@ -8,20 +8,25 @@ set(json_inlcude ${THIRD_PARTY_DIR}/json11)
 set(json_lib_dir ${THIRD_PARTY_DIR}/lib/json11)
 
 add_library(json11 ${json_inlcude}/json11.cpp)
-set_target_properties(json11 PROPERTIES FOLDER "ThirdParty/json11" )
+set_target_properties(json11 PROPERTIES FOLDER "ThirdParty/json11")
+
+set(entt_inlcude ${THIRD_PARTY_DIR}/entt/include)
+
+add_library(entt ${entt_inlcude}/entt.hpp)
+set_target_properties(entt PROPERTIES LINKER_LANGUAGE CXX)
 
 # ---- Add source files ----
 # Note: globbing sources is considered bad practice as CMake's generators may not detect new files
 # automatically. Keep that in mind when changing files, or explicitly mention them here.
-file(GLOB_RECURSE HEADER_FILES "*.h")
+file(GLOB_RECURSE HEADER_FILES "*.h *.hpp")
 file(GLOB_RECURSE SOURCE_FILES "*.cpp")
 
 #source_group(TREE "${ENGINE_ROOT_DIR}/schema" FILES ${SCHEMA_FILES})
-source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADER_FILES} ${SOURCE_FILES})
+source_group(TREE "${CMAKE_CURRENT_SOURCE_DIR}" FILES ${HEADER_FILES} ${HEADER_FILES2} ${SOURCE_FILES})
 
 # Note: for header-only libraries change all PUBLIC flags to INTERFACE and create an interface
 # target: add_library(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
-add_library(${TARGET_NAME} ${HEADER_FILES} ${SOURCE_FILES})
+add_library(${TARGET_NAME} ${HEADER_FILES} ${HEADER_FILES2} ${SOURCE_FILES})
 
 set_target_properties(${TARGET_NAME} PROPERTIES CXX_STANDARD 17)
 set_target_properties(${TARGET_NAME} PROPERTIES FOLDER "Engine")
@@ -38,8 +43,10 @@ target_link_libraries(${TARGET_NAME} PUBLIC imgui)
 target_link_libraries(${TARGET_NAME} PUBLIC glm)
 target_link_libraries(${TARGET_NAME} PUBLIC assimp)
 target_link_libraries(${TARGET_NAME} PUBLIC md5)
+target_link_libraries(${TARGET_NAME} PUBLIC yaml-cpp)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
 target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:json11>)
+target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:entt>)
 
 add_dependencies(${TARGET_NAME} ${SHADER_COMPILE_TARGET})
 
@@ -56,6 +63,11 @@ target_include_directories(
 target_include_directories(
   ${TARGET_NAME} 
   PUBLIC $<BUILD_INTERFACE:${json_inlcude}>
+)
+
+target_include_directories(
+  ${TARGET_NAME} 
+  PUBLIC $<BUILD_INTERFACE:${entt_inlcude}>
 )
 
 target_include_directories(

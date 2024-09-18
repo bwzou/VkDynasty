@@ -57,3 +57,8 @@ if(NOT TARGET md5)
     include(md5.cmake)
     set_target_properties(md5 PROPERTIES FOLDER ${third_party_folder}/md5)
 endif()
+
+if(NOT TARGET yaml-cpp)
+    include(yaml-cpp.cmake)
+    set_target_properties(yaml-cpp PROPERTIES FOLDER ${third_party_folder}/yaml-cpp)
+endif()
