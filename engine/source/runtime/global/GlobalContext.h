@@ -11,6 +11,7 @@ namespace DynastyEngine {
     class RenderSystem;
     class DebugManager;
 
+
     class RuntimeGlobalContext
     {
     public:

@@ -104,7 +104,7 @@ namespace DynastyEngine
     {
         const std::string& configFilePath = "";
         gRuntimeGlobalContext.startSystems(configFilePath);
-        
+
         LOG_INFO("engine start");
     }
 

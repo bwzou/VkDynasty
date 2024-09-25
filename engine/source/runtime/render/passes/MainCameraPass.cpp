@@ -90,7 +90,7 @@ namespace DynastyEngine
     void MainCameraPass::drawMeshGbuffer() 
     {
         // 默认使用第一个
-        mRenderResource->updateUniformBuffer(mVulkanAPI, 0);
+        // mRenderResource->updateUniformBuffer(mVulkanAPI, 0);
 
         mVulkanAPI->cmdBindPipeline(mVulkanAPI->getCurrentCommandBuffer(), VK_PIPELINE_BIND_POINT_GRAPHICS, mRenderPipelines[RenderPipelineTypeMeshGBuffer].pipeline);
         

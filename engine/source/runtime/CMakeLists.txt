@@ -46,7 +46,7 @@ target_link_libraries(${TARGET_NAME} PUBLIC md5)
 target_link_libraries(${TARGET_NAME} PUBLIC yaml-cpp)
 target_link_libraries(${TARGET_NAME} PUBLIC ${vulkan_lib})
 target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:json11>)
-target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:entt>)
+# target_link_libraries(${TARGET_NAME} PRIVATE $<BUILD_INTERFACE:entt>)
 
 add_dependencies(${TARGET_NAME} ${SHADER_COMPILE_TARGET})
 

@@ -1,6 +1,7 @@
 #include "runtime/render/RenderResource.h"
 #include "runtime/platform/vulkan/VulkanAPI.h"
 #include "runtime/render/RenderMesh.h"
+#include "runtime/render/RenderCamera.h"
 
 
 namespace DynastyEngine 
@@ -87,6 +88,24 @@ namespace DynastyEngine
         ubo.proj = glm::perspective(glm::radians(75.0f), mVulkanAPI->getSwapchainInfo().extent.width / (float) mVulkanAPI->getSwapchainInfo().extent.height, 0.1f, 500.0f);
         ubo.proj[1][1] *= -1;
 
+        memcpy(uniformBuffersMapped[currentFrameIndex], &ubo, sizeof(ubo));
+    }
+
+    void RenderResource::updatePerFrameBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI, uint32_t currentFrameIndex, std::shared_ptr<RenderCamera> camera)
+    {
+        static auto startTime = std::chrono::high_resolution_clock::now();
+
+        auto currentTime = std::chrono::high_resolution_clock::now();
+        float time = std::chrono::duration<float, std::chrono::seconds::period>(currentTime - startTime).count();
+
+        glm::mat4 viewMatrix = camera->getViewMatrix();
+        glm::mat4 projMatrix = camera->getPersProjMatrix();
+        
+        UniformBufferObject ubo{};
+        // ubo.model = glm::rotate(glm::mat4(1.0f), time * glm::radians(90.0f), glm::vec3(0.0f, 0.0f, 1.0f));
+        ubo.model = glm::mat4(1.0f);
+        ubo.view  = viewMatrix;
+        ubo.proj  = projMatrix;
         memcpy(uniformBuffersMapped[currentFrameIndex], &ubo, sizeof(ubo));
     }
 

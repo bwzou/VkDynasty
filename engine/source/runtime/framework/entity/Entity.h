@@ -1,8 +1,10 @@
 
 #include "runtime/code/base/UUID.h"
 #include "runtime/framework/component/Component.h"
+#include "runtime/framework/level/Level.h"
 #include <vector>
 
+#include <entt.hpp>
 
 namespace DynastyEngine 
 {
@@ -10,7 +12,7 @@ namespace DynastyEngine
     {
     public:
         Entity() = default;
-        // Entity(UUID<Entity> uuid, Level* level);
+        Entity(entt::entity handle, Level* level);
         Entity(const Entity& other) = default;
 
         template<typename T, typename... Args>
@@ -22,25 +24,19 @@ namespace DynastyEngine
         template<typename T>
         T& getComponent()
         {
-
+            return mLevel->mRegistry.get<T>(mEntityHandle);
         }
 
         template<typename T>
-        bool hasComponent(const std::string& compenentTypeName) const
+        bool hasComponent()
         {
-            // const std::string& = 
-            for (const auto& component : mComponents)
-            {
-                if (component.getTypeName() == compenentTypeName)
-                    return true;
-            }
-
-            return false;
+            return mLevel->mRegistry.all_of<T>(mEntityHandle);
         }
 
         int getUUID();
 
     private:
-        std::vector<Component> mComponents;
+        entt::entity mEntityHandle{ entt::null };
+        Level* mLevel = nullptr;
     };
 }

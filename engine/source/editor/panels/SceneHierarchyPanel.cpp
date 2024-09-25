@@ -9,7 +9,8 @@ namespace DynastyEngine
         
     void SceneHierarchyPanel::setContent(const std::shared_ptr<Level>& context) 
     {
-        
+        mContext = context;
+        mSelectionContext = {};
     }
 
     void SceneHierarchyPanel::onImGuiDraw(bool* pOpen, bool* pOpenProperties) 
@@ -18,8 +19,8 @@ namespace DynastyEngine
 		{
 			ImGui::Begin("Scene Hierarchy", pOpen);
 
-			// if (mContext)
-			// {
+			if (mContext)
+			{
 			// 	mContext->mRegistry.each([&](auto entityID)
 			// 		{
 			// 			Entity entity = { entityID, mContext.get() };
@@ -58,7 +59,7 @@ namespace DynastyEngine
 
 			// 		ImGui::EndPopup();
 			// 	}
-			// }
+			}
 
 			ImGui::End();
 		}

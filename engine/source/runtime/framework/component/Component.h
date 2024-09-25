@@ -10,7 +10,7 @@ namespace DynastyEngine {
         }
         virtual ~Component() {};
 
-        virtual std::string getTypeName() const;
+        virtual std::string getTypeName() const {};
     
     private:
         std::string mType;

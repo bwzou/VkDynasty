@@ -6,11 +6,10 @@
 #include "runtime/render/RenderSystem.h"
 #include "runtime/debug/DebugManager.h"
 
-
 namespace DynastyEngine {
     RuntimeGlobalContext gRuntimeGlobalContext;
 
-    void RuntimeGlobalContext::startSystems(const std::string& config_file_path)
+    void RuntimeGlobalContext::startSystems(const std::string& configFilePath)
     {
         mLoggerSystem = std::make_shared<LogSystem>();
 

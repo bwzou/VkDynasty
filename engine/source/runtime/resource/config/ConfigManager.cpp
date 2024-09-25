@@ -22,4 +22,7 @@ namespace DynastyEngine
     const std::filesystem::path& ConfigManager::getEditorFontPath() const { return mEditorFontPath; }
 
     const std::filesystem::path& ConfigManager::getShaderGlslDir() const { return mShaderGlslDir; }
+
+    const std::string& ConfigManager::getGlobalRenderingResUrl() const { return mGlobalRenderingRes; };
+    
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "runtime/framework/level/Level.h"
+#include "runtime/framework/entity/Entity.h"
 
 #include <imgui.h>
 #include <imgui_internal.h>
@@ -24,5 +25,7 @@ namespace DynastyEngine
 
     private:
         int mTemp;
+        std::shared_ptr<Level> mContext;
+        Entity mSelectionContext;
     };
 }

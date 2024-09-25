@@ -25,9 +25,9 @@ namespace DynastyEngine
         if (!cameraDepth_) 
         {
             cameraDepth_ = std::make_shared<Camera>();
-            cameraDepth_->setPerspective(glm::radians(CAMERA_FOV),
-                                        (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT,
-                                        CAMERA_NEAR, CAMERA_FAR);
+            // cameraDepth_->setPerspective(glm::radians(CAMERA_FOV),
+            //                             (float) SHADOW_MAP_WIDTH / (float) SHADOW_MAP_HEIGHT,
+            //                             CAMERA_NEAR, CAMERA_FAR);
         }
 
         if (!renderer_) 

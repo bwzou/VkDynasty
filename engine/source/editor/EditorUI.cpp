@@ -15,6 +15,10 @@
 #include "runtime/platform/PlatformUtils.h"
 #include "runtime/resource/asset/AssetManager.h"
 
+#include "editor/global/GlobalContext.h"
+#include "editor/managers/EditorInputManager.h"
+#include "editor/managers/EditorSceneManager.h"
+
 namespace DynastyEngine
 {
     static bool pEditorMenu = true;
@@ -312,11 +316,11 @@ namespace DynastyEngine
                 render_target_window_size.x * dpi_scale,
                 render_target_window_size.y * dpi_scale);
 #else
-            gRuntimeGlobalContext.m_render_system->updateEngineContentViewport(
+            gRuntimeGlobalContext.mRenderSystem->updateEngineContentViewport(
                 render_target_window_pos.x, render_target_window_pos.y, render_target_window_size.x, render_target_window_size.y);
 #endif
-            // gRuntimeGlobalContext.m_input_manager->setEngineWindowPos(render_target_window_pos);
-            // gRuntimeGlobalContext.m_input_manager->setEngineWindowSize(render_target_window_size);
+            gEditorGlobalContext.mInputManager->setEngineWindowPos(render_target_window_pos);
+            gEditorGlobalContext.mInputManager->setEngineWindowSize(render_target_window_size);
         }
 
         ImGui::End();
@@ -645,7 +649,7 @@ namespace DynastyEngine
         // TODO 加载方式可能会不一样
         else if (path.extension().string() == ".json") 
         {
-
+            
         }
 
         // 设置显示内容

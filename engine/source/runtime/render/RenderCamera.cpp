@@ -12,12 +12,12 @@ namespace DynastyEngine
         mFar = far;
     }
 
-    void RenderCamera::lookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) 
-    {
-        mEye = eye;
-        mCenter = center;
-        mUp = up;
-    } 
+    // void RenderCamera::lookAt(const glm::vec3 &eye, const glm::vec3 &center, const glm::vec3 &up) 
+    // {
+    //     mEye = eye;
+    //     mCenter = center;
+    //     mUp = up;
+    // } 
 
     // 投影矩阵
     // https://ogldev.org/www/tutorial12/tutorial12.html
@@ -51,28 +51,28 @@ namespace DynastyEngine
     // 所以mat[ i ][ j ]表示的是第 i 列，第 j 行元素
     glm::mat4 RenderCamera::viewMatrix() const 
     {
-        glm::vec3 forward(glm::normalize(mCenter - mEye));
-        glm::vec3 side(glm::normalize(cross(forward, mUp)));
-        glm::vec3 up(glm::cross(side, forward));
+        // glm::vec3 forward(glm::normalize(centerPosition - eyePosition));
+        // glm::vec3 side(glm::normalize(cross(forward, upDir)));
+        // glm::vec3 up(glm::cross(side, forward));
 
-        glm::mat4 view(1.f);
+        // glm::mat4 view(1.f);
 
-        view[0][0] = side.x;
-        view[1][0] = side.y;
-        view[2][0] = side.z;
-        view[3][0] = -glm::dot(side, mEye);
+        // view[0][0] = side.x;
+        // view[1][0] = side.y;
+        // view[2][0] = side.z;
+        // view[3][0] = -glm::dot(side, mEye);
 
-        view[0][1] = up.x;
-        view[1][1] = up.y;
-        view[2][1] = up.z;
-        view[3][1] = -glm::dot(up, mEye);
+        // view[0][1] = up.x;
+        // view[1][1] = up.y;
+        // view[2][1] = up.z;
+        // view[3][1] = -glm::dot(up, mEye);
 
-        view[0][2] = -forward.x;
-        view[1][2] = -forward.y;
-        view[2][2] = -forward.z;
-        view[3][2] = glm::dot(forward, mEye);
+        // view[0][2] = -forward.x;
+        // view[1][2] = -forward.y;
+        // view[2][2] = -forward.z;
+        // view[3][2] = glm::dot(forward, mEye);
 
-        return view;
+        // return view;
     }
 
     glm::vec3 RenderCamera::getWorldPositionFromView(glm::vec3 pos) const 
@@ -106,7 +106,7 @@ namespace DynastyEngine
         glm::vec3 nearNormal = forward;
         mFrustum.planes[0].set(nearNormal, nearCenter);
             
-            // far plane
+        // far plane
         glm::vec3 farCenter = mEye + forward * mFar;
         glm::vec3 farNormal = -forward;
         mFrustum.planes[1].set(farNormal, farCenter);
@@ -166,4 +166,138 @@ namespace DynastyEngine
         }
     }
 
+
+
+
+
+    void RenderCamera::lookAt(const glm::vec3& position, const glm::vec3& target, const glm::vec3& up)
+    {
+        mPosition = position;
+
+        // model rotation
+        // maps vectors to camera space (x, y, z)
+        glm::vec3 forward = glm::normalize((target - position));
+        mRotation      = getRotationTo(forward, Y);
+
+        // correct the up vector
+        // the cross product of non-orthogonal vectors is not normalized
+        glm::vec3 right  = glm::normalize(cross(forward, glm::normalize(up)));
+        glm::vec3 orthUp = cross(right, forward);
+
+        Quaternion upRotation = getRotationTo(mRotation * orthUp, Z);
+
+        mRotation = Quaternion(upRotation) * mRotation;
+
+        // inverse of the model rotation
+        // maps camera space vectors to model vectors
+        mInvRotation = mRotation.conjugate();
+    }
+
+    void RenderCamera::setAspect(float aspect) 
+    {
+        mAspect = aspect;
+
+        // tan(mFovx * 0.5) = aspect * tan(mFovy * 0.5)
+        // mFovx = std::atan(aspect * std::tan(glm::radians(mFovy) * 0.5)) * 2.0f;
+
+        mFovy = Radian(Math::atan(Math::tan(Radian(Degree(mFovx) * 0.5f)) / mAspect) * 2.0f).valueDegrees();
+    }
+
+    void RenderCamera::move(glm::vec3 delta) 
+    {
+        mPosition += delta;
+    }
+    
+    void RenderCamera::rotate(glm::vec2 delta)
+    {
+        // rotation around x, y axis
+        delta = glm::vec2(Radian(Degree(delta.x)).valueRadians(), Radian(Degree(delta.y)).valueRadians());
+
+        // limit pitch
+        float dot = glm::dot(mUpAxis, forward());
+        if ((dot < -0.99f && delta.x > 0.0f) || // angle nearing 180 degrees
+            (dot > 0.99f && delta.x < 0.0f))    // angle nearing 0 degrees
+            delta.x = 0.0f;
+
+        // pitch is relative to current sideways rotation
+        // yaw happens independently
+        // this prevents roll
+        Quaternion pitch, yaw;
+        pitch.fromAngleAxis(Radian(delta.x), X);
+        yaw.fromAngleAxis(Radian(delta.y), Z);
+
+        mRotation = pitch * mRotation * yaw;
+
+        mInvRotation = mRotation.conjugate();
+    }
+
+    void RenderCamera::zoom(float offset)
+    {
+        mFovy = glm::clamp(mFovy - offset, MIN_FOV, MAX_FOV);
+    }
+
+    glm::mat4 RenderCamera::makeLookAtMatrix(const glm::vec3 eyePosition, const glm::vec3 centerPosition, const glm::vec3 upDir)
+    {
+        glm::vec3 forward(glm::normalize(centerPosition - eyePosition));
+        glm::vec3 side(glm::normalize(cross(forward, upDir)));
+        glm::vec3 up(glm::cross(side, forward));
+
+        glm::mat4 view(1.f);
+
+        view[0][0] = side.x;
+        view[1][0] = side.y;
+        view[2][0] = side.z;
+        view[3][0] = -glm::dot(side, eyePosition);
+
+        view[0][1] = up.x;
+        view[1][1] = up.y;
+        view[2][1] = up.z;
+        view[3][1] = -glm::dot(up, eyePosition);
+
+        view[0][2] = -forward.x;
+        view[1][2] = -forward.y;
+        view[2][2] = -forward.z;
+        view[3][2] = glm::dot(forward, eyePosition);
+
+        return view;
+    }
+
+    glm::mat4 RenderCamera::makePersProjMatrix(float fovy, float aspect, float znear, float zfar)
+    {
+        float tanHalfFovInverse = 1.f / std::tan((fovy * 0.5f));
+
+        glm::mat4 projection(0.f);
+        projection[0][0] = tanHalfFovInverse / aspect;
+        projection[1][1] = tanHalfFovInverse;
+        projection[2][2] = (zfar + znear) / (znear - zfar);
+        projection[2][3] = -1.f;
+        projection[3][2] = -(zfar * znear) / (zfar - znear);
+
+        return projection;
+    }
+
+    glm::mat4 RenderCamera::getViewMatrix() 
+    {
+        glm::mat4 viewMatrix = glm::mat4(1.0f);
+        switch (mCurrentCameraType)
+        {   
+            case RenderCameraType::Editor:
+                viewMatrix = makeLookAtMatrix(position(), position() + forward(), up());
+                break;
+            case RenderCameraType::Motor:
+                viewMatrix = mViewMatrices[MAIN_VIEW_MATRIX_INDEX];
+                break;
+            default:
+                break;
+        }
+        return viewMatrix;
+    }
+
+    glm::mat4 RenderCamera::getPersProjMatrix()
+    {
+        glm::mat4 fixMatrix = glm::mat4(1.0f);
+        glm::mat4 projMatrix = fixMatrix * makePersProjMatrix(glm::radians(mFovy), mAspect, mZnear, mZfar);
+        projMatrix[1][1] *= -1;
+        return projMatrix;
+    }
 }

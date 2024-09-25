@@ -19,6 +19,8 @@ namespace DynastyEngine
         // const std::filesystem::path& getEditorSmallIconPath() const;
         const std::filesystem::path& getEditorFontPath() const;
         const std::filesystem::path& getShaderGlslDir() const;
+        const std::string& getGlobalRenderingResUrl() const;
+        // const std::string& getGlobalParticleResUrl() const;
 
     private:
         std::filesystem::path mRootFolder = "/Users/bowenzou/Workspace/Documents/dynasty";
@@ -29,6 +31,7 @@ namespace DynastyEngine
         std::filesystem::path mEditorFontPath;
         std::filesystem::path mShaderGlslDir = "/Users/bowenzou/Workspace/Documents/dynasty/engine/shader/generated/spv/";
 
-        
+        std::filesystem::path mGlobalRenderingRes = "/Users/bowenzou/Workspace/Documents/dynasty/engine/asset/global/rendering.global.json";
+        // std::filesystem::path mGlobalRenderingRes = "/Users/bowenzou/Workspace/Documents/dynasty/engine/asset/global/rendering.global.json";
     };
 }

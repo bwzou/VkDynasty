@@ -1,4 +1,5 @@
-#include "runtime/framework/level/level.h"
+#pragma once
+#include "runtime/framework/level/Level.h"
 
 namespace DynastyEngine 
 {

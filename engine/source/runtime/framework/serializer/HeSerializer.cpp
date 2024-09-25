@@ -1,4 +1,8 @@
 // #include "runtime/framework/serializer/HeSerializer.h"
+// #include "runtime/code/base/GLMInc.h"
+// #include "runtime/framework/entity/Entity.h"
+// #include "runtime/framework/component/base/IDComponent.h"
+// #include "runtime/framework/component/base/TagComponent.h"
 
 // #include <yaml-cpp/yaml.h>
 
@@ -103,53 +107,53 @@
 // 		return out;
 // 	}
 
-//     static std::string rigidBody2DBodyTypeToString(Rigidbody2DComponent::BodyType bodyType)
-// 	{
-// 		switch (bodyType)
-// 		{
-// 		    case Rigidbody2DComponent::BodyType::Static:    return "Static";
-// 		    case Rigidbody2DComponent::BodyType::Dynamic:   return "Dynamic";
-// 		    case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
-// 		}
+// //     static std::string rigidBody2DBodyTypeToString(Rigidbody2DComponent::BodyType bodyType)
+// // 	{
+// // 		switch (bodyType)
+// // 		{
+// // 		    case Rigidbody2DComponent::BodyType::Static:    return "Static";
+// // 		    case Rigidbody2DComponent::BodyType::Dynamic:   return "Dynamic";
+// // 		    case Rigidbody2DComponent::BodyType::Kinematic: return "Kinematic";
+// // 		}
 
-// 		// HE_CORE_ASSERT(false, "Unknown body type");
-// 		return {};
-// 	}
+// // 		// HE_CORE_ASSERT(false, "Unknown body type");
+// // 		return {};
+// // 	}
 
-// 	static Rigidbody2DComponent::BodyType rigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
-// 	{
-// 		if (bodyTypeString == "Static")    return Rigidbody2DComponent::BodyType::Static;
-// 		if (bodyTypeString == "Dynamic")   return Rigidbody2DComponent::BodyType::Dynamic;
-// 		if (bodyTypeString == "Kinematic") return Rigidbody2DComponent::BodyType::Kinematic;
+// // 	static Rigidbody2DComponent::BodyType rigidBody2DBodyTypeFromString(const std::string& bodyTypeString)
+// // 	{
+// // 		if (bodyTypeString == "Static")    return Rigidbody2DComponent::BodyType::Static;
+// // 		if (bodyTypeString == "Dynamic")   return Rigidbody2DComponent::BodyType::Dynamic;
+// // 		if (bodyTypeString == "Kinematic") return Rigidbody2DComponent::BodyType::Kinematic;
 
-// 		// HE_CORE_ASSERT(false, "Unknown body type");
-// 		return Rigidbody2DComponent::BodyType::Static;
-// 	}
+// // 		// HE_CORE_ASSERT(false, "Unknown body type");
+// // 		return Rigidbody2DComponent::BodyType::Static;
+// // 	}
 
 //     static void serializeEntity(YAML::Emitter& out, Entity entity)
 // 	{
-// 		HE_CORE_ASSERT(entity.HasComponent<IDComponent>());
+// 		// HE_CORE_ASSERT(entity.HasComponent<IDComponent>());
 
 // 		out << YAML::BeginMap;//Entity
-// 		out << YAML::Key << "Entity" << YAML::Value << entity.GetUUID(); 
+// 		out << YAML::Key << "Entity" << YAML::Value << entity.getUUID(); 
 
-// 		if (entity.HasComponent<TagComponent>())
+// 		if (entity.hasComponent<TagComponent>())
 // 		{
 // 			out << YAML::Key << "TagComponent";
 // 			out << YAML::BeginMap; // TagComponent
 
-// 			auto& tag = entity.GetComponent<TagComponent>().Tag;
+// 			auto& tag = entity.getComponent<TagComponent>().mTag;
 // 			out << YAML::Key << "Tag" << YAML::Value << tag;
 
 // 			out << YAML::EndMap; // TagComponent
 // 		}
 
-// 		if (entity.HasComponent<TransformComponent>())
+// 		if (entity.hasComponent<TransformComponent>())
 // 		{
 // 			out << YAML::Key << "TransformComponent";
 // 			out << YAML::BeginMap; // TransformComponent
 
-// 			auto& tc = entity.GetComponent<TransformComponent>();
+// 			auto& tc = entity.getComponent<TransformComponent>();
 // 			out << YAML::Key << "Translation" << YAML::Value << tc.Translation;
 // 			out << YAML::Key << "Rotation" << YAML::Value << tc.Rotation;
 // 			out << YAML::Key << "Scale" << YAML::Value << tc.Scale;
@@ -157,12 +161,12 @@
 // 			out << YAML::EndMap; // TransformComponent
 // 		}
 
-// 		if (entity.HasComponent<CameraComponent>())
+// 		if (entity.hasComponent<CameraComponent>())
 // 		{
 // 			out << YAML::Key << "CameraComponent";
 // 			out << YAML::BeginMap; // CameraComponent
 
-// 			auto& cameraComponent = entity.GetComponent<CameraComponent>();
+// 			auto& cameraComponent = entity.getComponent<CameraComponent>();
 // 			auto& camera = cameraComponent.Camera;
 
 // 			out << YAML::Key << "Camera" << YAML::Value;
@@ -182,23 +186,23 @@
 // 			out << YAML::EndMap; // CameraComponent
 // 		}
 
-// 		if (entity.HasComponent<SpriteRendererComponent>())
+// 		if (entity.hasComponent<SpriteRendererComponent>())
 // 		{
 // 			out << YAML::Key << "SpriteRendererComponent";
 // 			out << YAML::BeginMap; // SpriteRendererComponent
 
-// 			auto& spriteRendererComponent = entity.GetComponent<SpriteRendererComponent>();
+// 			auto& spriteRendererComponent = entity.getComponent<SpriteRendererComponent>();
 // 			out << YAML::Key << "Color" << YAML::Value << spriteRendererComponent.Color;
 
 // 			out << YAML::EndMap; // SpriteRendererComponent
 // 		}
 
-// 		if (entity.HasComponent<CircleRendererComponent>())
+// 		if (entity.hasComponent<CircleRendererComponent>())
 // 		{
 // 			out << YAML::Key << "CircleRendererComponent";
 // 			out << YAML::BeginMap;
 
-// 			auto& circleComponent = entity.GetComponent<CircleRendererComponent>();
+// 			auto& circleComponent = entity.getComponent<CircleRendererComponent>();
 // 			out << YAML::Key << "Color" << YAML::Value << circleComponent.Color;
 // 			out << YAML::Key << "Thickness" << YAML::Value << circleComponent.Thickness;
 // 			out << YAML::Key << "Fade" << YAML::Value << circleComponent.Fade;
@@ -206,24 +210,24 @@
 // 			out << YAML::EndMap;
 // 		}
 
-// 		if (entity.HasComponent<Rigidbody2DComponent>())
+// 		if (entity.hasComponent<Rigidbody2DComponent>())
 // 		{
 // 			out << YAML::Key << "Rigidbody2DComponent";
 // 			out << YAML::BeginMap; // Rigidbody2DComponent
 
-// 			auto& rb2dComponent = entity.GetComponent<Rigidbody2DComponent>();
+// 			auto& rb2dComponent = entity.getComponent<Rigidbody2DComponent>();
 // 			out << YAML::Key << "BodyType" << YAML::Value << rigidBody2DBodyTypeToString(rb2dComponent.Type);
 // 			out << YAML::Key << "FixedRotation" << YAML::Value << rb2dComponent.FixedRotation;
 
 // 			out << YAML::EndMap; // Rigidbody2DComponent
 // 		}
 
-// 		if (entity.HasComponent<BoxCollider2DComponent>())
+// 		if (entity.hasComponent<BoxCollider2DComponent>())
 // 		{
 // 			out << YAML::Key << "BoxCollider2DComponent";
 // 			out << YAML::BeginMap; // BoxCollider2DComponent
 
-// 			auto& bc2dComponent = entity.GetComponent<BoxCollider2DComponent>();
+// 			auto& bc2dComponent = entity.getComponent<BoxCollider2DComponent>();
 // 			out << YAML::Key << "Offset" << YAML::Value << bc2dComponent.Offset;
 // 			out << YAML::Key << "Size" << YAML::Value << bc2dComponent.Size;
 // 			out << YAML::Key << "Density" << YAML::Value << bc2dComponent.Density;
@@ -234,12 +238,12 @@
 // 			out << YAML::EndMap; // BoxCollider2DComponent
 // 		}
 
-// 		if (entity.HasComponent<CircleCollider2DComponent>())
+// 		if (entity.hasComponent<CircleCollider2DComponent>())
 // 		{
 // 			out << YAML::Key << "CircleCollider2DComponent";
 // 			out << YAML::BeginMap; // CircleCollider2DComponent
 
-// 			auto& cc2dComponent = entity.GetComponent<CircleCollider2DComponent>();
+// 			auto& cc2dComponent = entity.getComponent<CircleCollider2DComponent>();
 // 			out << YAML::Key << "Offset" << YAML::Value << cc2dComponent.Offset;
 // 			out << YAML::Key << "Radius" << YAML::Value << cc2dComponent.Radius;
 // 			out << YAML::Key << "Density" << YAML::Value << cc2dComponent.Density;
@@ -250,12 +254,12 @@
 // 			out << YAML::EndMap; // CircleCollider2DComponent
 // 		}
 
-// 		if (entity.HasComponent<Rigidbody3DComponent>())
+// 		if (entity.hasComponent<Rigidbody3DComponent>())
 // 		{
 // 			out << YAML::Key << "Rigidbody3DComponent";
 // 			out << YAML::BeginMap;
 
-// 			auto& rb3dComponent = entity.GetComponent<Rigidbody3DComponent>();
+// 			auto& rb3dComponent = entity.getComponent<Rigidbody3DComponent>();
 // 			out << YAML::Key << "mass" << YAML::Value << rb3dComponent.mass;
 // 			out << YAML::Key << "type" << YAML::Value << (uint32_t)rb3dComponent.Type;
 // 			out << YAML::Key << "shape" << YAML::Value << (uint32_t)rb3dComponent.Shape;
@@ -267,12 +271,12 @@
 // 			out << YAML::EndMap;
 // 		}
 
-// 		if (entity.HasComponent<MeshComponent>())
+// 		if (entity.hasComponent<MeshComponent>())
 // 		{
 // 			out << YAML::Key << "MeshComponent";
 // 			out << YAML::BeginMap;
 
-// 			auto& meshComponent = entity.GetComponent<MeshComponent>();
+// 			auto& meshComponent = entity.getComponent<MeshComponent>();
 // 			out << YAML::Key << "Path" << YAML::Value << meshComponent.Path.c_str();
 
 // 			// Material 
@@ -293,24 +297,24 @@
 // 			out << YAML::EndMap;
 // 		}
 
-// 		if (entity.HasComponent<PointLightComponent>())
+// 		if (entity.hasComponent<PointLightComponent>())
 // 		{
 // 			out << YAML::Key << "PointLightComponent";
 // 			out << YAML::BeginMap;
 
-// 			auto& lightComponent = entity.GetComponent<PointLightComponent>();
+// 			auto& lightComponent = entity.getComponent<PointLightComponent>();
 // 			out << YAML::Key << "pointIntensity" << YAML::Value << lightComponent.Intensity;
 // 			out << YAML::Key << "Color" << YAML::Value << lightComponent.LightColor;
 
 // 			out << YAML::EndMap;
 // 		}
 
-// 		if (entity.HasComponent<DirectionalLightComponent>())
+// 		if (entity.hasComponent<DirectionalLightComponent>())
 // 		{
 // 			out << YAML::Key << "DirectionalLightComponent";
 // 			out << YAML::BeginMap;
 
-// 			auto& lightComponent = entity.GetComponent<DirectionalLightComponent>();
+// 			auto& lightComponent = entity.getComponent<DirectionalLightComponent>();
 // 			out << YAML::Key << "dirIntensity" << YAML::Value << lightComponent.Intensity;
 
 // 			out << YAML::EndMap;
@@ -319,197 +323,197 @@
 // 		out << YAML::EndMap;
 // 	}
 
-//     bool HeSerializer::serialize(const std::string& filepath) 
-//     {
-//         YAML::Emitter out;
-// 		out << YAML::BeginMap;
-// 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
-// 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
-// 		mLevel->mRegistry.each([&](auto entityID)
-// 			{
-// 				Entity entity = { entityID, mLevel.get() };
-// 				if (!entity)
-// 					return;
-// 				//Serialize Entity
-// 				serializeEntity(out, entity);
-// 			});
-// 		out << YAML::EndSeq;
-// 		out << YAML::EndMap;
+// //     bool HeSerializer::serialize(const std::string& filepath) 
+// //     {
+// //         YAML::Emitter out;
+// // 		out << YAML::BeginMap;
+// // 		out << YAML::Key << "Scene" << YAML::Value << "Untitled";
+// // 		out << YAML::Key << "Entities" << YAML::Value << YAML::BeginSeq;
+// // 		mLevel->mRegistry.each([&](auto entityID)
+// // 			{
+// // 				Entity entity = { entityID, mLevel.get() };
+// // 				if (!entity)
+// // 					return;
+// // 				//Serialize Entity
+// // 				serializeEntity(out, entity);
+// // 			});
+// // 		out << YAML::EndSeq;
+// // 		out << YAML::EndMap;
 
-// 		std::ofstream fout(filepath);
-// 		fout << out.c_str();
-//     }
+// // 		std::ofstream fout(filepath);
+// // 		fout << out.c_str();
+// //     }
 
-//     bool HeSerializer::serializeRuntime(const std::string& filepath)
-//     {
+// //     bool HeSerializer::serializeRuntime(const std::string& filepath)
+// //     {
 
-//     }
+// //     }
 
-//     bool HeSerializer::deserialize(const std::string& filepath) 
-//     {
-//         YAML::Node data;
-// 		try
-// 		{
-// 			data = YAML::LoadFile(filepath);
-// 		}
-// 		catch (YAML::ParserException e)
-// 		{
-// 			return false;
-// 		}
+// //     bool HeSerializer::deserialize(const std::string& filepath) 
+// //     {
+// //         YAML::Node data;
+// // 		try
+// // 		{
+// // 			data = YAML::LoadFile(filepath);
+// // 		}
+// // 		catch (YAML::ParserException e)
+// // 		{
+// // 			return false;
+// // 		}
 
-// 		if (!data["Scene"])
-// 			return false;
+// // 		if (!data["Scene"])
+// // 			return false;
 
-// 		std::string sceneName = data["Scene"].as<std::string>();
-// 		HE_CORE_TRACE("Deserializing scene '{0}'", sceneName);
+// // 		std::string sceneName = data["Scene"].as<std::string>();
+// // 		HE_CORE_TRACE("Deserializing scene '{0}'", sceneName);
 
-// 		auto entities = data["Entities"];
-// 		if (entities)
-// 		{
-// 			for (auto entity : entities)
-// 			{
-// 				uint64_t uuid = entity["Entity"].as<uint64_t>();
+// // 		auto entities = data["Entities"];
+// // 		if (entities)
+// // 		{
+// // 			for (auto entity : entities)
+// // 			{
+// // 				uint64_t uuid = entity["Entity"].as<uint64_t>();
 
-// 				std::string name;
-// 				auto tagComponent = entity["TagComponent"];
-// 				if (tagComponent)
-// 					name = tagComponent["Tag"].as<std::string>();
+// // 				std::string name;
+// // 				auto tagComponent = entity["TagComponent"];
+// // 				if (tagComponent)
+// // 					name = tagComponent["Tag"].as<std::string>();
 
-// 				HE_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
+// // 				HE_CORE_TRACE("Deserialized entity with ID = {0}, name = {1}", uuid, name);
 
-// 				Entity deserializedEntity = mLevel->CreateEntityWithUUID(uuid, name);
+// // 				Entity deserializedEntity = mLevel->CreateEntityWithUUID(uuid, name);
 
-// 				auto transformComponent = entity["TransformComponent"];
-// 				if (transformComponent)
-// 				{
-// 					// Entities always have transforms
-// 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
-// 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
-// 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
-// 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
-// 				}
+// // 				auto transformComponent = entity["TransformComponent"];
+// // 				if (transformComponent)
+// // 				{
+// // 					// Entities always have transforms
+// // 					auto& tc = deserializedEntity.GetComponent<TransformComponent>();
+// // 					tc.Translation = transformComponent["Translation"].as<glm::vec3>();
+// // 					tc.Rotation = transformComponent["Rotation"].as<glm::vec3>();
+// // 					tc.Scale = transformComponent["Scale"].as<glm::vec3>();
+// // 				}
 
-// 				auto cameraComponent = entity["CameraComponent"];
-// 				if (cameraComponent)
-// 				{
-// 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
+// // 				auto cameraComponent = entity["CameraComponent"];
+// // 				if (cameraComponent)
+// // 				{
+// // 					auto& cc = deserializedEntity.AddComponent<CameraComponent>();
 
-// 					const auto& cameraProps = cameraComponent["Camera"];
-// 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
+// // 					const auto& cameraProps = cameraComponent["Camera"];
+// // 					cc.Camera.SetProjectionType((SceneCamera::ProjectionType)cameraProps["ProjectionType"].as<int>());
 
-// 					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
-// 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
-// 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
+// // 					cc.Camera.SetPerspectiveVerticalFOV(cameraProps["PerspectiveFOV"].as<float>());
+// // 					cc.Camera.SetPerspectiveNearClip(cameraProps["PerspectiveNear"].as<float>());
+// // 					cc.Camera.SetPerspectiveFarClip(cameraProps["PerspectiveFar"].as<float>());
 
-// 					cc.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
-// 					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
-// 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
+// // 					cc.Camera.SetOrthographicSize(cameraProps["OrthographicSize"].as<float>());
+// // 					cc.Camera.SetOrthographicNearClip(cameraProps["OrthographicNear"].as<float>());
+// // 					cc.Camera.SetOrthographicFarClip(cameraProps["OrthographicFar"].as<float>());
 
-// 					cc.Primary = cameraComponent["Primary"].as<bool>();
-// 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
-// 				}
+// // 					cc.Primary = cameraComponent["Primary"].as<bool>();
+// // 					cc.FixedAspectRatio = cameraComponent["FixedAspectRatio"].as<bool>();
+// // 				}
 
-// 				auto spriteRendererComponent = entity["SpriteRendererComponent"];
-// 				if (spriteRendererComponent)
-// 				{
-// 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
-// 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
-// 				}
+// // 				auto spriteRendererComponent = entity["SpriteRendererComponent"];
+// // 				if (spriteRendererComponent)
+// // 				{
+// // 					auto& src = deserializedEntity.AddComponent<SpriteRendererComponent>();
+// // 					src.Color = spriteRendererComponent["Color"].as<glm::vec4>();
+// // 				}
 
-// 				auto circleRendererComponent = entity["CircleRendererComponent"];
-// 				if (circleRendererComponent)
-// 				{
-// 					auto& circle = deserializedEntity.AddComponent<CircleRendererComponent>();
-// 					circle.Color = circleRendererComponent["Color"].as<glm::vec4>();
-// 					circle.Thickness = circleRendererComponent["Thickness"].as<float>();
-// 					circle.Fade = circleRendererComponent["Fade"].as<float>();
-// 				}
+// // 				auto circleRendererComponent = entity["CircleRendererComponent"];
+// // 				if (circleRendererComponent)
+// // 				{
+// // 					auto& circle = deserializedEntity.AddComponent<CircleRendererComponent>();
+// // 					circle.Color = circleRendererComponent["Color"].as<glm::vec4>();
+// // 					circle.Thickness = circleRendererComponent["Thickness"].as<float>();
+// // 					circle.Fade = circleRendererComponent["Fade"].as<float>();
+// // 				}
 
-// 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];
-// 				if (rigidbody2DComponent)
-// 				{
-// 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
-// 					rb2d.Type = rigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
-// 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
-// 				}
+// // 				auto rigidbody2DComponent = entity["Rigidbody2DComponent"];
+// // 				if (rigidbody2DComponent)
+// // 				{
+// // 					auto& rb2d = deserializedEntity.AddComponent<Rigidbody2DComponent>();
+// // 					rb2d.Type = rigidBody2DBodyTypeFromString(rigidbody2DComponent["BodyType"].as<std::string>());
+// // 					rb2d.FixedRotation = rigidbody2DComponent["FixedRotation"].as<bool>();
+// // 				}
 
-// 				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
-// 				if (boxCollider2DComponent)
-// 				{
-// 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
-// 					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
-// 					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
-// 					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
-// 					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
-// 					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
-// 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
-// 				}
+// // 				auto boxCollider2DComponent = entity["BoxCollider2DComponent"];
+// // 				if (boxCollider2DComponent)
+// // 				{
+// // 					auto& bc2d = deserializedEntity.AddComponent<BoxCollider2DComponent>();
+// // 					bc2d.Offset = boxCollider2DComponent["Offset"].as<glm::vec2>();
+// // 					bc2d.Size = boxCollider2DComponent["Size"].as<glm::vec2>();
+// // 					bc2d.Density = boxCollider2DComponent["Density"].as<float>();
+// // 					bc2d.Friction = boxCollider2DComponent["Friction"].as<float>();
+// // 					bc2d.Restitution = boxCollider2DComponent["Restitution"].as<float>();
+// // 					bc2d.RestitutionThreshold = boxCollider2DComponent["RestitutionThreshold"].as<float>();
+// // 				}
 
-// 				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
-// 				if (circleCollider2DComponent)
-// 				{
-// 					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
-// 					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
-// 					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
-// 					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
-// 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
-// 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
-// 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
-// 				}
+// // 				auto circleCollider2DComponent = entity["CircleCollider2DComponent"];
+// // 				if (circleCollider2DComponent)
+// // 				{
+// // 					auto& cc2d = deserializedEntity.AddComponent<CircleCollider2DComponent>();
+// // 					cc2d.Offset = circleCollider2DComponent["Offset"].as<glm::vec2>();
+// // 					cc2d.Radius = circleCollider2DComponent["Radius"].as<float>();
+// // 					cc2d.Density = circleCollider2DComponent["Density"].as<float>();
+// // 					cc2d.Friction = circleCollider2DComponent["Friction"].as<float>();
+// // 					cc2d.Restitution = circleCollider2DComponent["Restitution"].as<float>();
+// // 					cc2d.RestitutionThreshold = circleCollider2DComponent["RestitutionThreshold"].as<float>();
+// // 				}
 
-// 				auto meshComponent = entity["MeshComponent"];
-// 				if (meshComponent)
-// 				{
-// 					std::string str = meshComponent["Path"].as<std::string>();
-// 					auto& mc = deserializedEntity.AddComponent<MeshComponent>(str);
+// // 				auto meshComponent = entity["MeshComponent"];
+// // 				if (meshComponent)
+// // 				{
+// // 					std::string str = meshComponent["Path"].as<std::string>();
+// // 					auto& mc = deserializedEntity.AddComponent<MeshComponent>(str);
 
-// 					// Material
-// 					mc.mMesh->mMaterial[0]->bUseAlbedoMap = meshComponent["bUseAlbedoMap"].as<bool>();
-// 					mc.mMesh->mMaterial[0]->col = meshComponent["col"].as<glm::vec4>();
-// 					mc.mMesh->mMaterial[0]->bUseNormalMap = meshComponent["bUseNormalMap"].as<bool>();
-// 					mc.mMesh->mMaterial[0]->bUseMetallicMap = meshComponent["bUseMetallicMap"].as<bool>();
-// 					mc.mMesh->mMaterial[0]->metallic = meshComponent["metallic"].as<float>();
-// 					mc.mMesh->mMaterial[0]->bUseRoughnessMap = meshComponent["bUseRoughnessMap"].as<bool>();
-// 					mc.mMesh->mMaterial[0]->roughness = meshComponent["roughness"].as<float>();
-// 					mc.mMesh->mMaterial[0]->bUseAoMap = meshComponent["bUseAoMap"].as<bool>();
-// 					// End Material
-// 				}
+// // 					// Material
+// // 					mc.mMesh->mMaterial[0]->bUseAlbedoMap = meshComponent["bUseAlbedoMap"].as<bool>();
+// // 					mc.mMesh->mMaterial[0]->col = meshComponent["col"].as<glm::vec4>();
+// // 					mc.mMesh->mMaterial[0]->bUseNormalMap = meshComponent["bUseNormalMap"].as<bool>();
+// // 					mc.mMesh->mMaterial[0]->bUseMetallicMap = meshComponent["bUseMetallicMap"].as<bool>();
+// // 					mc.mMesh->mMaterial[0]->metallic = meshComponent["metallic"].as<float>();
+// // 					mc.mMesh->mMaterial[0]->bUseRoughnessMap = meshComponent["bUseRoughnessMap"].as<bool>();
+// // 					mc.mMesh->mMaterial[0]->roughness = meshComponent["roughness"].as<float>();
+// // 					mc.mMesh->mMaterial[0]->bUseAoMap = meshComponent["bUseAoMap"].as<bool>();
+// // 					// End Material
+// // 				}
 
-// 				auto rigidbody3DComponent = entity["Rigidbody3DComponent"];
-// 				if (rigidbody3DComponent)
-// 				{
-// 					auto& rb3d = deserializedEntity.AddComponent<Rigidbody3DComponent>();
-// 					rb3d.mass = rigidbody3DComponent["mass"].as<float>();
-// 					rb3d.Type = (Rigidbody3DComponent::Body3DType)rigidbody3DComponent["type"].as<uint32_t>();
-// 					rb3d.Shape = (CollisionShape)rigidbody3DComponent["shape"].as<uint32_t>();
-// 					rb3d.linearDamping = rigidbody3DComponent["linearDamping"].as<float>();
-// 					rb3d.angularDamping = rigidbody3DComponent["angularDamping"].as<float>();
-// 					rb3d.restitution = rigidbody3DComponent["restitution"].as<float>();
-// 					rb3d.friction = rigidbody3DComponent["friction"].as<float>();
-// 				}
+// // 				auto rigidbody3DComponent = entity["Rigidbody3DComponent"];
+// // 				if (rigidbody3DComponent)
+// // 				{
+// // 					auto& rb3d = deserializedEntity.AddComponent<Rigidbody3DComponent>();
+// // 					rb3d.mass = rigidbody3DComponent["mass"].as<float>();
+// // 					rb3d.Type = (Rigidbody3DComponent::Body3DType)rigidbody3DComponent["type"].as<uint32_t>();
+// // 					rb3d.Shape = (CollisionShape)rigidbody3DComponent["shape"].as<uint32_t>();
+// // 					rb3d.linearDamping = rigidbody3DComponent["linearDamping"].as<float>();
+// // 					rb3d.angularDamping = rigidbody3DComponent["angularDamping"].as<float>();
+// // 					rb3d.restitution = rigidbody3DComponent["restitution"].as<float>();
+// // 					rb3d.friction = rigidbody3DComponent["friction"].as<float>();
+// // 				}
 
-// 				auto pointLightComponent = entity["PointLightComponent"];
-// 				if (pointLightComponent)
-// 				{
-// 					float intensity = pointLightComponent["pointIntensity"].as<float>();
-// 					glm::vec3 color = pointLightComponent["Color"].as<glm::vec3>();
-// 					auto& src = deserializedEntity.AddComponent<PointLightComponent>(intensity, color);
-// 				}
+// // 				auto pointLightComponent = entity["PointLightComponent"];
+// // 				if (pointLightComponent)
+// // 				{
+// // 					float intensity = pointLightComponent["pointIntensity"].as<float>();
+// // 					glm::vec3 color = pointLightComponent["Color"].as<glm::vec3>();
+// // 					auto& src = deserializedEntity.AddComponent<PointLightComponent>(intensity, color);
+// // 				}
 
-// 				auto directionalLightComponent = entity["DirectionalLightComponent"];
-// 				if (directionalLightComponent)
-// 				{
-// 					float intensity = directionalLightComponent["dirIntensity"].as<float>();
-// 					auto& src = deserializedEntity.AddComponent<DirectionalLightComponent>(intensity);
-// 				}
-// 			}
-// 		}
+// // 				auto directionalLightComponent = entity["DirectionalLightComponent"];
+// // 				if (directionalLightComponent)
+// // 				{
+// // 					float intensity = directionalLightComponent["dirIntensity"].as<float>();
+// // 					auto& src = deserializedEntity.AddComponent<DirectionalLightComponent>(intensity);
+// // 				}
+// // 			}
+// // 		}
 
-// 		return true;
-//     }
+// // 		return true;
+// //     }
 
-//     bool HeSerializer::deserializeRuntime(const std::string& filepath)
-//     {
+// //     bool HeSerializer::deserializeRuntime(const std::string& filepath)
+// //     {
 
-//     }
+// //     }
 // }

@@ -9,6 +9,7 @@ namespace DynastyEngine
 {
     
     class VulkanAPI;
+    class RenderCamera;
     class RenderResource
     {
     
@@ -21,6 +22,7 @@ namespace DynastyEngine
         void createIndexBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI);
         void createUniformBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI);
         void updateUniformBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI, uint32_t currentFrameIndex);
+        void updatePerFrameBuffer(std::shared_ptr<VulkanAPI> mVulkanAPI, uint32_t currentFrameIndex, std::shared_ptr<RenderCamera> camera);
         void updateMeshData(std::shared_ptr<VulkanAPI>      mVulkanAPI,
                             uint32_t                        indexBufferSize,
                             void*                           indexBufferData,

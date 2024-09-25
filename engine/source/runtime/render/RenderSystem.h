@@ -34,6 +34,8 @@ namespace DynastyEngine
         void tick(float deltaTime);
         void clear();
 
+        std::shared_ptr<RenderCamera> getRenderCamera();
+
     private:
         std::shared_ptr<VulkanAPI>                mVulkanAPI;
         std::shared_ptr<RenderCamera>             mRenderCamera;
